@@ -1076,7 +1076,7 @@ void TimeSet()
 	}
 	delay(100);
 
-	tempNumToSet = ReadRotary(tempNumToSet);
+	//tempNumToSet = ReadRotary(tempNumToSet);
 	/*
 	if (ReadRotary() == 1)
 	tempNumToSet += 1;
@@ -1095,43 +1095,26 @@ void TimeSet()
 			int a = 2;
 			int b = 0;
 
-			if (tempNumToSet > a)
-				tempNumToSet = b;
-
-			if (tempNumToSet < b)
-				tempNumToSet = a;
-
+			tempNumToSet = ReadRotary(tempNumToSet, b, a);
 			numToSet = tempNumToSet;
 		}
 		break;
 
 	case 1:
 		if (time[0] == 2)
-		{
-			//2,0
+		{			
 			int a = 4;
 			int b = 0;
 
-			if (tempNumToSet > a)
-				tempNumToSet = b;
-
-			if (tempNumToSet < b)
-				tempNumToSet = a;
-
+			tempNumToSet = ReadRotary(tempNumToSet, b, a);
 			numToSet = tempNumToSet;
 		}
 		else
 		{
-			//9,1
 			int a = 9;
-			int b = 1;
+			int b = 0;
 
-			if (tempNumToSet > a)
-				tempNumToSet = b;
-
-			if (tempNumToSet < b)
-				tempNumToSet = a;
-
+			tempNumToSet = ReadRotary(tempNumToSet, b, a);
 			numToSet = tempNumToSet;
 		}
 		break;
@@ -1142,12 +1125,7 @@ void TimeSet()
 			int a = 5;
 			int b = 0;
 
-			if (tempNumToSet > a)
-				tempNumToSet = b;
-
-			if (tempNumToSet < b)
-				tempNumToSet = a;
-
+			tempNumToSet = ReadRotary(tempNumToSet, b, a);
 			numToSet = tempNumToSet;
 		}
 		break;
@@ -1158,12 +1136,7 @@ void TimeSet()
 			int a = 9;
 			int b = 0;
 
-			if (tempNumToSet > a)
-				tempNumToSet = b;
-
-			if (tempNumToSet < b)
-				tempNumToSet = a;
-
+			tempNumToSet = ReadRotary(tempNumToSet, b, a);
 			numToSet = tempNumToSet;
 		}
 		break;
@@ -1201,6 +1174,9 @@ void TimeSet()
 		rtcTime.minute = Newmn.toInt();
 		rtcTime.second = 0;
 		rtc.writeTime(&rtcTime);
+
+		unRedColours();
+		targetBrightness = daylevel;
 
 		State = DisplayTime;
 		matrix.fillScreen(0);
