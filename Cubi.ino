@@ -361,9 +361,8 @@ void loop()
 #pragma #endregion
 
 #pragma region Alarm Stuff
-	if (realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0 && State != Alarm)
+	if (realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0 && State != Alarm && AlarmisSet)
 	{
-		Serial.println("Alarm Is going off!");
 		State = Alarm;
 		textCursor = 0;
 		matrix.fillScreen(0);
