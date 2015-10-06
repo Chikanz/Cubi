@@ -48,6 +48,5 @@ Figure out why the music cycle code is so weird
 Find a better name to not be associated with the MSI computer of the same name.
 </li>
 </ul>
-<sup>I had the idea first screw you MSI yours isn't even a fucking cube it's a rectangle enjoy your thermal throttling and crappy minimalist apple rip off aesthetic, assholes</sup>
 
 
