@@ -364,7 +364,7 @@ void loop()
 #pragma #endregion
 
 #pragma region Alarm Stuff
-	if (realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0 && State != Alarm && AlarmisSet)
+	if (AlarmisSet && State != Alarm && realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0)
 	{
 		State = Alarm;
 		textCursor = 0;
@@ -446,7 +446,7 @@ void loop()
 break;
 			}
 		}
-		Serial.println(displayCol1);
+		//Serial.println(displayCol1);
 		//Serial.println(displayCol2);
 		matrix.setTextColor(colors[displayCol1]);
 
@@ -454,6 +454,7 @@ break;
 
 		if (buttonPressed())
 		{
+			targetBrightness = daylevel;
 			digitalWrite(3, LOW);
 			matrix.fillScreen(0);
 			State = DisplayTime;
@@ -556,7 +557,10 @@ break;
 				RedColours();
 			}
 			else
+			{
+				unRedColours();
 				targetBrightness = daylevel;
+			}
 		}
 
 		delay(100);
@@ -800,19 +804,26 @@ void testLight()
 
 void SetLight()
 {
-	Serial.println(targetBrightness);
-	Serial.println(currentBrightness);
+	//Serial.println(targetBrightness);
+	//Serial.println(currentBrightness);
 
-	if (currentBrightness < targetBrightness)
-		currentBrightness += 1;
+	if (currentBrightness != targetBrightness)
+	{
+		if (currentBrightness < targetBrightness)
+		{
+			currentBrightness += 1;
+		}
 
-	if (currentBrightness > targetBrightness)
-		currentBrightness -= 1;
+		if (currentBrightness > targetBrightness)
+		{
+			currentBrightness -= 1;
+		}
 
-	if (currentBrightness < 1 && millis() > 1000)
-		currentBrightness = 1;
+		if (currentBrightness < 1 && millis() > 1000)
+			currentBrightness = 1;
 
-	matrix.setBrightness(currentBrightness);
+		matrix.setBrightness(currentBrightness);
+	}
 }
 
 void RedColours()
