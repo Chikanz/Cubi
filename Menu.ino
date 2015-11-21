@@ -11,7 +11,7 @@ void menu()
 	if (menuPage < 0 && canBounce)
 	{
 		conveyorTarget = -5;
-		canBounce = false;
+		canBounce = false;		
 	}
 
 	if (menuPage > 4 && canBounce)
@@ -29,10 +29,15 @@ void menu()
 	if (conveyorBelt > 52)
 	{
 		conveyorTarget = 48;
-		menuPage = 4;
 	}
 
-	//Serial.println(conveyorTarget);
+	if (menuPage > 4)
+		menuPage = 4;
+
+	if (menuPage < 0)
+		menuPage = 0;
+
+	Serial.println(conveyorBelt);
 
 	if (lastVal != menuPage)
 	{
@@ -41,7 +46,6 @@ void menu()
 		case 0:
 			//colourIcon();
 			conveyorTarget = 0;
-
 			lastVal = 0;
 			break;
 
@@ -78,4 +82,59 @@ void menu()
 	timeIcon(24);
 	pirrana(36, 500);
 	backIcon(48);
+
+	delay(55);
+}
+
+void menuPageChange()
+{
+	switch (menuPage)
+	{
+	case 0:
+		State = ChangeColor;
+		matrix.fillScreen(0);
+		break;
+
+	case 1:
+		State = MenuAlarm;
+		matrix.fillScreen(0);
+		break;
+
+	case 2:
+		State = TimeSetMode;
+		matrix.fillScreen(0);
+		break;
+
+	case 3:
+		State = Snake;
+		matrix.fillScreen(0);
+		break;
+
+	case 4:
+		State = DisplayTime;
+		matrix.fillScreen(0);
+		break;
+	}
+
+	//Reset belt
+	conveyorBelt = -8;
+}
+
+long timer;
+void conveyBelt()
+{
+	timer += deltaTime();
+	if (timer > 55)
+	{
+		if (conveyorBelt < conveyorTarget)
+			conveyorBelt += 1;
+
+		if (conveyorBelt > conveyorTarget)
+			conveyorBelt -= 1;
+
+		if (conveyorBelt == conveyorTarget)
+			canBounce = true;
+
+		timer = 0;
+	}
 }
