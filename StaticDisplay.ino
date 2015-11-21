@@ -1,4 +1,4 @@
-
+//The test mode used for photos and stuff
 void staticDisplay()
 {
 	targetBrightness = ReadRotary(targetBrightness, 0, 30);

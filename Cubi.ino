@@ -167,7 +167,8 @@ enum eState
 	ChangeColor,	// 7
 	DisplayTest,	// 8
 	Snake,			// 9
-	StaticDisplay,	//10
+	SnakeGameOver,	//10
+	StaticDisplay,	//11
 };
 
 //
@@ -198,8 +199,8 @@ int dimtime = 0;
 LinkedList<int> snakeBodyX = LinkedList<int>();
 LinkedList<int> snakeBodyY = LinkedList<int>();
 
-enum eDirection { Up, Right, Down, Left };
-eDirection dir = Right;
+enum eDirection { Up, Right, Down, Left};
+eDirection dir = Up;
 LinkedList<eDirection> dirList = LinkedList<eDirection>();
 
 int inputDirMod;
@@ -220,9 +221,15 @@ int headx;
 int heady;
 
 int timerTemp;
-
 bool mouth;
-///
+
+
+File root;
+int fileCount;
+
+int conveyorBelt = -8;
+int conveyorTarget = 0;
+bool canBounce = true;
 
 void setup()
 {
@@ -236,36 +243,32 @@ void setup()
 	pinMode(12, OUTPUT);
 	pinMode(13, OUTPUT);
 
-	matrix.setCursor(matrix.width(), 0);
-	//servo.attach(3);
+	matrix.setCursor(matrix.width(), 0);	
 
-	pinMode(13, OUTPUT);
-
-	//Sets inital values if eeprom is blank
+	//EEPROM startup
 	Serial.println("Reading from Eeprom");
 	displayCol1 = EEPROM.read(1);
 	displayCol2 = EEPROM.read(2);
 
 	AlarmTime[0] = EEPROM.read(3);
 	AlarmTime[1] = EEPROM.read(4);
+
 	AlarmisSet = EEPROM.read(5);
 	songToPlay = EEPROM.read(6);
 	Serial.println("Done reading from Eeprom!");
 
-	//Audio Stuff
+	//Audio
 	AudioMemory(5);
 
 	sgtl5000_1.enable();
 	sgtl5000_1.volume(0.5);
 
-	pinMode(13, OUTPUT);
-
+	//SD card
 	SPI.setMOSI(7);
 	SPI.setSCK(14);
 
 	if (!(SD.begin(10)))
 	{
-		// stop here, but print a message repetitively
 		while (!(SD.begin(10)))
 		{
 			Serial.println("Unable to access the SD card");
@@ -273,7 +276,7 @@ void setup()
 		}
 	}
 
-	//Snake stuff
+	//Snake
 	snakeBodyX.add(3);
 	snakeBodyX.add(3);
 
@@ -285,6 +288,13 @@ void setup()
 	dirList.add(Left);
 	dirList.add(Down);
 	dirList.add(Left);
+
+	//Directory Read SD card
+	root = SD.open("/");
+	countDirectory(root);
+	fileCount -= 1;
+	Serial.println("Files in dir:");
+	Serial.print(fileCount);
 }
 
 int lastNum = 0;
@@ -295,20 +305,12 @@ bool canTest = true;
 
 int fakeTime = 0;
 
+bool redded = false;
 
+//
 void loop()
 {
 	matrix.fillScreen(0);
-
-	/*
-	if (onSecond() && canTest)
-	{
-		testLight();
-		canTest = false;
-	}
-	else if (!onSecond())
-		canTest = true;
-	*/
 
 	fixedLight();
 	SetLight();
@@ -372,98 +374,12 @@ void loop()
 		targetBrightness = 17;
 	}
 
+#pragma #endregion
+
 	if (State == Alarm)
 	{
-		displayoff = false;
-		targetBrightness = daylevel;
-		unRedColours();
-
-		digitalWrite(3, HIGH);
-		UpdateTime();
-
-		matrix.setCursor(textCursor, 0);
-		if (--textCursor == -50)
-			textCursor = matrix.width();
-		matrix.print(("Wake Up!"));
-
-		if (!playWav1.isPlaying())
-		{
-			EEPROM.write(6, songToPlay += 1);
-
-			if (songToPlay > 11)
-			{
-				songToPlay = 0;
-				EEPROM.write(6, 0);
-				Serial.println("Song Playing: ");
-				Serial.println(songToPlay);
-			}
-
-			Serial.print(songToPlay);
-			switch (songToPlay)
-			{
-			case 1:
-				playFile("(1).wav");
-				break;
-
-			case 2:
-				playFile("(2).wav");
-				break;
-
-			case 3:
-				playFile("(3).wav");
-				break;
-
-			case 4:
-				playFile("(4).wav");
-				break;
-
-			case 5:
-				playFile("(5).wav");
-				break;
-
-			case 6:
-				playFile("(6).wav");
-				break;
-
-			case 7:
-				playFile("(7).wav");
-				break;
-
-			case 8:
-				playFile("(8).wav");
-				break;
-
-			case 9:
-				playFile("(9).wav");
-				break;
-
-			case 10:
-				playFile("(10).wav");
-				break;
-
-			case 11:
-				playFile("(11).wav");
-break;
-			}
-		}
-		//Serial.println(displayCol1);
-		//Serial.println(displayCol2);
-		matrix.setTextColor(colors[displayCol1]);
-
-		delay(100);
-
-		if (buttonPressed())
-		{
-			targetBrightness = daylevel;
-			digitalWrite(3, LOW);
-			matrix.fillScreen(0);
-			State = DisplayTime;
-			canPress = false;
-			//servo.write(21);
-			playWav1.stop();
-		}
+		PlayAlarm();
 	}
-#pragma #endregion
 
 	if (State == MenuAlarm)
 	{
@@ -515,34 +431,13 @@ break;
 			canPress = false;
 		}
 
-		////Dimmer
-		//if (rtcTime.hour > 0 && rtcTime.hour < 6 && displayoff == false && dimTrigger == false)
-		//{
-		//	dimTrigger = true;
-		//	dimtime = 3;
-		//	Serial.println("TRIGGERED");
-		//}
-
-		//if (dimtime > 0 && onSecond())
-		//{
-		//	dimtime -= 3;
-		//	Serial.println("count...");
-		//}
-
-		//if (dimtime = 0 && displayoff == false)
-		//{
-		//	dimTrigger = false;
-		//	displayoff = true;
-		//	Serial.println("off");
-		//}
-
-		//Handles displayoff
+		//Re-write dis
 		if (displayoff)
 		{
 			if (rtcTime.hour > 20 || rtcTime.hour < 7)
 			{
 				matrix.fillScreen(0);
-				targetBrightness = nightLevel;
+				//targetBrightness = 1;
 			}
 			else
 			{
@@ -553,7 +448,7 @@ break;
 		{
 			if (rtcTime.hour > 20 || rtcTime.hour < 7)
 			{
-				targetBrightness = nightLevel;
+				targetBrightness = 1;
 				RedColours();
 			}
 			else
@@ -570,17 +465,11 @@ break;
 	{
 		UpdateTime();
 		menu();
-		//delay(100);
 
 		if (buttonPressed())
 		{
 			menuPageChange();
-			menuPage = 0;
-		}
-
-		//Reset rotary every hour so it doesn't overflow
-		if (mn == 0 && sec == 0)
-		{
+			//Reset rotary to hopefully avoid overflow
 			rotary.write(0);
 		}
 	}
@@ -592,7 +481,7 @@ break;
 		if (hourBelow10)
 			minuteAlert(displayCol1);
 
-		UpdateTime();
+		//UpdateTime();
 		changeColor();
 		delay(10);
 	}
@@ -609,37 +498,26 @@ break;
 
 	if (State == StaticDisplay)
 	{
-		targetBrightness = ReadRotary(targetBrightness, 0, 30);
+		staticDisplay();
+	}
+
+	if (State == SnakeGameOver)
+	{
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1]);
+		displayNum(score % 10, 4, 0, colors[displayCol2]);
+
+		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
+		matrix.drawPixel(7, 7, colors[displayCol1]);
+		matrix.show();
 
 		if (buttonPressed())
-			fakeTime += 1;
-		
-
-		if (fakeTime > 4)
-			fakeTime = 0;
-
-		switch (fakeTime)
 		{
-		case 0:
-			DisplayCurrentTime(0, 4, 2, 0, false, 0);
-			break;
+			headx = 3;
+			heady = 3;
+			snakeLength = 3;
+			score = 0;
 
-		case 1:
-			DisplayCurrentTime(1, 1, 3, 7, false, 0);
-			break;
-
-		case 2:
-			DisplayCurrentTime(1, 3, 3, 7, false, 0);
-			break;
-
-		case 3:
-			DisplayCurrentTime(0, 2, 4, 7, false, 0);
-			break;
-
-		case 4:
-			DisplayCurrentTime(1, 2, 3, 1, false, 0);
-			break;
-
+			State = DisplayTime;
 		}
 	}
 
@@ -649,145 +527,10 @@ break;
 	if (digitalRead(2) == LOW)
 		canPress = true;
 }
+//
 
-int menuVal;
-int lastVal = 5;
-int newPos;
-int conveyorBelt = -8;
-int conveyorTarget = 0;
-bool canBounce = true;
 
-void menu()
-{
-	menuPage = ReadRotary(menuPage);
 
-	//Bounce
-	if (menuPage < 0 && canBounce)
-	{
-		conveyorTarget = -5;
-		canBounce = false;
-	}
-
-	if (menuPage > 4 && canBounce)
-	{
-		conveyorTarget = 53;
-		canBounce = false;
-	}
-
-	if (conveyorBelt < -4)
-	{
-		conveyorTarget = 0;
-		menuPage = 0;
-	}
-
-	if (conveyorBelt > 52)
-	{
-		conveyorTarget = 48;
-		menuPage = 4;
-	}
-
-	//Serial.println(conveyorTarget);
-
-	if (lastVal != menuPage)
-	{
-		switch (menuPage)
-		{
-		case 0:
-			//colourIcon();
-			conveyorTarget = 0;
-
-			lastVal = 0;
-			break;
-
-		case 1:
-			//speakerIcon();
-			conveyorTarget = 12;
-			lastVal = 1;
-			break;
-
-		case 2:
-			//timeIcon();
-			conveyorTarget = 24;
-			lastVal = 2;
-			break;
-
-		case 3:
-			//piranna();
-			conveyorTarget = 36;
-			lastVal = 3;
-			break;
-
-		case 4:
-			//backIcon()
-			conveyorTarget = 48;
-			lastVal = 4;
-			break;
-		}
-	}
-
-	conveyBelt();
-
-	colourIcon();
-	speakerIcon(12, true);
-	timeIcon(24);
-	pirrana(36, 500);
-	backIcon(48);
-}
-
-void menuPageChange()
-{
-	switch (menuPage)
-	{
-	case 0:
-		State = ChangeColor;
-		matrix.fillScreen(0);
-		break;
-
-	case 1:
-		State = MenuAlarm;
-		matrix.fillScreen(0);
-		break;
-
-	case 2:
-		State = TimeSetMode;
-		matrix.fillScreen(0);
-		break;
-
-	case 3:
-		State = Snake;
-		matrix.fillScreen(0);
-		break;
-
-	case 4:
-		State = DisplayTime;
-		matrix.fillScreen(0);
-		break;
-	}
-
-	//Reset belt
-	conveyorBelt = -8;
-}
-
-long timer;
-void conveyBelt()
-{
-	timer += deltaTime();
-	if (timer > 50)
-	{
-		if (conveyorBelt < conveyorTarget)
-			conveyorBelt += 1;
-
-		if (conveyorBelt > conveyorTarget)
-			conveyorBelt -= 1;
-
-		if (conveyorBelt == conveyorTarget)
-			canBounce = true;
-
-		timer = 0;
-	}
-}
-
-//Function depricated as I̶ ̶w̶a̶s̶ ̶t̶o̶o̶ ̶l̶a̶z̶y̶ ̶t̶o̶ ̶d̶r̶i̶l̶l̶ ̶a̶ ̶h̶o̶l̶e̶  a hole for the light sensor would ruin the aesthetic of the box, Might include in future versions
 void testLight()
 {
 	float sensor = analogRead(A7);
@@ -922,278 +665,6 @@ int posX[] =
 int colpos2;
 int colpos3;
 
-void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int blinkpos)
-{
-	if (bigMode)
-	{
-		posOffset = 4;
-		colpos2 = displayCol2;
-		colpos3 = displayCol1;
-		if (hr1 == 0)
-		{
-			hourBelow10 = true;
-		}
-		else
-			hourBelow10 = false;
-	}
-	else
-	{
-		hourBelow10 = false;
-		posOffset = 0;
-		colpos2 = displayCol1;
-		colpos3 = displayCol2;
-	}
-
-	if (!Blink)
-	{
-		if (hourBelow10 && bigMode)
-		{
-			//displayNum(hr1, 1, 0, colors[displayCol1]);
-			displayNum(hr2, 1, 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-		}
-		else
-		{
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-		}
-	}
-	else
-	{
-		switch (blinkpos)
-		{
-		case 0:
-			if (onHalfSecond())
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			/*
-			else
-			displayNum(hr1, posX[0 + posOffset], 0, colors[0]);
-			*/
-
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 1:
-			if (onHalfSecond())
-			{
-				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			}
-			/*
-			else
-			{
-			//Serial.println("off");
-			displayNum(hr2, posX[1 + posOffset], 0, colors[0]);
-			}
-			*/
-
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 2:
-			if (onHalfSecond())
-				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 3:
-			if (onHalfSecond())
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			break;
-		}
-	}
-}
-
-void UpdateTime()
-{
-	rtc.readDate(&rtcDate);
-
-	rtc.readTime(&rtcTime);
-	hr = rtcTime.hour;
-	realHr = rtcTime.hour;
-	mn = rtcTime.minute;
-	sec = rtcTime.second;
-
-	/*
-	Serial.println("Hr:"); Serial.println(hr);
-	Serial.println("Mn:"); Serial.println(mn);
-	Serial.println("Sec:"); Serial.println(sec);
-	*/
-
-	
-	if (!HourMode24 && hr > 12)
-	{
-		hr -= 12;
-	}
-	
-
-	if (hr < 10)
-	{
-		hrDisplay1 = 0;
-		hrDisplay2 = hr;
-	}
-	else
-	{
-		hrDisplay1 = hr % 100 / 10;
-		hrDisplay2 = hr % 10;
-	}
-
-	if (mn < 10)
-	{
-		mnDisplay1 = 0;
-		mnDisplay2 = mn;
-	}
-	else
-	{
-		mnDisplay1 = mn % 100 / 10;
-		mnDisplay2 = mn % 10;
-	}
-}
-
-void minuteAlert(int col)
-{
-	//Serial.println(sec % 2);
-	if (!(sec % 2))
-	{
-		matrix.drawPixel(0, 0, colors[col]);
-	}
-
-	if (sec == 0)
-	{
-		matrix.drawPixel(0, 0, matrix.Color(0, 255, 200));
-	}
-}
-
-int tempNumToSet;
-void TimeSet()
-{
-	if (buttonPressed())
-	{
-		pos++;
-		canPress = false;
-	}
-	delay(100);
-
-	//tempNumToSet = ReadRotary(tempNumToSet);
-	/*
-	if (ReadRotary() == 1)
-	tempNumToSet += 1;
-
-	if (ReadRotary() == 2)
-	tempNumToSet -= 1;
-	*/
-
-	//Serial.println(val);
-	switch (pos)
-	{
-	case 0:
-		//1,0
-		if (true)
-		{
-			int a = 2;
-			int b = 0;
-
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
-		break;
-
-	case 1:
-		if (time[0] == 2)
-		{			
-			int a = 4;
-			int b = 0;
-
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
-		else
-		{
-			int a = 9;
-			int b = 0;
-
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
-		break;
-
-	case 2:
-		if (true)
-		{
-			int a = 5;
-			int b = 0;
-
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
-		break;
-
-	case 3:
-		if (true)
-		{
-			int a = 9;
-			int b = 0;
-
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
-		break;
-	}
-
-	time[pos] = numToSet;
-
-	DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
-
-	if (pos >= 4)
-	{
-		pos = 0;
-		String hrr1 = String(time[0]);
-		String hrr2 = String(time[1]);
-		String mnn1 = String(time[2]);
-		String mnn2 = String(time[3]);
-
-		String Newhr = String(hrr1 + hrr2);
-		String Newmn = String(mnn1 + mnn2);		
-
-		//Serial.println(Newhr.toInt());
-		/*
-
-		setTime(
-		Newhr.toInt() //hr
-		, Newmn.toInt() //mn
-		, 0 //sec
-		, 28
-		, 2
-		, 2015);
-		*/
-		Serial.println(Newhr);
-
-		rtcTime.hour = Newhr.toInt();
-		rtcTime.minute = Newmn.toInt();
-		rtcTime.second = 0;
-		rtc.writeTime(&rtcTime);
-
-		unRedColours();
-		targetBrightness = daylevel;
-
-		State = DisplayTime;
-		matrix.fillScreen(0);
-	}
-}
-
 int alarmMenuPage = 0;
 int loopint = -50;
 String text = "ayy";
@@ -1254,7 +725,6 @@ void AlarmPageChange()
 		Serial.println("Setting Alarm");
 		State = SetAlarm;
 		AlarmisSet = true;
-		EEPROM.write(5, true);
 		matrix.fillScreen(0);
 		break;
 	}
@@ -1266,6 +736,7 @@ void AlarmSet()
 	{
 		pos++;
 		canPress = false;
+		numToSet = 0;
 	}
 
 	delay(100);
@@ -1282,7 +753,7 @@ void AlarmSet()
 			numToSet = ReadRotary(numToSet, 0, 4);
 		}
 		else
-			numToSet = ReadRotary(numToSet, 1, 9);
+			numToSet = ReadRotary(numToSet, 0, 9);
 		break;
 
 	case 2:
@@ -1317,6 +788,7 @@ void AlarmSet()
 
 		EEPROM.write(3, AlarmTime[0]);
 		EEPROM.write(4, AlarmTime[1]);
+		EEPROM.write(5, true);
 
 		matrix.fillScreen(0);
 		delay(500);
@@ -1353,268 +825,6 @@ boolean onHalfSecond()
 	else
 		return true;
 }
-
-#pragma region	numberzzz
-
-void displayNum(int num, int x, int y, uint16_t col)
-{
-	if (bigMode)
-	{
-		switch (num)
-		{
-		case 1:
-			num1Big(x, y, col);
-			break;
-
-		case 2:
-			num2Big(x, y, col);
-			break;
-
-		case 3:
-			num3Big(x, y, col);
-			break;
-
-		case 4:
-			num4Big(x, y, col);
-			break;
-
-		case 5:
-			num5Big(x, y, col);
-			break;
-
-		case 6:
-			num6Big(x, y, col);
-			break;
-
-		case 7:
-			num7Big(x, y, col);
-			break;
-
-		case 8:
-			num8Big(x, y, col);
-			break;
-
-		case 9:
-			num9Big(x, y, col);
-			break;
-
-		case 0:
-			num0Big(x, y, col);
-			break;
-		}
-	}
-	else
-	{
-		switch (num)
-		{
-		case 1:
-			num1(x, y, col);
-			break;
-
-		case 2:
-			num2(x, y, col);
-			break;
-
-		case 3:
-			num3(x, y, col);
-			break;
-
-		case 4:
-			num4(x, y, col);
-			break;
-
-		case 5:
-			num5(x, y, col);
-			break;
-
-		case 6:
-			num6(x, y, col);
-			break;
-
-		case 7:
-			num7(x, y, col);
-			break;
-
-		case 8:
-			num8(x, y, col);
-			break;
-
-		case 9:
-			num9(x, y, col);
-			break;
-
-		case 0:
-			num0(x, y, col);
-			break;
-		}
-	}
-}
-
-void num1(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	//matrix.drawPixel(2 + xmod,1 + ymod,col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
-}
-
-void num2(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawPixel(2 + xmod, 1 + ymod, col);
-	matrix.drawPixel(1 + xmod, 2 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
-}
-
-void num3(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 3 + ymod, col);
-}
-
-void num4(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-
-	matrix.drawLine(2 + xmod, 1 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 1 + ymod, col);
-}
-
-void num5(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
-	matrix.drawPixel(2 + xmod, 2 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
-}
-
-void num6(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
-	matrix.drawLine(2 + xmod, 2 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(2 + xmod, 0 + ymod, col);
-}
-
-void num7(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
-}
-
-void num8(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
-}
-
-void num9(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
-}
-
-void num0(int x, int y, uint16_t col)
-{
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
-}
-
-void num0Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 0 + x, 7, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-
-	//matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	//matrix.drawLine(0 + x, 7, 1 + x, 7, col);
-}
-
-void num1Big(int x, int y, uint16_t col)
-{
-	if (x > 4)
-		matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-	else
-		matrix.drawLine(0 + x, 0, 0 + x, 7, col);
-}
-
-void num2Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 4, col);
-	matrix.drawLine(0 + x, 4, 0 + x, 7, col);
-	matrix.drawPixel(1 + x, 7, col);
-}
-
-void num3Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-	matrix.drawLine(0 + x, 4, 0 + x, 4, col);
-	matrix.drawLine(0 + x, 7, 1 + x, 7, col);
-}
-
-void num4Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
-}
-
-void num5Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
-	matrix.drawPixel(0 + x, 7, col);
-}
-
-void num6Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(0 + x, 0, 0 + x, 7, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
-}
-
-void num7Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-	matrix.drawPixel(0 + x, 0, col);
-}
-
-void num8Big(int x, int y, uint16_t col)
-{
-	matrix.drawRect(0 + x, 0, 2, 4, col);
-	matrix.drawRect(0 + x, 5, 2, 3, col);
-}
-
-void num9Big(int x, int y, uint16_t col)
-{
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-}
-
-#pragma endregion
 
 void playFile(String filename)
 {
@@ -1765,160 +975,6 @@ int deltaTime4()
 	deltaTime = millis() - tempTimer4;
 	tempTimer4 = millis();
 	return deltaTime;
-}
-
-int colSwitch1;
-int colSwitch2;
-
-int timer3 = 0;
-bool timerSwitch = false;
-void colourIcon()
-{
-	//Serial.println(timer3);
-	if (timerSwitch)
-		timer3 += deltaTime3();
-
-	if (timer3 > 1000)
-	{
-		srandom(millis());
-		int rnd;
-		rnd = random(1, 4);
-		colSwitch1 += rnd;
-
-		//Serial.println("Random: ");
-		//Serial.println(rnd);
-
-		rnd = random(1, 4);
-		colSwitch2 += rnd;
-		//Serial.println("Random: ");
-		//Serial.println(rnd);
-
-		//Serial.println();
-		//Serial.print("ColSwitch1:");
-		//Serial.println(colSwitch1);
-		//Serial.println();
-		//Serial.print("ColSwitch2:");
-		//Serial.println(colSwitch2);
-
-		timer3 = 0;
-
-		Serial.println("ayy");
-	}
-
-	if (!timerSwitch)
-	{
-		colSwitch1 = displayCol1;
-		colSwitch2 = displayCol2;
-
-		timerSwitch = true;
-	}
-
-	if (colSwitch1 == colSwitch2)
-		colSwitch2 += 5;
-
-	if (colSwitch1 > 8)
-	{
-		colSwitch1 -= 8;
-		//Serial.println("Ayy");
-	}
-
-	if (colSwitch2 > 8)
-	{
-		//Serial.println("Ayy");
-		colSwitch2 -= 8;
-	}
-
-	matrix.fillRoundRect(conveyorBelt + 1, 1, 6, 6, 1, colors[colSwitch1]);
-
-	matrix.fillTriangle(conveyorBelt + 2, 5, conveyorBelt + 5, 2, conveyorBelt + 2, 2, colors[colSwitch2]);
-
-	matrix.drawLine(conveyorBelt + 2, 1, conveyorBelt + 5, 1, colors[colSwitch2]);
-	matrix.drawLine(conveyorBelt + 1, 2, conveyorBelt + 1, 5, colors[colSwitch2]);
-}
-
-int timer2;
-void speakerIcon(int startPos, bool play)
-{
-	if (play)
-	{
-		timer2 += deltaTime2();
-		if (timer2 > 200)
-		{
-			moveNum--;
-			timer2 = 0;
-		}
-
-		if (moveNum < -2)
-		{
-			moveNum = 3;
-		}
-	}
-
-	int tempConveyor = conveyorBelt - startPos;
-
-	if (moveNum > -1 || conveyorBelt != conveyorTarget)
-	{
-		matrix.drawLine(tempConveyor + moveNum, 2, tempConveyor + moveNum, 5, colors[displayCol1]);
-	}
-
-	if (moveNum > -2 || conveyorBelt != conveyorTarget)
-	{
-		matrix.drawPixel(tempConveyor + moveNum + 1, 1, colors[displayCol1]);
-		matrix.drawPixel(tempConveyor + moveNum + 1, 6, colors[displayCol1]);
-	}
-
-	matrix.drawLine(tempConveyor + 3, 0, tempConveyor + 3, 7, colors[displayCol2]);
-	matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 6, colors[displayCol2]);
-	matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 5, colors[displayCol2]);
-	matrix.drawRect(tempConveyor + 6, 3, tempConveyor + 2, 2, colors[displayCol2]);
-
-	//Serial.println(moveNum);
-}
-
-void speakerIcon(bool play)
-{
-	if (play)
-	{
-		timer2 += deltaTime2();
-
-		if (timer2 > 200)
-		{
-			moveNum--;
-			timer2 = 0;
-		}
-
-		if (moveNum < -2)
-		{
-			moveNum = 3;
-		}
-	}
-
-	if (moveNum > -1)
-	{
-		matrix.drawLine(moveNum, 2, moveNum, 5, colors[displayCol1]);
-	}
-
-	if (moveNum > -2)
-	{
-		matrix.drawPixel(moveNum + 1, 1, colors[displayCol1]);
-		matrix.drawPixel(moveNum + 1, 6, colors[displayCol1]);
-	}
-
-	matrix.drawLine(3, 0, 3, 7, colors[displayCol2]);
-	matrix.drawLine(4, 1, 4, 6, colors[displayCol2]);
-	matrix.drawLine(5, 2, 5, 5, colors[displayCol2]);
-	matrix.drawRect(6, 3, 2, 2, colors[displayCol2]);
-
-	//Serial.println(moveNum);
-}
-
-void timeIcon(int startpos)
-{
-	//  int tempConveyor = conveyorBelt - 16;
-	int tempConveyor = conveyorBelt - startpos;
-
-	matrix.drawRoundRect(tempConveyor + 1, 1, 6, 6, 1, colors[displayCol1]);
-	matrix.drawTriangle(tempConveyor + 3, 4, tempConveyor + 3, 3, tempConveyor + 4, 4, colors[displayCol1]);
 }
 
 int backMove = 0;
@@ -2111,7 +1167,7 @@ void snake()
 			if (headx == snakeBodyX.get(i) && heady == snakeBodyY.get(i))
 			{
 				gameOver();
-				i = 999;
+				Serial.println("Gayyyme over");
 			}
 		}
 	}
@@ -2121,7 +1177,6 @@ void snake()
 
 void gameOver()
 {
-	delay(2000);
 	matrix.fillScreen(0);
 	matrix.fillRect(0, 0, 8, 8, colors[displayCol1]);
 	matrix.show();
@@ -2132,31 +1187,10 @@ void gameOver()
 	matrix.show();
 	delay(1000);
 
-	while (gameOverloop)
-	{
-		matrix.fillScreen(0);
-
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1]);
-		displayNum(score % 10, 4, 0, colors[displayCol2]);
-
-		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
-		matrix.drawPixel(7, 7, colors[displayCol1]);
-		matrix.show();
-
-		if (buttonPressed())
-		{
-			headx = 3;
-			heady = 3;
-			snakeLength = 2;
-			score = -1;
-
-			State = DisplayTime;
-			gameOverloop = false;
-		}
-	}
+	State = SnakeGameOver;
 }
 
-//Thanks to Carlotta Tatti of hack.hands() for this sweet function
+//Thanks to Carlotta Tatti of hack.hands()
 void shiftBackwards(int myarray[], int size, int shiftBy)
 {
 	if (shiftBy > size) {
@@ -2231,5 +1265,21 @@ void pirrana(int startpos, int timer)
 		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
 
 		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, White);
+	}
+}
+
+void countDirectory(File dir) {
+	while (true) 
+	{
+		File entry = dir.openNextFile();
+		if (!entry) 
+		{
+			// no more files
+			break;
+		}
+
+		fileCount += 1;
+
+		entry.close();
 	}
 }

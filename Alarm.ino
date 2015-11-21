@@ -1,4 +1,4 @@
-//Handles Alarm shit
+//Alarm shit
 int timesPlayed;
 
 void PlayAlarm()
@@ -42,7 +42,6 @@ void PlayAlarm()
 		matrix.fillScreen(0);
 		State = DisplayTime;
 		canPress = false;
-		//servo.write(21);
 		playWav1.stop();
 	}
 }
