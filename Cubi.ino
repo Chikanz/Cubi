@@ -18,8 +18,12 @@ EEPROM Memory allocation
 
 #include <EEPROM.h>
 
-#include <SoftI2C.h>
-#include <DS3232RTC.h>
+//Phasing out
+//#include <SoftI2C.h>
+//#include <DS3232RTC.h>
+//
+
+#include <Time.h>
 
 #include <Audio.h>
 #include <Wire.h>
@@ -41,10 +45,10 @@ AudioControlSGTL5000     sgtl5000_1;     //xy=240,153
 
 										 //Declcare instances
 										 //RTC stuff
-SoftI2C i2c(A3, A2);
-DS3232RTC rtc(i2c);
-RTCTime rtcTime;
-RTCDate rtcDate;
+//SoftI2C i2c(A3, A2);
+//DS3232RTC rtc(i2c);
+//RTCTime rtcTime;
+//RTCDate rtcDate;
 
 Encoder rotary(5, 4);  //Rotary Encoder
 
@@ -295,6 +299,10 @@ void setup()
 	fileCount -= 1;
 	Serial.println("Files in dir:");
 	Serial.print(fileCount);
+
+	//Teensy RTC setup
+	setSyncProvider(getTeensy3Time);
+
 }
 
 int lastNum = 0;
@@ -434,7 +442,7 @@ void loop()
 		//Re-write dis
 		if (displayoff)
 		{
-			if (rtcTime.hour > 20 || rtcTime.hour < 7)
+			if (hour() > 20 || hour() < 7)
 			{
 				matrix.fillScreen(0);
 				//targetBrightness = 1;
@@ -446,7 +454,7 @@ void loop()
 		}
 		else
 		{
-			if (rtcTime.hour > 20 || rtcTime.hour < 7)
+			if (hour() > 20 || hour() < 7)
 			{
 				targetBrightness = 1;
 				RedColours();
@@ -592,13 +600,13 @@ void fixedLight()
 
 	//Set the light to 1 at 8:00pm
 
-	if ((rtcTime.hour > 20 && rtcTime.hour < 6))
+	if ((hour() > 20 && hour() < 6))
 	{
 		targetBrightness = 1;
 	}
 
 	//If the alarm isn't set, set the birghtness back up to normal at 8
-	if (!AlarmisSet && rtcTime.hour > 8 && rtcTime.hour < 20)
+	if (!AlarmisSet && hour() > 8 && hour() < 20)
 		targetBrightness = 17;
 }
 
@@ -800,10 +808,10 @@ void AlarmSet()
 
 boolean onSecond()
 {
-	rtc.readTime(&rtcTime);
-	int secs = rtcTime.second;
+	//rtc.readTime(&rtcTime);
+	//int secs = rtcTime.second;
 	//Serial.println(secs);
-	if (secs % 2 == 0)
+	if (second() % 2 == 0)
 	{
 		return true;
 	}
@@ -811,14 +819,16 @@ boolean onSecond()
 		return false;
 }
 
+
+//Not really on half second, but makes a cool blink effect
 int sec2 = 1;
 boolean onHalfSecond()
 {
-	rtc.readTime(&rtcTime);
-	int secs = rtcTime.second;
+	//rtc.readTime(&rtcTime);
+	//int secs = second()
 	sec2++;
 	//Serial.println(secs);
-	if (secs % 2 == 0 && sec2 % 2 == 0)
+	if (second() % 2 == 0 && sec2 % 2 == 0)
 	{
 		return false;
 	}
@@ -920,14 +930,15 @@ int ReadRotary(int varToChange)
 	}
 }
 
-void GetTemperature()
-{
-	int t1 = rtc.readTemperature(); // retrieve the value from the DS3232
-	float temp = t1 / 4; // temperature in Celsius stored in temp
-	delay(100);
-	Serial.print(temp);
-	//return temp;
-}
+//Will replace with thermister analog read some day
+//void GetTemperature()
+//{
+//	int t1 = rtc.readTemperature(); // retrieve the value from the DS3232
+//	float temp = t1 / 4; // temperature in Celsius stored in temp
+//	delay(100);
+//	Serial.print(temp);
+//	//return temp;
+//}
 
 long tempTimer = 0;
 
