@@ -16,6 +16,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Cubi.ino" />
+    <None Include="Alarm.ino" />
+    <None Include="Menu.ino" />
+    <None Include="StaticDisplay.ino" />
+    <None Include="Time.ino" />
+    <None Include="Graphics.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Visual Micro\.Cubi.vsarduino.h">

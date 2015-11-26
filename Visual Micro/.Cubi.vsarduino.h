@@ -84,4 +84,9 @@ extern "C" void __cxa_pure_virtual() {;}
 #define portInputRegister(P)
 #define portModeRegister(P)
 #include <Cubi.ino>
+#include <Alarm.ino>
+#include <Graphics.ino>
+#include <Menu.ino>
+#include <StaticDisplay.ino>
+#include <Time.ino>
 #endif
