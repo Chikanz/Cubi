@@ -21,76 +21,114 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 		colpos3 = displayCol2;
 	}
 
-	if (!Blink)
+	if (rtcTime.hour > 21 & State == DisplayTime)
 	{
-		if (hourBelow10 && bigMode)
+		//Night
+
+		matrix.drawLine(0, 0, 0, 2, Red);
+
+
+		switch (hr2)
 		{
-			//displayNum(hr1, 1, 0, colors[displayCol1]);
-			displayNum(hr2, 1, 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
+		case 0:
+			matrix.drawLine(2, 0, 2, 2, Red);
+			matrix.drawLine(3, 0, 3, 2, Red);
+			break;
+
+		case 1:
+			matrix.drawLine(2, 0, 2, 2, Red);
+			break;
+
+		case 2:
+			matrix.drawLine(3, 0, 3, 2, Red);
+			matrix.drawPixel(2, 0, Red);
+			matrix.drawPixel(4, 2, Red);
+			break;
+
+
 		}
-		else
+
+		if (!hourBelow10)
 		{
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
+			displayNum(mn1, 2, 4, Red, false);
+			displayNum(mn2, 5, 4, Red, false);
 		}
 	}
 	else
 	{
-		switch (blinkpos)
+		//Normal display
+		if (!Blink)
 		{
-		case 0:
-			if (onHalfSecond())
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			/*
-			else
-			displayNum(hr1, posX[0 + posOffset], 0, colors[0]);
-			*/
-
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 1:
-			if (onHalfSecond())
+			if (hourBelow10 && bigMode)
 			{
-				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
+				//displayNum(hr1, 1, 0, colors[displayCol1]);
+				displayNum(hr2, 1, 0, colors[colpos2], true);
+				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
 			}
-			/*
 			else
 			{
-			//Serial.println("off");
-			displayNum(hr2, posX[1 + posOffset], 0, colors[0]);
+				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
+				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2], true);
+				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
 			}
-			*/
-
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 2:
-			if (onHalfSecond())
-				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-			break;
-
-		case 3:
-			if (onHalfSecond())
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2]);
-
-			displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1]);
-			displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2]);
-			displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3]);
-			break;
 		}
+		else
+		{
+			switch (blinkpos)
+			{
+			case 0:
+				if (onHalfSecond())
+					displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
+				/*
+				else
+				displayNum(hr1, posX[0 + posOffset], 0, colors[0]);
+				*/
+
+				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2], true);
+				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				break;
+
+			case 1:
+				if (onHalfSecond())
+				{
+					displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2], true);
+				}
+				/*
+				else
+				{
+				//Serial.println("off");
+				displayNum(hr2, posX[1 + posOffset], 0, colors[0]);
+				}
+				*/
+
+				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				break;
+
+			case 2:
+				if (onHalfSecond())
+					displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+
+				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2], true);
+				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				break;
+
+			case 3:
+				if (onHalfSecond())
+					displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+
+				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
+				displayNum(hr2, posX[1 + posOffset], 0, colors[colpos2], true);
+				displayNum(mn1, posX[2 + posOffset], 1, colors[colpos3], true);
+				break;
+			}
+		}
+
 	}
 }
 

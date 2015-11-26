@@ -3,7 +3,7 @@ int timesPlayed;
 
 void PlayAlarm()
 {
-	displayoff = false;
+	display = true;
 	targetBrightness = daylevel;
 	unRedColours();
 

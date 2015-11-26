@@ -60,8 +60,7 @@ Encoder rotary(5, 4);  //Rotary Encoder
 #define Purple matrix.Color(255,0,255)
 #define Cyan matrix.Color(0,255,255)
 #define White matrix.Color(255,255,255)
-
-#define Blue matrix.Color(0,150,255)
+#define Blue matrix.Color(50,150,255)
 
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 	NEO_MATRIX_TOP + NEO_MATRIX_LEFT +
@@ -188,7 +187,7 @@ int moveNum = 3;
 int targetBrightness = 17;
 int currentBrightness = 0;
 
-bool displayoff = true;
+bool display = true; //true is on off is false
 int nightLevel = 0;
 int daylevel = 17;
 int displayOnOff = 0;
@@ -418,10 +417,14 @@ void loop()
 		displayOnOff = ReadRotary(displayOnOff, 0, 1);
 
 		if (displayOnOff == 1)
-			displayoff = false;
+		{
+			display = true;
+		}
 
 		if (displayOnOff == 0)
-			displayoff = true;
+		{
+			display = false;
+		}
 
 		if (buttonPressed())
 		{
@@ -431,31 +434,31 @@ void loop()
 			canPress = false;
 		}
 
-		//Re-write dis
-		if (displayoff)
+		if (rtcTime.hour > 20 || rtcTime.hour < 7)
 		{
-			if (rtcTime.hour > 20 || rtcTime.hour < 7)
+			//Night
+			if (display)
+			{
+				targetBrightness = 1;
+			}
+			else
 			{
 				matrix.fillScreen(0);
-				//targetBrightness = 1;
-			}
-			else
-			{
-				targetBrightness = 1;
 			}
 		}
-		else
+
+		if(rtcTime.hour > 7 && rtcTime.hour < 20)
 		{
-			if (rtcTime.hour > 20 || rtcTime.hour < 7)
+			//Day
+			if(display)
 			{
-				targetBrightness = 1;
-				RedColours();
+				targetBrightness = 17;
 			}
 			else
 			{
-				unRedColours();
-				targetBrightness = daylevel;
+				targetBrightness = 5;
 			}
+
 		}
 
 		delay(100);
@@ -488,7 +491,7 @@ void loop()
 
 	if (State == DisplayTest)
 	{
-		//pirrana(500);
+		
 	}
 
 	if (State == Snake)
@@ -503,8 +506,8 @@ void loop()
 
 	if (State == SnakeGameOver)
 	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1]);
-		displayNum(score % 10, 4, 0, colors[displayCol2]);
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], true);
+		displayNum(score % 10, 4, 0, colors[displayCol2], true);
 
 		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
 		matrix.drawPixel(7, 7, colors[displayCol1]);
@@ -597,9 +600,18 @@ void fixedLight()
 		targetBrightness = 1;
 	}
 
+	//Make colours red
+	if (rtcTime.hour == 20 && sec == 0)
+	{
+		RedColours();
+	}
+
 	//If the alarm isn't set, set the birghtness back up to normal at 8
-	if (!AlarmisSet && rtcTime.hour > 8 && rtcTime.hour < 20)
+	if (!AlarmisSet && rtcTime.hour == 8)
+	{
 		targetBrightness = 17;
+		unRedColours();
+	}
 }
 
 int ColPos = 0;
@@ -609,7 +621,7 @@ void changeColor()
 	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
 
 	//Code will continually think the rotary encoder is turning left unless serial.print or delay(1) is used. Wtf.
-	Serial.println(ColorToChoose);
+	//Serial.println(ColorToChoose);
 	delay(1);
 
 	ColorToChoose = ReadRotary(ColorToChoose, 1, 9);

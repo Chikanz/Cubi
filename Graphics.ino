@@ -1,10 +1,9 @@
 //Graphics functions like icons and numbers
-
 #pragma region	numberzzz
 
-void displayNum(int num, int x, int y, uint16_t col)
+void displayNum(int num, int x, int y, uint16_t col, bool big)
 {
-	if (bigMode)
+	if (big)
 	{
 		switch (num)
 		{
@@ -98,94 +97,85 @@ void displayNum(int num, int x, int y, uint16_t col)
 
 void num1(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	//matrix.drawPixel(2 + xmod,1 + ymod,col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
+	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
+	matrix.drawPixel(1 + x, 1 + y, col);
 }
 
 void num2(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawPixel(2 + xmod, 1 + ymod, col);
-	matrix.drawPixel(1 + xmod, 2 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
+
+	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
+	matrix.drawPixel(2 + x, 1 + y, col);
+	matrix.drawPixel(1 + x, 2 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
 }
 
 void num3(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 3 + ymod, col);
+	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
+	matrix.drawPixel(1 + x, 0 + y, col);
+	matrix.drawPixel(1 + x, 3 + y, col);
 }
 
 void num4(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-
-	matrix.drawLine(2 + xmod, 1 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 1 + ymod, col);
+	matrix.drawLine(2 + x, 1 + y, 2 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 1 + y, col);
 }
 
 void num5(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
+	
+	
 
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
-	matrix.drawPixel(2 + xmod, 2 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
+	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
+	matrix.drawPixel(1 + x, 1 + y, col);
+	matrix.drawPixel(2 + x, 2 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
 }
 
 void num6(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
+	
+	
 
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
-	matrix.drawLine(2 + xmod, 2 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(2 + xmod, 0 + ymod, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
+	matrix.drawLine(2 + x, 2 + y, 2 + x, 3 + y, col);
+	matrix.drawPixel(2 + x, 0 + y, col);
 }
 
 void num7(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
+	
+	
+	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
+	matrix.drawPixel(1 + x, 0 + y, col);
 }
 
 void num8(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
+	
+	
+	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
 }
 
 void num9(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(2 + xmod, 0 + ymod, 2 + xmod, 3 + ymod, col);
-	matrix.drawPixel(1 + xmod, 0 + ymod, col);
-	matrix.drawPixel(1 + xmod, 1 + ymod, col);
+	
+	
+	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
+	matrix.drawPixel(1 + x, 0 + y, col);
+	matrix.drawPixel(1 + x, 1 + y, col);
 }
 
 void num0(int x, int y, uint16_t col)
 {
-	int xmod = x * 4;
-	int ymod = y * 4;
-	matrix.drawLine(1 + xmod, 0 + ymod, 2 + xmod, 0 + ymod, col);
-	matrix.drawLine(1 + xmod, 0 + ymod, 1 + xmod, 3 + ymod, col);
-	matrix.drawLine(1 + xmod, 3 + ymod, 2 + xmod, 3 + ymod, col);
+	
+	
+	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
 }
 
 void num0Big(int x, int y, uint16_t col)
@@ -250,8 +240,8 @@ void num7Big(int x, int y, uint16_t col)
 
 void num8Big(int x, int y, uint16_t col)
 {
-	matrix.drawRect(0 + x, 0, 2, 4, col);
-	matrix.drawRect(0 + x, 5, 2, 3, col);
+	matrix.drawRect(0 + x, 0, 2, 3, col);
+	matrix.drawRect(0 + x, 4, 2, 4, col);
 }
 
 void num9Big(int x, int y, uint16_t col)
