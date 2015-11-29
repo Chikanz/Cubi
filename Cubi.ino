@@ -318,6 +318,8 @@ bool redded = false;
 //
 void loop()
 {
+	digitalClockDisplay();
+
 	matrix.fillScreen(0);
 
 	fixedLight();

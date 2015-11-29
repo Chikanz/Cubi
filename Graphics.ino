@@ -250,8 +250,8 @@ void num7Big(int x, int y, uint16_t col)
 
 void num8Big(int x, int y, uint16_t col)
 {
-	matrix.drawRect(0 + x, 0, 2, 4, col);
-	matrix.drawRect(0 + x, 5, 2, 3, col);
+	matrix.drawRect(0 + x, 0, 2, 3, col);
+	matrix.drawRect(0 + x, 4, 2, 4, col);
 }
 
 void num9Big(int x, int y, uint16_t col)
