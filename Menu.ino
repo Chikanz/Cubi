@@ -2,10 +2,16 @@
 int menuVal;
 int lastVal = 5;
 int newPos;
+int lastPos = 60;
+int menuSpeed = 50; //Lower is faster
 
 void menu()
 {
 	menuPage = ReadRotary(menuPage);
+
+
+	Serial.print("Menu Page:");
+	Serial.println(menuPage);
 
 	//Bounce
 	if (menuPage < 0 && canBounce)
@@ -14,9 +20,9 @@ void menu()
 		canBounce = false;		
 	}
 
-	if (menuPage > 4 && canBounce)
+	if (menuPage > 5 && canBounce)
 	{
-		conveyorTarget = 53;
+		conveyorTarget = lastPos + 5;
 		canBounce = false;
 	}
 
@@ -26,13 +32,13 @@ void menu()
 		menuPage = 0;
 	}
 
-	if (conveyorBelt > 52)
+	if (conveyorBelt > lastPos + 4)
 	{
-		conveyorTarget = 48;
+		conveyorTarget = lastPos;
 	}
 
-	if (menuPage > 4)
-		menuPage = 4;
+	if (menuPage > 5)
+		menuPage = 5;
 
 	if (menuPage < 0)
 		menuPage = 0;
@@ -43,47 +49,53 @@ void menu()
 	{
 		switch (menuPage)
 		{
+
 		case 0:
-			//colourIcon();
+			//Time
 			conveyorTarget = 0;
-			lastVal = 0;
 			break;
 
 		case 1:
-			//speakerIcon();
+			//colourIcon();
 			conveyorTarget = 12;
-			lastVal = 1;
 			break;
 
 		case 2:
-			//timeIcon();
+			//speakerIcon();
 			conveyorTarget = 24;
-			lastVal = 2;
+			
 			break;
 
 		case 3:
-			//piranna();
+			//timeIcon();
 			conveyorTarget = 36;
-			lastVal = 3;
+			
 			break;
 
 		case 4:
-			//backIcon()
+			//piranna();
 			conveyorTarget = 48;
-			lastVal = 4;
+		
+			break;
+
+		case 5:
+			//backIcon()
+			conveyorTarget = 60;
 			break;
 		}
+		lastVal = menuPage;
 	}
 
-	conveyBelt();
+	conveyBelt(menuSpeed);
 
-	colourIcon();
-	speakerIcon(12, true);
-	timeIcon(24);
-	pirrana(36, 500);
-	backIcon(48);
+	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+	colourIcon(12);	
+	speakerIcon(24, true);
+	timeIcon(36);
+	pirrana(48, 500);
+	backIcon(60);
 
-	delay(55);
+	delay(menuSpeed);
 }
 
 void menuPageChange()
@@ -91,26 +103,30 @@ void menuPageChange()
 	switch (menuPage)
 	{
 	case 0:
+		State = Brightness;
+		break;
+
+	case 1:
 		State = ChangeColor;
 		matrix.fillScreen(0);
 		break;
 
-	case 1:
+	case 2:
 		State = MenuAlarm;
 		matrix.fillScreen(0);
 		break;
 
-	case 2:
+	case 3:
 		State = TimeSetMode;
 		matrix.fillScreen(0);
 		break;
 
-	case 3:
+	case 4:
 		State = Snake;
 		matrix.fillScreen(0);
 		break;
 
-	case 4:
+	case 5:
 		State = DisplayTime;
 		matrix.fillScreen(0);
 		break;
@@ -121,10 +137,10 @@ void menuPageChange()
 }
 
 long timer;
-void conveyBelt()
+void conveyBelt(int speed)
 {
 	timer += deltaTime();
-	if (timer > 55)
+	if (timer > speed)
 	{
 		if (conveyorBelt < conveyorTarget)
 			conveyorBelt += 1;

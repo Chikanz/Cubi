@@ -162,17 +162,17 @@ int pirranaPos = 46;
 
 enum eState
 {
-	TimeSetMode,	// 1
-	DisplayTime,	// 2
-	Menu,			// 3
-	SetAlarm,		// 4
-	MenuAlarm,		// 5
-	Alarm,			// 6
-	ChangeColor,	// 7
-	DisplayTest,	// 8
-	Snake,			// 9
-	SnakeGameOver,	//10
-	StaticDisplay,	//11
+	TimeSetMode,	
+	DisplayTime,	
+	SetAlarm,		
+	MenuAlarm,	
+	Brightness,
+	Alarm,			
+	ChangeColor,	
+	DisplayTest,	
+	Snake,			
+	SnakeGameOver,	
+	StaticDisplay,	
 };
 
 //
@@ -308,7 +308,7 @@ void setup()
 
 }
 
-int lastNum = 0;
+//int lastNum = 0;
 bool servoPos = false;
 
 bool hourBelow10;
@@ -321,64 +321,12 @@ bool redded = false;
 //
 void loop()
 {
-	//digitalClockDisplay();
-
 	matrix.fillScreen(0);
 
 	fixedLight();
 	SetLight();
 
-#pragma region Serialread
-	if (Serial.available() > 0)
-	{
-		int incomingByte = Serial.read();
-		Serial.println("    ");
-		Serial.println("    ");
-		Serial.println("I GOT");
-		Serial.println(incomingByte);
-		Serial.println("    ");
-		Serial.println("    ");
-
-		switch (incomingByte - 50)
-		{
-		case 1:
-			State = TimeSetMode;
-			break;
-
-		case 2:
-			State = DisplayTime;
-			break;
-
-		case 3:
-			State = Menu;
-			break;
-
-		case 4:
-			State = SetAlarm;
-			break;
-
-		case 5:
-			State = Menu;
-			break;
-
-		case 6:
-			State = TimeSetMode;
-			break;
-
-		case 7:
-			State = TimeSetMode;
-			break;
-
-		case 8:
-			State = TimeSetMode;
-			break;
-		}
-
-		incomingByte = 0;
-	}
-#pragma #endregion
-
-#pragma region Alarm Stuff
+	//Alarm
 	if (AlarmisSet && State != Alarm && realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0)
 	{
 		State = Alarm;
@@ -386,8 +334,6 @@ void loop()
 		matrix.fillScreen(0);
 		targetBrightness = 17;
 	}
-
-#pragma #endregion
 
 	if (State == Alarm)
 	{
@@ -420,43 +366,37 @@ void loop()
 	if (State == DisplayTime)
 	{
 		UpdateTime();
-
-		if (bigMode)
-			minuteAlert(displayCol2);
-		if (hourBelow10)
-			minuteAlert(displayCol1);
-
-		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
-
-		if (buttonPressed())
-		{
-			x = matrix.width();
-			State = Menu;
-			matrix.fillScreen(0);
-			canPress = false;
-		}
-		delay(100);
-	}
-
-	if (State == Menu)
-	{
-		UpdateTime();
 		menu();
 
 		if (buttonPressed())
 		{
 			menuPageChange();
 			//Reset rotary to hopefully avoid overflow
-			rotary.write(0);
+			//rotary.write(0);
 		}
+	}
+
+	if (State == Brightness)
+	{
+		UpdateTime();
+		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, 0);
+
+		if (buttonPressed())
+		{
+			State = DisplayTime;
+			Serial.print("button");
+			Serial.println(State);
+			matrix.fillScreen(0);
+			//delay(100);
+			canPress = false;
+		}
+		delay(100);
 	}
 
 	if (State == ChangeColor)
 	{
-		if (!bigMode)
-			minuteAlert(displayCol2);
 		if (hourBelow10)
-			minuteAlert(displayCol1);
+			minuteAlert(displayCol1,0);
 
 		//UpdateTime();
 		changeColor();
@@ -555,7 +495,10 @@ void fixedLight()
 		RedColours();
 
 	//Dimmer
-	displayOnOff = ReadRotary(displayOnOff, 0, 1);
+	if (State == Brightness)
+	{
+		displayOnOff = ReadRotary(displayOnOff, 0, 1);
+	}
 
 	if (displayOnOff == 1)
 		display = false;
@@ -650,23 +593,6 @@ void changeColor()
 		EEPROM.write(2, displayCol2);
 	}
 }
-
-int posOffset = 0;
-int posX[] =
-{
-	0,
-	1,
-	0,
-	1,
-
-	0,
-	2,
-	4,
-	6,
-};
-
-int colpos2;
-int colpos3;
 
 int alarmMenuPage = 0;
 int loopint = -50;

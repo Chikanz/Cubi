@@ -257,7 +257,7 @@ int colSwitch2;
 
 int timer3 = 0;
 bool timerSwitch = false;
-void colourIcon()
+void colourIcon(int startPos)
 {
 	//Serial.println(timer3);
 	if (timerSwitch)
@@ -313,12 +313,14 @@ void colourIcon()
 		colSwitch2 -= 8;
 	}
 
-	matrix.fillRoundRect(conveyorBelt + 1, 1, 6, 6, 1, colors[colSwitch1]);
+	int tempConveyor = conveyorBelt - startPos;
 
-	matrix.fillTriangle(conveyorBelt + 2, 5, conveyorBelt + 5, 2, conveyorBelt + 2, 2, colors[colSwitch2]);
+	matrix.fillRoundRect(tempConveyor + 1, 1, 6, 6, 1, colors[colSwitch1]);
 
-	matrix.drawLine(conveyorBelt + 2, 1, conveyorBelt + 5, 1, colors[colSwitch2]);
-	matrix.drawLine(conveyorBelt + 1, 2, conveyorBelt + 1, 5, colors[colSwitch2]);
+	matrix.fillTriangle(tempConveyor + 2, 5, tempConveyor + 5, 2, tempConveyor + 2, 2, colors[colSwitch2]);
+
+	matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 5, 1, colors[colSwitch2]);
+	matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 5, colors[colSwitch2]);
 }
 
 int timer2;
