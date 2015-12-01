@@ -21,13 +21,13 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 		colpos3 = displayCol2;
 	}
 
-	if (rtcTime.hour > 21 & State == DisplayTime)
+	if (hour() > 21 && State == DisplayTime)
 	{
-		//Night
+		//Drawing the preset night mode time
 
+		//"1"
 		matrix.drawLine(0, 0, 0, 2, Red);
-
-
+		//1,2 or 3
 		switch (hr2)
 		{
 		case 0:

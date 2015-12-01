@@ -192,10 +192,13 @@ int moveNum = 3;
 int targetBrightness = 17;
 int currentBrightness = 0;
 
-bool displayoff = true;
-int nightLevel = 0;
+//bool displayoff = true;
+bool display = true;
+int displayOnOff = 1;
+
+//int nightLevel = 0;
 int daylevel = 17;
-int displayOnOff = 0;
+
 bool dimTrigger = false;
 int dimtime = 0;
 
@@ -318,7 +321,7 @@ bool redded = false;
 //
 void loop()
 {
-	digitalClockDisplay();
+	//digitalClockDisplay();
 
 	matrix.fillScreen(0);
 
@@ -425,14 +428,6 @@ void loop()
 
 		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
 
-		displayOnOff = ReadRotary(displayOnOff, 0, 1);
-
-		if (displayOnOff == 1)
-			displayoff = false;
-
-		if (displayOnOff == 0)
-			displayoff = true;
-
 		if (buttonPressed())
 		{
 			x = matrix.width();
@@ -440,34 +435,6 @@ void loop()
 			matrix.fillScreen(0);
 			canPress = false;
 		}
-
-		//Re-write dis
-		if (displayoff)
-		{
-			if (hour() > 20 || hour() < 7)
-			{
-				matrix.fillScreen(0);
-				//targetBrightness = 1;
-			}
-			else
-			{
-				targetBrightness = 1;
-			}
-		}
-		else
-		{
-			if (hour() > 20 || hour() < 7)
-			{
-				targetBrightness = 1;
-				RedColours();
-			}
-			else
-			{
-				unRedColours();
-				targetBrightness = daylevel;
-			}
-		}
-
 		delay(100);
 	}
 
@@ -513,8 +480,8 @@ void loop()
 
 	if (State == SnakeGameOver)
 	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1]);
-		displayNum(score % 10, 4, 0, colors[displayCol2]);
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1],true);
+		displayNum(score % 10, 4, 0, colors[displayCol2],true);
 
 		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
 		matrix.drawPixel(7, 7, colors[displayCol1]);
@@ -539,26 +506,12 @@ void loop()
 }
 //
 
-
-
-void testLight()
-{
-	float sensor = analogRead(A7);
-	if (sensor > 30)
-		targetBrightness = 17;
-	else if (sensor > 15)
-		targetBrightness = 8;
-	/*else
-	targetBrightness = 1;*/
-
-	//Serial.println(targetBrightness);
-	//Serial.println(sensor);
-}
-
 void SetLight()
 {
-	//Serial.println(targetBrightness);
-	//Serial.println(currentBrightness);
+	/*Serial.print("Target:");
+	Serial.println(targetBrightness);
+	Serial.print("Current:");
+	Serial.println(currentBrightness);*/
 
 	if (currentBrightness != targetBrightness)
 	{
@@ -597,19 +550,59 @@ void unRedColours()
 
 void fixedLight()
 {
-	//Serial.println(hr);
-	//Serial.println(sec);
+	//Red
+	if (hour() > 21 || hour() < 7)
+		RedColours();
 
-	//Set the light to 1 at 8:00pm
+	//Dimmer
+	displayOnOff = ReadRotary(displayOnOff, 0, 1);
 
-	if ((hour() > 20 && hour() < 6))
+	if (displayOnOff == 1)
+		display = false;
+
+	if (displayOnOff == 0)
+		display = true;
+
+	Serial.println(displayOnOff);
+
+	if (display)
+	{ 
+		if (hour() > 20 || hour() < 7) //on
+		{
+			targetBrightness = 1; //Display on, Night
+			//Serial.println("Day, Night");
+		}
+		else
+		{
+			targetBrightness = 17; //Day, Display on
+			//Serial.println("Day, Display on");
+		}
+	}
+	else
+	{ 
+		if (hour() > 20 || hour() < 7) //off
+		{
+			matrix.fillScreen(0); //Off, Night
+			//Serial.println("off night");
+		}
+		else
+		{
+			targetBrightness = 5; //Off, Day
+		}
+	}
+	
+	if ((hour() == 20 && sec == 0)) //Set the light to 1 at 8:00pm
 	{
 		targetBrightness = 1;
 	}
 
-	//If the alarm isn't set, set the birghtness back up to normal at 8
-	if (!AlarmisSet && hour() > 8 && hour() < 20)
-		targetBrightness = 17;
+
+	if (!AlarmisSet && hour() == 8)
+	{
+		targetBrightness = 17; //If the alarm isn't set, set the birghtness back up to normal at 8
+		unRedColours();
+	}
+
 }
 
 int ColPos = 0;
