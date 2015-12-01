@@ -18,8 +18,12 @@ EEPROM Memory allocation
 
 #include <EEPROM.h>
 
-#include <SoftI2C.h>
-#include <DS3232RTC.h>
+//Phasing out
+//#include <SoftI2C.h>
+//#include <DS3232RTC.h>
+//
+
+#include <Time.h>
 
 #include <Audio.h>
 #include <Wire.h>
@@ -41,10 +45,10 @@ AudioControlSGTL5000     sgtl5000_1;     //xy=240,153
 
 										 //Declcare instances
 										 //RTC stuff
-SoftI2C i2c(A3, A2);
-DS3232RTC rtc(i2c);
-RTCTime rtcTime;
-RTCDate rtcDate;
+//SoftI2C i2c(A3, A2);
+//DS3232RTC rtc(i2c);
+//RTCTime rtcTime;
+//RTCDate rtcDate;
 
 Encoder rotary(5, 4);  //Rotary Encoder
 
@@ -60,7 +64,8 @@ Encoder rotary(5, 4);  //Rotary Encoder
 #define Purple matrix.Color(255,0,255)
 #define Cyan matrix.Color(0,255,255)
 #define White matrix.Color(255,255,255)
-#define Blue matrix.Color(50,150,255)
+
+#define Blue matrix.Color(0,150,255)
 
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 	NEO_MATRIX_TOP + NEO_MATRIX_LEFT +
@@ -187,7 +192,7 @@ int moveNum = 3;
 int targetBrightness = 17;
 int currentBrightness = 0;
 
-bool display = true; //true is on off is false
+bool displayoff = true;
 int nightLevel = 0;
 int daylevel = 17;
 int displayOnOff = 0;
@@ -294,6 +299,10 @@ void setup()
 	fileCount -= 1;
 	Serial.println("Files in dir:");
 	Serial.print(fileCount);
+
+	//Teensy RTC setup
+	setSyncProvider(getTeensy3Time);
+
 }
 
 int lastNum = 0;
@@ -309,6 +318,8 @@ bool redded = false;
 //
 void loop()
 {
+	digitalClockDisplay();
+
 	matrix.fillScreen(0);
 
 	fixedLight();
@@ -417,14 +428,10 @@ void loop()
 		displayOnOff = ReadRotary(displayOnOff, 0, 1);
 
 		if (displayOnOff == 1)
-		{
-			display = true;
-		}
+			displayoff = false;
 
 		if (displayOnOff == 0)
-		{
-			display = false;
-		}
+			displayoff = true;
 
 		if (buttonPressed())
 		{
@@ -434,31 +441,31 @@ void loop()
 			canPress = false;
 		}
 
-		if (rtcTime.hour > 20 || rtcTime.hour < 7)
+		//Re-write dis
+		if (displayoff)
 		{
-			//Night
-			if (display)
+			if (hour() > 20 || hour() < 7)
+			{
+				matrix.fillScreen(0);
+				//targetBrightness = 1;
+			}
+			else
 			{
 				targetBrightness = 1;
 			}
-			else
-			{
-				matrix.fillScreen(0);
-			}
 		}
-
-		if(rtcTime.hour > 7 && rtcTime.hour < 20)
+		else
 		{
-			//Day
-			if(display)
+			if (hour() > 20 || hour() < 7)
 			{
-				targetBrightness = 17;
+				targetBrightness = 1;
+				RedColours();
 			}
 			else
 			{
-				targetBrightness = 5;
+				unRedColours();
+				targetBrightness = daylevel;
 			}
-
 		}
 
 		delay(100);
@@ -491,7 +498,7 @@ void loop()
 
 	if (State == DisplayTest)
 	{
-		
+		//pirrana(500);
 	}
 
 	if (State == Snake)
@@ -506,8 +513,8 @@ void loop()
 
 	if (State == SnakeGameOver)
 	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], true);
-		displayNum(score % 10, 4, 0, colors[displayCol2], true);
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1]);
+		displayNum(score % 10, 4, 0, colors[displayCol2]);
 
 		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
 		matrix.drawPixel(7, 7, colors[displayCol1]);
@@ -595,23 +602,14 @@ void fixedLight()
 
 	//Set the light to 1 at 8:00pm
 
-	if ((rtcTime.hour > 20 && rtcTime.hour < 6))
+	if ((hour() > 20 && hour() < 6))
 	{
 		targetBrightness = 1;
 	}
 
-	//Make colours red
-	if (rtcTime.hour == 20 && sec == 0)
-	{
-		RedColours();
-	}
-
 	//If the alarm isn't set, set the birghtness back up to normal at 8
-	if (!AlarmisSet && rtcTime.hour == 8)
-	{
+	if (!AlarmisSet && hour() > 8 && hour() < 20)
 		targetBrightness = 17;
-		unRedColours();
-	}
 }
 
 int ColPos = 0;
@@ -621,7 +619,7 @@ void changeColor()
 	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
 
 	//Code will continually think the rotary encoder is turning left unless serial.print or delay(1) is used. Wtf.
-	//Serial.println(ColorToChoose);
+	Serial.println(ColorToChoose);
 	delay(1);
 
 	ColorToChoose = ReadRotary(ColorToChoose, 1, 9);
@@ -812,10 +810,10 @@ void AlarmSet()
 
 boolean onSecond()
 {
-	rtc.readTime(&rtcTime);
-	int secs = rtcTime.second;
+	//rtc.readTime(&rtcTime);
+	//int secs = rtcTime.second;
 	//Serial.println(secs);
-	if (secs % 2 == 0)
+	if (second() % 2 == 0)
 	{
 		return true;
 	}
@@ -823,14 +821,16 @@ boolean onSecond()
 		return false;
 }
 
+
+//Not really on half second, but makes a cool blink effect
 int sec2 = 1;
 boolean onHalfSecond()
 {
-	rtc.readTime(&rtcTime);
-	int secs = rtcTime.second;
+	//rtc.readTime(&rtcTime);
+	//int secs = second()
 	sec2++;
 	//Serial.println(secs);
-	if (secs % 2 == 0 && sec2 % 2 == 0)
+	if (second() % 2 == 0 && sec2 % 2 == 0)
 	{
 		return false;
 	}
@@ -932,14 +932,15 @@ int ReadRotary(int varToChange)
 	}
 }
 
-void GetTemperature()
-{
-	int t1 = rtc.readTemperature(); // retrieve the value from the DS3232
-	float temp = t1 / 4; // temperature in Celsius stored in temp
-	delay(100);
-	Serial.print(temp);
-	//return temp;
-}
+//Will replace with thermister analog read some day
+//void GetTemperature()
+//{
+//	int t1 = rtc.readTemperature(); // retrieve the value from the DS3232
+//	float temp = t1 / 4; // temperature in Celsius stored in temp
+//	delay(100);
+//	Serial.print(temp);
+//	//return temp;
+//}
 
 long tempTimer = 0;
 

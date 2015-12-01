@@ -134,19 +134,18 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 
 void UpdateTime()
 {
-	rtc.readDate(&rtcDate);
+	/*rtc.readDate(&rtcDate);
 
 	rtc.readTime(&rtcTime);
 	hr = rtcTime.hour;
 	realHr = rtcTime.hour;
 	mn = rtcTime.minute;
 	sec = rtcTime.second;
-
-	/*
-	Serial.println("Hr:"); Serial.println(hr);
-	Serial.println("Mn:"); Serial.println(mn);
-	Serial.println("Sec:"); Serial.println(sec);
 	*/
+
+	hr = hour();
+	mn = minute();
+	sec = second();
 
 	if (!HourMode24 && hr > 12)
 	{
@@ -157,7 +156,6 @@ void UpdateTime()
 	{
 		hr = 12;
 	}
-
 
 	if (hr < 10)
 	{
@@ -273,26 +271,25 @@ void TimeSet()
 		String Newhr = String(hrr1 + hrr2);
 		String Newmn = String(mnn1 + mnn2);
 
-		//Serial.println(Newhr.toInt());
-		/*
-
-		setTime(
-		Newhr.toInt() //hr
-		, Newmn.toInt() //mn
-		, 0 //sec
-		, 28
-		, 2
-		, 2015);
-		*/
 		Serial.println(Newhr);
 
-		rtcTime.hour = Newhr.toInt();
+		/*rtcTime.hour = Newhr.toInt();
 		rtcTime.minute = Newmn.toInt();
 		rtcTime.second = 0;
-		rtc.writeTime(&rtcTime);
+		rtc.writeTime(&rtcTime);*/
 
-		unRedColours();
-		targetBrightness = daylevel;
+		setTime(
+			Newhr.toInt(),
+			Newmn.toInt(),
+			0,
+			0,
+			0,
+			2015
+			);
+
+
+		//unRedColours();
+		//targetBrightness = daylevel;
 
 		State = DisplayTime;
 		matrix.fillScreen(0);
@@ -313,3 +310,29 @@ void minuteAlert(int col)
 	}
 }
 
+time_t getTeensy3Time()
+{
+	return Teensy3Clock.get();
+}
+
+void digitalClockDisplay() {
+	// digital clock display of the time
+	Serial.print(hour());
+	printDigits(minute());
+	printDigits(second());
+	Serial.print(" ");
+	Serial.print(day());
+	Serial.print(" ");
+	Serial.print(month());
+	Serial.print(" ");
+	Serial.print(year());
+	Serial.println();
+}
+
+void printDigits(int digits) {
+	// utility function for digital clock display: prints preceding colon and leading 0
+	Serial.print(":");
+	if (digits < 10)
+		Serial.print('0');
+	Serial.print(digits);
+}
