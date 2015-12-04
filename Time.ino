@@ -15,8 +15,6 @@ int posX[] =
 //Normal
 void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 {
-	if (hourBelow10)
-		minuteAlert(displayCol1, xmod);
 
 	if (hr1 == 0)
 	{
@@ -26,41 +24,47 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		hourBelow10 = false;
 
 	//Night Mode
-	if (hour() > 21 && State == DisplayTime)
+	if ((hour() > 21 || hour() == 0) && (State == DisplayTime || State == Brightness || State == DisplayTest))
 	{
 		//Drawing the preset night mode time
 
 		//"1"
-		matrix.drawLine(0, 0, 0, 2, Red);
+		matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
 		//1,2 or 3
 		switch (hr2)
 		{
 		case 0:
-			matrix.drawLine(2, 0, 2, 2, Red);
-			matrix.drawLine(3, 0, 3, 2, Red);
+			matrix.drawRect(0 + xmod, 0, 2, 2, Red);
 			break;
 
 		case 1:
-			matrix.drawLine(2, 0, 2, 2, Red);
+			matrix.drawLine(2 + xmod, 0, 2 + xmod, 1, Red);
 			break;
 
 		case 2:
-			matrix.drawLine(3, 0, 3, 2, Red);
-			matrix.drawPixel(2, 0, Red);
-			matrix.drawPixel(4, 2, Red);
+			matrix.drawLine(0 + xmod, 2, 0 + xmod, 3, Red);
 			break;
 		}
 
 		if (!hourBelow10)
 		{
-			displayNum(mn1, 2, 4, Red, false);
-			displayNum(mn2, 5, 4, Red, false);
+			displayNum(mn1, 3 + xmod, 3, Red, false);
+			displayNum(mn2, 6 + xmod, 3, Red, false);
 		}
+	}
+	else if (colors[1] == matrix.Color(255, 0, 0) && hour() > 0) //If display is redded
+	{
+		//displayNum(hr1, 1, 0, colors[displayCol1]);
+		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], true);
+		displayNum(mn1, 3 + xmod, 1, colors[displayCol1], true);
+		displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
 	}
 	else
 	{
 		if (hourBelow10)
 		{
+			minuteAlert(displayCol1, xmod);
+
 			//displayNum(hr1, 1, 0, colors[displayCol1]);
 			displayNum(hr2, 1 + xmod, 0, colors[displayCol2], true);
 			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
@@ -72,7 +76,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 			displayNum(hr2, 2 + xmod, 0, colors[displayCol2], true);
 			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
 			displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
-		}
+		}		
 	}
 }
 

@@ -95,89 +95,74 @@ void displayNum(int num, int x, int y, uint16_t col, bool big)
 	}
 }
 
-void num1(int x, int y, uint16_t col)
+#pragma region	Small
+void num0(int x, int y, uint16_t col)
 {
-	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
-	matrix.drawPixel(1 + x, 1 + y, col);
+	matrix.drawRect(0 + x, 0 + y, 2, 5,col);
 }
 
-void num2(int x, int y, uint16_t col)
+void num1(int x, int y, uint16_t col)
 {
-
-	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
-	matrix.drawPixel(2 + x, 1 + y, col);
-	matrix.drawPixel(1 + x, 2 + y, col);
-	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 5 + y, col);
+}
+void num2(int x, int y, uint16_t col) //
+{
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 2 + y, col);
+	matrix.drawLine(0 + x, 2 + y, 0 + x, 4 + y, col);
+	matrix.drawPixel(0 + x, 0 + y, col);
+	matrix.drawPixel(1 + x, 4 + y, col);
 }
 
 void num3(int x, int y, uint16_t col)
 {
-	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
-	matrix.drawPixel(1 + x, 0 + y, col);
-	matrix.drawPixel(1 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 4 + y, col);
+	matrix.drawPixel(0 + x, 0 + y, col);
+	matrix.drawPixel(0 + x, 2 + y, col);
+	matrix.drawPixel(0 + x, 4 + y, col);
 }
 
 void num4(int x, int y, uint16_t col)
 {
-	matrix.drawLine(2 + x, 1 + y, 2 + x, 3 + y, col);
-	matrix.drawLine(1 + x, 0 + y, 1 + x, 1 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 2 + y, col);
+	matrix.drawLine(1 + x, 2 + y, 1 + x, 4 + y, col);
 }
 
 void num5(int x, int y, uint16_t col)
 {
-	
-	
-
-	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
-	matrix.drawPixel(1 + x, 1 + y, col);
-	matrix.drawPixel(2 + x, 2 + y, col);
-	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 2 + y, col);
+	matrix.drawLine(1 + x, 2 + y, 1 + x, 4 + y, col);
+	matrix.drawPixel(1 + x, 0 + y, col);
+	matrix.drawPixel(0 + x, 4 + y, col);
 }
 
 void num6(int x, int y, uint16_t col)
 {
-	
-	
-
-	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
-	matrix.drawLine(2 + x, 2 + y, 2 + x, 3 + y, col);
-	matrix.drawPixel(2 + x, 0 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(1 + x, 2 + y, 1 + x, 4 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 1 + y, col);
+	matrix.drawPixel(1 + x, 0 + y, col);
 }
 
 void num7(int x, int y, uint16_t col)
 {
-	
-	
-	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
-	matrix.drawPixel(1 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 4 + y, col);
+	matrix.drawPixel(0 + x, 0 + y, col);
 }
 
 void num8(int x, int y, uint16_t col)
 {
-	
-	
-	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
-	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
+	matrix.drawRect(0 + x, 0 + y, 2, 2, col);
+	matrix.drawRect(0 + x, 3 + y, 2, 2, col);
 }
 
 void num9(int x, int y, uint16_t col)
 {
-	
-	
-	matrix.drawLine(2 + x, 0 + y, 2 + x, 3 + y, col);
-	matrix.drawPixel(1 + x, 0 + y, col);
-	matrix.drawPixel(1 + x, 1 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 4 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 2 + y, col);
 }
+#pragma endregion
 
-void num0(int x, int y, uint16_t col)
-{
-	
-	
-	matrix.drawLine(1 + x, 0 + y, 2 + x, 0 + y, col);
-	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
-	matrix.drawLine(1 + x, 3 + y, 2 + x, 3 + y, col);
-}
-
+#pragma region	Big
 void num0Big(int x, int y, uint16_t col)
 {
 	matrix.drawLine(0 + x, 0, 0 + x, 7, col);
@@ -249,6 +234,7 @@ void num9Big(int x, int y, uint16_t col)
 	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
 	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
 }
+#pragma endregion
 
 #pragma endregion
 
@@ -286,8 +272,6 @@ void colourIcon(int startPos)
 		//Serial.println(colSwitch2);
 
 		timer3 = 0;
-
-		Serial.println("ayy");
 	}
 
 	if (!timerSwitch)

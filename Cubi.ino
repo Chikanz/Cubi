@@ -184,7 +184,6 @@ eState State = DisplayTime;
 //
 
 int textCursor = 8;
-int menuPage = 0;
 long Rpos = -999;
 int songToPlay;
 int moveNum = 3;
@@ -194,12 +193,12 @@ int currentBrightness = 0;
 
 //bool displayoff = true;
 bool display = true;
-int displayOnOff = 1;
+int displayOnOff = 0;
 
 //int nightLevel = 0;
 int daylevel = 17;
 
-bool dimTrigger = false;
+//bool dimTrigger = false;
 int dimtime = 0;
 
 //Snake
@@ -234,9 +233,12 @@ bool mouth;
 File root;
 int fileCount;
 
-int conveyorBelt = -8;
+
+//Menu
+int conveyorBelt = 0;
 int conveyorTarget = 0;
-bool canBounce = true;
+bool canBounce = false;
+int menuPage = -1;
 
 void setup()
 {
@@ -319,6 +321,8 @@ int fakeTime = 0;
 bool redded = false;
 
 //
+
+int i = 0;
 void loop()
 {
 	matrix.fillScreen(0);
@@ -403,15 +407,21 @@ void loop()
 		delay(10);
 	}
 
+	
 	if (State == DisplayTest)
 	{
-		//pirrana(500);
+		i += 1;
+
+		if (i > 9)
+			i = 0;
+
+		DisplayCurrentTime(1, 1, i, i, 0);
+		delay(1000);
+
+		
 	}
 
 	if (State == Snake)
-	{
-		snake();
-	}
 
 	if (State == StaticDisplay)
 	{
@@ -498,45 +508,45 @@ void fixedLight()
 	if (State == Brightness)
 	{
 		displayOnOff = ReadRotary(displayOnOff, 0, 1);
-	}
 
-	if (displayOnOff == 1)
-		display = false;
+		if (displayOnOff == 1)
+			display = false;
 
-	if (displayOnOff == 0)
-		display = true;
+		if (displayOnOff == 0)
+			display = true;
 
-	Serial.println(displayOnOff);
+		Serial.println(displayOnOff);
 
-	if (display)
-	{ 
-		if (hour() > 20 || hour() < 7) //on
+		if (display)
 		{
-			targetBrightness = 1; //Display on, Night
-			//Serial.println("Day, Night");
+			if (hour() > 20 || hour() < 7) //on
+			{
+				targetBrightness = 1; //Display on, Night
+				//Serial.println("Day, Night");
+			}
+			else
+			{
+				targetBrightness = 17; //Day, Display on
+				//Serial.println("Day, Display on");
+			}
 		}
 		else
 		{
-			targetBrightness = 17; //Day, Display on
-			//Serial.println("Day, Display on");
-		}
-	}
-	else
-	{ 
-		if (hour() > 20 || hour() < 7) //off
-		{
-			matrix.fillScreen(0); //Off, Night
-			//Serial.println("off night");
-		}
-		else
-		{
-			targetBrightness = 5; //Off, Day
+			if (hour() > 20 || hour() < 7) //off
+			{
+				matrix.fillScreen(0); //Off, Night
+				//Serial.println("off night");
+			}
+			else
+			{
+				targetBrightness = 5; //Off, Day
+			}
 		}
 	}
 	
 	if ((hour() == 20 && sec == 0)) //Set the light to 1 at 8:00pm
 	{
-		targetBrightness = 1;
+		targetBrightness = 5;
 	}
 
 
@@ -740,7 +750,6 @@ boolean onSecond()
 		return false;
 }
 
-
 //Not really on half second, but makes a cool blink effect
 int sec2 = 1;
 boolean onHalfSecond()
@@ -862,7 +871,6 @@ int ReadRotary(int varToChange)
 //}
 
 long tempTimer = 0;
-
 int deltaTime()
 {
 	/*

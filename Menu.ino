@@ -5,13 +5,15 @@ int newPos;
 int lastPos = 60;
 int menuSpeed = 50; //Lower is faster
 
+int resetTimer;
+
 void menu()
 {
+	Serial.print("Delta:");
+	Serial.println(resetTimer);
+	//Serial.println(RealDeltaTime());
+
 	menuPage = ReadRotary(menuPage);
-
-
-	Serial.print("Menu Page:");
-	Serial.println(menuPage);
 
 	//Bounce
 	if (menuPage < 0 && canBounce)
@@ -84,6 +86,24 @@ void menu()
 			break;
 		}
 		lastVal = menuPage;
+		resetTimer = 0;
+	}
+
+	//Reset Pos Timer (tried to use a delta time function but behaved weirdly)
+	if (lastVal == menuPage && conveyorTarget != 0)
+	{
+		resetTimer += 52;
+	}
+
+	if (conveyorTarget == 0)
+	{
+		resetTimer = 0;
+	}
+
+	if (resetTimer > 10000) // 10 Seconds
+	{
+		conveyorTarget = 0;
+		menuPage = 0;
 	}
 
 	conveyBelt(menuSpeed);
