@@ -422,6 +422,9 @@ void loop()
 	}
 
 	if (State == Snake)
+	{
+		snake();
+	}
 
 	if (State == StaticDisplay)
 	{
