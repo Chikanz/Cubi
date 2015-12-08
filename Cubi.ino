@@ -37,18 +37,22 @@ EEPROM Memory allocation
 //#include <avr/power.h>
 
 // Audio stuff
-AudioPlaySdWav           playWav1;       //xy=154,78
-AudioOutputI2S           i2s1;           //xy=334,89
-AudioConnection          patchCord1(playWav1, 0, i2s1, 0);
-AudioConnection          patchCord2(playWav1, 1, i2s1, 1);
-AudioControlSGTL5000     sgtl5000_1;     //xy=240,153
+//AudioPlaySdWav           playWav1;       //xy=154,78
+//AudioOutputI2S           i2s1;           //xy=334,89
+//AudioConnection          patchCord1(playWav1, 0, i2s1, 0);
+//AudioConnection          patchCord2(playWav1, 1, i2s1, 1);
+//AudioControlSGTL5000     sgtl5000_1;     //xy=240,153
 
-										 //Declcare instances
-										 //RTC stuff
-//SoftI2C i2c(A3, A2);
-//DS3232RTC rtc(i2c);
-//RTCTime rtcTime;
-//RTCDate rtcDate;
+// GUItool: begin automatically generated code
+AudioPlaySdWav           playWav1;     //xy=253,243
+AudioMixer4              mixer1;         //xy=446,247
+AudioOutputI2S           i2s1;           //xy=604,246
+AudioConnection          patchCord1(playWav1, 0, mixer1, 0);
+AudioConnection          patchCord2(mixer1, 0, i2s1, 0);
+AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
+AudioControlSGTL5000     sgtl5000_1;     //xy=254,324
+										 // GUItool: end automatically generated code
+
 
 Encoder rotary(5, 4);  //Rotary Encoder
 
@@ -178,7 +182,7 @@ enum eState
 //
 ///
 ////
-eState State = DisplayTime;
+eState State = Alarm;
 ////
 ///
 //
@@ -240,6 +244,10 @@ int conveyorTarget = 0;
 bool canBounce = false;
 int menuPage = -1;
 
+float targetVolume = 1;
+float volume = 0;
+int fadeTimer = 0;
+
 void setup()
 {
 	matrix.begin();
@@ -270,7 +278,7 @@ void setup()
 	AudioMemory(5);
 
 	sgtl5000_1.enable();
-	sgtl5000_1.volume(0.5);
+	mixer1.gain(0, 0);
 
 	//SD card
 	SPI.setMOSI(7);
@@ -330,6 +338,15 @@ void loop()
 	fixedLight();
 	SetLight();
 
+	if (Serial.available() > 0)
+	{
+		time_t t = processSyncMessage();
+		if (t != 0) {
+			Teensy3Clock.set(t); // set the RTC
+			setTime(t);
+		}
+	}
+
 	//Alarm
 	if (AlarmisSet && State != Alarm && realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0)
 	{
@@ -341,6 +358,18 @@ void loop()
 
 	if (State == Alarm)
 	{
+		if (volume < targetVolume)
+		{
+			volume += 0.002;
+			fadeTimer = 0;
+		}
+		else
+			fadeTimer += 51;
+
+		Serial.print("Volume:");
+		Serial.println(volume);
+		mixer1.gain(0, volume);
+
 		PlayAlarm();
 	}
 
@@ -1225,4 +1254,21 @@ void countDirectory(File dir) {
 
 		entry.close();
 	}
+}
+
+//From the teesny 3 RTC example code
+unsigned long processSyncMessage() 
+{
+	unsigned long pctime = 0L;
+	const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013 
+
+	if (Serial.find("T")) //Time header
+	{
+		pctime = Serial.parseInt();
+		return pctime;
+		if (pctime < DEFAULT_TIME) { // check the value is a valid time (greater than Jan 1 2013)
+			pctime = 0L; // return 0 to indicate that the time is not valid
+		}
+	}
+	return pctime;
 }
