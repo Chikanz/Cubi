@@ -34,7 +34,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		switch (hr2)
 		{
 		case 0:
-			matrix.drawRect(0 + xmod, 0, 2, 2, Red);
+			matrix.drawRect(2 + xmod, 0, 2, 2, Red);
 			break;
 
 		case 1:
