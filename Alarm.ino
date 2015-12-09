@@ -40,7 +40,7 @@ void PlayAlarm()
 		targetBrightness = daylevel;
 		digitalWrite(3, LOW);
 		matrix.fillScreen(0);
-		State = DisplayTime;
+		State = Main;
 		canPress = false;
 		playWav1.stop();
 	}
