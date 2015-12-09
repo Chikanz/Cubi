@@ -60,10 +60,9 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 	}
 	else
 	{
+		/*
 		if (hourBelow10)
 		{
-			minuteAlert(displayCol1, xmod);
-
 			//displayNum(hr1, 1, 0, colors[displayCol1]);
 			displayNum(hr2, 1 + xmod, 0, colors[displayCol2], true);
 			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
@@ -75,7 +74,24 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 			displayNum(hr2, 2 + xmod, 0, colors[displayCol2], true);
 			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
 			displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
-		}		
+		}
+		*/
+
+		if (hourBelow10)
+		{
+			minuteAlert(displayCol1, xmod);
+			
+			numConvey2.Update(hr2, 1 + conveyorBelt, 75, colors[displayCol2]);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
+			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
+		}
+		else
+		{
+			numConvey1.Update(hr1, 0 + conveyorBelt, 100, colors[displayCol1]);
+			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2]);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
+			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
+		}
 	}
 }
 

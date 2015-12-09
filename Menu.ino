@@ -102,8 +102,6 @@ void menu()
 
 	conveyBelt(menuSpeed);
 
-	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
-
 	colourIcon(12);	
 	speakerIcon(24, true);
 	timeIcon(36);

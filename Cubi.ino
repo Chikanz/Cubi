@@ -167,7 +167,7 @@ int pirranaPos = 46;
 enum eState
 {
 	TimeSetMode,	
-	DisplayTime,	
+	Main,	
 	SetAlarm,		
 	MenuAlarm,	
 	Brightness,
@@ -182,7 +182,7 @@ enum eState
 //
 ///
 ////
-eState State = Alarm;
+eState State = Main;
 ////
 ///
 //
@@ -247,6 +247,71 @@ int menuPage = -1;
 float targetVolume = 1;
 float volume = 0;
 int fadeTimer = 0;
+
+//Compiler didn't like it when class was moved to another place, temp fix
+class NumConveyor
+{
+	int belt, target;
+	int ymod = 0;
+	int speed;
+
+	uint16_t col;
+
+	long timer;
+
+	int velocity;
+
+public:
+
+	void Update(int numTarget, int x, int speed, uint16_t colour)
+	{
+		target = numTarget * 11;
+
+		num0Big(x, 0 - ymod, colour);
+		num1Big(x, 11 - ymod, colour);
+		num2Big(x, 22 - ymod, colour);
+		num3Big(x, 33 - ymod, colour);
+		num4Big(x, 44 - ymod, colour);
+		num5Big(x, 55 - ymod, colour);
+		num6Big(x, 66 - ymod, colour);
+		num7Big(x, 77 - ymod, colour);
+		num8Big(x, 88 - ymod, colour);
+		num9Big(x, 99 - ymod, colour);
+
+		timer += 51;
+
+		if (timer > speed)
+		{
+			if (belt != target)
+			{
+				if (belt < target)
+					belt++;
+
+				if (belt > target)
+					belt--;
+			}
+			timer = 0;
+		}		
+
+		ymod = belt;
+
+		Serial.print("x");
+		Serial.println(x);
+
+		Serial.print("ymod");
+		Serial.println(ymod);
+
+		Serial.print("belt");
+		Serial.println(belt);
+		Serial.println("--------");
+	}
+};
+
+NumConveyor numConvey1;
+NumConveyor numConvey2;
+NumConveyor numConvey3;
+NumConveyor numConvey4;
+
 
 void setup()
 {
@@ -396,10 +461,13 @@ void loop()
 		TimeSet();
 	}
 
-	if (State == DisplayTime)
+	if (State == Main)
 	{
+		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+
 		UpdateTime();
 		menu();
+		
 
 		if (buttonPressed())
 		{
@@ -416,7 +484,7 @@ void loop()
 
 		if (buttonPressed())
 		{
-			State = DisplayTime;
+			State = Main;
 			Serial.print("button");
 			Serial.println(State);
 			matrix.fillScreen(0);
@@ -436,18 +504,11 @@ void loop()
 		delay(10);
 	}
 
-	
 	if (State == DisplayTest)
 	{
-		i += 1;
+		numConvey1.Update(2,0,50,colors[displayCol1]);		
 
-		if (i > 9)
-			i = 0;
-
-		DisplayCurrentTime(1, 1, i, i, 0);
-		delay(1000);
-
-		
+		delay(100);
 	}
 
 	if (State == Snake)
@@ -476,7 +537,7 @@ void loop()
 			snakeLength = 3;
 			score = 0;
 
-			State = DisplayTime;
+			State = Main;
 		}
 	}
 
@@ -630,7 +691,7 @@ void changeColor()
 	{
 		//Serial.println("Back To displaying time");
 		ColPos = 0;
-		State = DisplayTime;
+		State = Main;
 		matrix.fillScreen(0);
 		EEPROM.write(2, displayCol2);
 	}
@@ -688,7 +749,7 @@ void AlarmPageChange()
 	case 0:
 		AlarmisSet = false;
 		EEPROM.write(5, false);
-		State = DisplayTime;
+		State = Main;
 		matrix.fillScreen(0);
 		break;
 
@@ -765,7 +826,7 @@ void AlarmSet()
 		delay(500);
 		//matrix.fillScreen(colors[displayCol2]);
 		//delay(500);
-		State = DisplayTime;
+		State = Main;
 	}
 }
 
