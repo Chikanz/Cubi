@@ -87,6 +87,8 @@ extern "C" void __cxa_pure_virtual() {;}
 #include <Alarm.ino>
 #include <Graphics.ino>
 #include <Menu.ino>
+#include <NumberConveyor.cpp>
+#include <NumberConveyor.h>
 #include <StaticDisplay.ino>
 #include <Time.ino>
 #endif
