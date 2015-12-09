@@ -3,6 +3,7 @@
 
 void displayNum(int num, int x, int y, uint16_t col, bool big)
 {
+	
 	if (big)
 	{
 		switch (num)
@@ -95,6 +96,7 @@ void displayNum(int num, int x, int y, uint16_t col, bool big)
 	}
 }
 
+
 #pragma region	Small
 void num0(int x, int y, uint16_t col)
 {
@@ -165,8 +167,8 @@ void num9(int x, int y, uint16_t col)
 #pragma region	Big
 void num0Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 0 + x, 7, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 7 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
 
 	//matrix.drawLine(0 + x, 0, 1 + x, 0, col);
 	//matrix.drawLine(0 + x, 7, 1 + x, 7, col);
@@ -175,64 +177,64 @@ void num0Big(int x, int y, uint16_t col)
 void num1Big(int x, int y, uint16_t col)
 {
 	if (x > 4)
-		matrix.drawLine(1 + x, 0, 1 + x, 7, col);
+		matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
 	else
-		matrix.drawLine(0 + x, 0, 0 + x, 7, col);
+		matrix.drawLine(0 + x, 0 + y, 0 + x, 7 + y, col);
 }
 
 void num2Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 4, col);
-	matrix.drawLine(0 + x, 4, 0 + x, 7, col);
-	matrix.drawPixel(1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 4 + y, col);
+	matrix.drawLine(0 + x, 4 + y, 0 + x, 7 + y, col);
+	matrix.drawPixel(1 + x, 7 + y, col);
 }
 
 void num3Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-	matrix.drawLine(0 + x, 4, 0 + x, 4, col);
-	matrix.drawLine(0 + x, 7, 1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
+	matrix.drawLine(0 + x, 4 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(0 + x, 7 + y, 1 + x, 7 + y, col);
 }
 
 void num4Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(1 + x, 4 + y, 1 + x, 7 + y, col);
 }
 
 void num5Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
-	matrix.drawPixel(0 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(1 + x, 4 + y, 1 + x, 7 + y, col);
+	matrix.drawPixel(0 + x, 7 + y, col);
 }
 
 void num6Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 1 + x, 0, col);
-	matrix.drawLine(0 + x, 0, 0 + x, 7, col);
-	matrix.drawLine(1 + x, 4, 1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 7 + y, col);
+	matrix.drawLine(1 + x, 4 + y, 1 + x, 7 + y, col);
 }
 
 void num7Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
-	matrix.drawPixel(0 + x, 0, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
+	matrix.drawPixel(0 + x, 0 + y, col);
 }
 
 void num8Big(int x, int y, uint16_t col)
 {
-	matrix.drawRect(0 + x, 0, 2, 3, col);
-	matrix.drawRect(0 + x, 4, 2, 4, col);
+	matrix.drawRect(0 + x, 0 + y, 2, 3, col);
+	matrix.drawRect(0 + x, 4 + y, 2, 4, col);
 }
 
 void num9Big(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0, 0 + x, 4, col);
-	matrix.drawLine(1 + x, 0, 1 + x, 7, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
 }
 #pragma endregion
 
