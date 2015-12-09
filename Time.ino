@@ -15,7 +15,6 @@ int posX[] =
 //Normal
 void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 {
-
 	if (hr1 == 0)
 	{
 		hourBelow10 = true;
@@ -24,7 +23,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		hourBelow10 = false;
 
 	//Night Mode
-	if ((hour() > 21 || hour() == 0) && (State == DisplayTime || State == Brightness || State == DisplayTest))
+	if ((hour() > 21 || hour() == 0) && (State == Main || State == Brightness || State == DisplayTest))
 	{
 		//Drawing the preset night mode time
 
@@ -56,7 +55,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 	{
 		//displayNum(hr1, 1, 0, colors[displayCol1]);
 		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], true);
-		displayNum(mn1, 3 + xmod, 1, colors[displayCol1], true);
+		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], true);
 		displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
 	}
 	else
@@ -89,7 +88,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 			hourBelow10 = true;
 		}
 
-	if (hour() > 21 && State == DisplayTime)
+	if (hour() > 21 && State == Main)
 	{
 		//Drawing the preset night mode time
 
@@ -353,7 +352,7 @@ void TimeSet()
 		//unRedColours();
 		//targetBrightness = daylevel;
 
-		State = DisplayTime;
+		State = Main;
 		matrix.fillScreen(0);
 		delay(100);
 	}
