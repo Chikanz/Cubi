@@ -8,11 +8,7 @@ int menuSpeed = 50; //Lower is faster
 int resetTimer;
 
 void menu()
-{
-	Serial.print("Delta:");
-	Serial.println(resetTimer);
-	//Serial.println(RealDeltaTime());
-
+{	
 	menuPage = ReadRotary(menuPage);
 
 	//Bounce
@@ -44,8 +40,6 @@ void menu()
 
 	if (menuPage < 0)
 		menuPage = 0;
-
-	Serial.println(conveyorBelt);
 
 	if (lastVal != menuPage)
 	{
@@ -108,7 +102,8 @@ void menu()
 
 	conveyBelt(menuSpeed);
 
-	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+
 	colourIcon(12);	
 	speakerIcon(24, true);
 	timeIcon(36);
@@ -147,7 +142,7 @@ void menuPageChange()
 		break;
 
 	case 5:
-		State = DisplayTime;
+		State = Main;
 		matrix.fillScreen(0);
 		break;
 	}
