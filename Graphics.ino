@@ -107,6 +107,7 @@ void num1(int x, int y, uint16_t col)
 {
 	matrix.drawLine(1 + x, 0 + y, 1 + x, 5 + y, col);
 }
+
 void num2(int x, int y, uint16_t col) //
 {
 	matrix.drawLine(1 + x, 0 + y, 1 + x, 2 + y, col);

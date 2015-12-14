@@ -312,6 +312,11 @@ NumConveyor numConvey2;
 NumConveyor numConvey3;
 NumConveyor numConvey4;
 
+NumConveyor setConvey1;
+NumConveyor setConvey2;
+NumConveyor setConvey3;
+NumConveyor setConvey4;
+
 
 void setup()
 {
@@ -480,7 +485,8 @@ void loop()
 	if (State == Brightness)
 	{
 		UpdateTime();
-		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, 0);
+		//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false,0);
+		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, 8);
 
 		if (buttonPressed())
 		{

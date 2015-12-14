@@ -28,27 +28,40 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		//Drawing the preset night mode time
 
 		//"1"
-		matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
+		if(hr2 != 2)
+			matrix.drawLine(0 + xmod, 0, 0 + xmod, 2, Red);
+		else
+			matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
 		//1,2 or 3
 		switch (hr2)
 		{
 		case 0:
-			matrix.drawRect(2 + xmod, 0, 2, 2, Red);
+			matrix.drawRect(2 + xmod, 0, 2, 3, Red);
 			break;
 
 		case 1:
-			matrix.drawLine(2 + xmod, 0, 2 + xmod, 1, Red);
+			matrix.drawLine(2 + xmod, 0, 2 + xmod, 2, Red);
 			break;
 
 		case 2:
-			matrix.drawLine(0 + xmod, 2, 0 + xmod, 3, Red);
+			matrix.drawLine(2 + xmod, 0, 3 + xmod, 0, Red);
+			matrix.drawLine(3 + xmod, 1, 4 + xmod, 1, Red);
 			break;
 		}
 
 		if (!hourBelow10)
 		{
-			displayNum(mn1, 3 + xmod, 3, Red, false);
-			displayNum(mn2, 6 + xmod, 3, Red, false);
+			if (mn2 != 1)	//Normal
+			{
+				displayNum(mn1, 3 + xmod, 3, Red, false);
+				displayNum(mn2, 6 + xmod, 3, Red, false);
+			}
+			else	//Align
+			{
+				displayNum(mn1, 4 + xmod, 3, Red, false);
+				displayNum(mn2, 6 + xmod, 3, Red, false);
+			}
+
 		}
 	}
 	else if (colors[1] == matrix.Color(255, 0, 0) && hour() > 0) //If display is redded
@@ -56,7 +69,8 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		//displayNum(hr1, 1, 0, colors[displayCol1]);
 		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], true);
 		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], true);
-		displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
+		displayNum(mn2, 6 + xmod, 0, colors[displayCol2], true);
+		Serial.println("ayyyyy");
 	}
 	else
 	{
@@ -81,9 +95,11 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		{
 			minuteAlert(displayCol1, xmod);
 			
-			numConvey2.Update(hr2, 1 + conveyorBelt, 75, colors[displayCol2]);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
+			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2]);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1]);
 			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
+
+			Serial.println("1");
 		}
 		else
 		{
@@ -91,6 +107,14 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2]);
 			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
 			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
+
+			if (State == Brightness)
+			{
+				displayNum(hr1, 0, 0, colors[displayCol1], true);
+				displayNum(hr2, 2, 0, colors[displayCol2], true);
+				displayNum(mn1, 4, 0, colors[displayCol1], true);
+				displayNum(mn2, 6, 0, colors[displayCol2], true);
+			}
 		}
 	}
 }
@@ -144,15 +168,15 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 			{
 				//displayNum(hr1, 1, 0, colors[displayCol1]);
 				displayNum(hr2, 1, 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
 			}
 			else
 			{
 				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
 				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
 			}
 		}
 		else
@@ -168,8 +192,8 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 				*/
 
 				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
 				break;
 
 			case 1:
@@ -186,8 +210,8 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 				*/
 
 				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
+				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
 				break;
 
 			case 2:
@@ -196,7 +220,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 
 				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
 				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
+				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
 				break;
 
 			case 3:
@@ -205,7 +229,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int b
 
 				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
 				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
+				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
 				break;
 			}
 		}
@@ -259,7 +283,6 @@ void TimeSet()
 		pos++;
 		canPress = false;
 	}
-	delay(100);
 
 	//tempNumToSet = ReadRotary(tempNumToSet);
 	/*
@@ -329,7 +352,12 @@ void TimeSet()
 
 	time[pos] = numToSet;
 
-	DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
+	//DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
+
+	setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
+	setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
+	setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
+	setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
 
 	if (pos >= 4)
 	{
