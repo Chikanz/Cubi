@@ -274,143 +274,28 @@ void UpdateTime()
 	}
 }
 
-
 int tempNumToSet;
 void TimeSet()
 {
-	int b = 0;
+	HrMn NewTime;
+	NewTime = TimeSetReturn();
 
-	if (buttonPressed())
-	{
-		pos++;
-		canPress = false;
-	}
+	setTime(
+		NewTime.Hr,
+		NewTime.Mn,
+		0,
+		0,
+		0,
+		2015
+		);
 
-	//tempNumToSet = ReadRotary(tempNumToSet);
-	/*
-	if (ReadRotary() == 1)
-	tempNumToSet += 1;
+	Teensy3Clock.set(now());
 
-	if (ReadRotary() == 2)
-	tempNumToSet -= 1;
-	*/
-
-	//Serial.println(val);
-	switch (pos)
-	{
-	case 0:
-	{
-		int a = 2;
-		int b = 0;
-
-		if (numToSet >= b && numToSet <= a)
-			numToSet = ReadRotary(numToSet);
-		else
-			numToSet = force(numToSet, b, a);
-	}
-		break;
-
-	case 1:
-		if (time[0] == 2)
-		{
-			int a = 4;
-			int b = 0;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		else
-		{
-			int a = 9;
-			int b = 0;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		break;
-
-	case 2:
-	{
-		int a = 5;
-		int b = 0;
-
-		if (numToSet >= b && numToSet <= a)
-			numToSet = ReadRotary(numToSet);
-		else
-			numToSet = force(numToSet, b, a);
-	}
-		break;
-
-	case 3:
-		{
-			int a = 9;
-			int b = 0;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		break;
-	}
-
-	time[pos] = numToSet;
-
-	//DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
-
-	setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
-	setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
-	setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
-	setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
-
-	if (pos >= 4)
-	{
-		pos = 0;
-		String hrr1 = String(time[0]);
-		String hrr2 = String(time[1]);
-		String mnn1 = String(time[2]);
-		String mnn2 = String(time[3]);
-
-		String Newhr = String(hrr1 + hrr2);
-		String Newmn = String(mnn1 + mnn2);
-
-		Serial.println(Newhr);
-
-		/*rtcTime.hour = Newhr.toInt();
-		rtcTime.minute = Newmn.toInt();
-		rtcTime.second = 0;
-		rtc.writeTime(&rtcTime);*/
-
-		setTime(
-			Newhr.toInt(),
-			Newmn.toInt(),
-			0,
-			0,
-			0,
-			2015
-			);
-
-		Teensy3Clock.set(now());
-
-		if (hour() > 7 && hour() < 20)
-		{
-			unRedColours();
-		}
-
-		//unRedColours();
-		//targetBrightness = daylevel;
-
-		State = Main;
-		matrix.fillScreen(0);
-		delay(100);
-	}
+	if (hour() > 7 && hour() < 20)
+		unRedColours();
+	
+	oke();
 }
-
-/////////
 
 HrMn TimeSetReturn()
 {
@@ -518,7 +403,6 @@ HrMn TimeSetReturn()
 	}
 }
 
-
 void minuteAlert(int col, int xmod)
 {
 	//Serial.println(sec % 2);
@@ -533,12 +417,13 @@ void minuteAlert(int col, int xmod)
 	}
 }
 
-//Teensy time keeping stuff
+//Teensy RTC Stuff
 time_t getTeensy3Time()
 {
 	return Teensy3Clock.get();
 }
 
+//Serial Stuff
 void digitalClockDisplay() {
 	// digital clock display of the time
 	Serial.print(hour());
