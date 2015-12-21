@@ -91,22 +91,6 @@ uint16_t colorsStore[] =
 	White,
 };
 
-
-int x = matrix.width();
-int pass = 0;
-
-int xx = 0;
-int yy = 0;
-int Minute1s = 0;
-int Minute10s = 0;
-
-boolean blinkk = true;
-int blinkCount = 0;
-int wheel = 0;
-
-int red, green, blue;
-int iteration;
-
 int hr, mn;
 int sec;
 
@@ -147,7 +131,6 @@ bool bigMode = true;
 int ColorToChoose = 1;
 
 int pirranaPos = 46;
-
 
 int textCursor = 8;
 long Rpos = -999;
@@ -207,30 +190,6 @@ int menuPage = -1;
 float targetVolume = 1;
 float volume = 0;
 int fadeTimer = 0;
-
-enum eState
-{
-	TimeSetMode,
-	Main,
-	SetAlarm,
-	MenuAlarm,
-	Brightness,
-	BrightnessProfile,
-	Alarm,
-	ChangeColor,
-	DisplayTest,
-	Snake,
-	SnakeGameOver,
-	StaticDisplay,
-};
-
-//
-///
-////
-eState State = Main;
-////
-///
-//
 
 //Compiler didn't like it when class was moved to another place, temp fix prob
 class NumConveyor
@@ -371,15 +330,38 @@ void setup()
 	setSyncProvider(getTeensy3Time);
 }
 
-//int lastNum = 0;
-bool servoPos = false;
-
 bool hourBelow10;
 bool canTest = true;
 
 int fakeTime = 0;
 
 bool redded = false;
+int brightnessGuage = 2;
+//
+
+enum eState
+{
+	TimeSetMode,
+	Main,
+	SetAlarm,
+	MenuAlarm,
+	Brightness,
+	BrightnessProfile,
+	Alarm,
+	ChangeColor,
+	DisplayTest,
+	Oke,
+	Snake,
+	SnakeGameOver,
+	StaticDisplay,
+};
+
+//
+///
+////
+eState State = Main;
+////
+///
 //
 
 void loop()
@@ -411,16 +393,28 @@ void loop()
 	{
 	case Main:
 	{
-		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
-
-		UpdateTime();
-		menu();
-
-		if (buttonPressed())
+		switch (brightnessGuage)
 		{
-			menuPageChange();
-			//Reset rotary to hopefully avoid overflow
-			//rotary.write(0);
+		case 7:
+		{
+			matrix.fillScreen(0);
+
+			if (buttonPressed())
+				State = Brightness;
+		}
+		break;
+
+		default:
+		{
+			DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+
+			UpdateTime();
+			menu();
+
+			if (buttonPressed())			
+				menuPageChange();
+		}
+		break;
 		}
 	}
 	break;
@@ -430,15 +424,8 @@ void loop()
 		BrightnessSelect();
 
 		if (buttonPressed())
-		{
-			State = Main;
-			Serial.print("button");
-			Serial.println(State);
-			matrix.fillScreen(0);
-			//delay(100);
-			canPress = false;
-		}
-
+			oke();
+		
 		//Note: Delay is in function
 	}
 	break;
@@ -532,9 +519,7 @@ void loop()
 	break;
 
 	case DisplayTest:
-	{	
-		matrix.drawPixel(2, 4, colors[2]);
-		matrix.drawLine(3, 5, 5, 3, colors[2]);
+	{
 	}
 	break;
 
@@ -543,7 +528,6 @@ void loop()
 		staticDisplay();
 	}
 	break;
-
 	}
 
 	matrix.show();
@@ -552,8 +536,6 @@ void loop()
 		canPress = true;
 }
 //
-
-
 
 int force(int num, int min, int max)
 {
@@ -616,49 +598,6 @@ void fixedLight()
 	if (hour() > 21 || hour() < 7)
 		RedColours();
 
-	//Dimmer
-	/*
-	if (State == Brightness)
-	{
-		displayOnOff = ReadRotary(displayOnOff, 0, 1);
-
-		if (displayOnOff == 1)
-			display = false;
-
-		if (displayOnOff == 0)
-			display = true;
-
-		Serial.println(displayOnOff);
-
-		if (display)
-		{
-			if (hour() > 20 || hour() < 7) //on
-			{
-				targetBrightness = 1; //Display on, Night
-				//Serial.println("Day, Night");
-			}
-			else
-			{
-				targetBrightness = 17; //Day, Display on
-				//Serial.println("Day, Display on");
-			}
-		}
-		else
-		{
-			if (hour() > 20 || hour() < 7) //off
-			{
-				matrix.fillScreen(0); //Off, Night
-				//Serial.println("off night");
-			}
-			else
-			{
-				targetBrightness = 5; //Off, Day
-			}
-		}
-		
-	}
-	*/
-
 	if ((hour() == 20 && sec == 0)) //Set the light to 1 at 8:00pm
 	{
 		targetBrightness = 5;
@@ -691,13 +630,11 @@ void changeColor()
 
 	if (buttonPressed())
 	{
-		canPress = false;
 		switch (ColPos)
 		{
 		case 1:
 			displayCol1 = ColorToChoose;
 			EEPROM.write(1, displayCol1);
-
 			break;
 
 		case 2:
@@ -709,144 +646,9 @@ void changeColor()
 
 	if (ColPos == 2)
 	{
-		//Serial.println("Back To displaying time");
 		ColPos = 0;
-		State = Main;
-		matrix.fillScreen(0);
+		oke();
 		EEPROM.write(2, displayCol2);
-	}
-}
-
-int alarmMenuPage = 0;
-int loopint = -50;
-String text = "ayy";
-void AlarmMenu()
-{
-	alarmMenuPage = ReadRotary(alarmMenuPage, 0, 1);
-
-	if (AlarmisSet)
-	{
-		matrix.drawPixel(7, 0, colors[displayCol2]);
-	}
-
-	switch (alarmMenuPage)
-	{
-	case 0:
-		/*
-		x = matrix.width();
-		matrix.fillScreen(0);
-		matrix.setTextColor(colors[displayCol1]);
-		text = "Off";
-		loopint = -15;
-		lastVal = 0;
-		//Serial.println("reset");
-		*/
-		moveNum = -3;
-		speakerIcon(false);
-		matrix.drawLine(0, 0, 7, 7, Red);
-		break;
-
-	case 1:
-		/*
-		text = "On";
-		matrix.fillScreen(0);
-		x = matrix.width();
-		matrix.setTextColor(colors[displayCol2]);
-		lastVal = 1;
-		loopint = -15;
-		//Serial.println("reset");
-		*/
-		speakerIcon(true);
-		break;
-	}
-	//matrix.print(text);
-}
-
-void AlarmPageChange()
-{
-	switch (alarmMenuPage)
-	{
-	case 0:
-		AlarmisSet = false;
-		EEPROM.write(5, false);
-		State = Main;
-		matrix.fillScreen(0);
-		break;
-
-	case 1:
-		Serial.println("Setting Alarm");
-		State = SetAlarm;
-		AlarmisSet = true;
-		matrix.fillScreen(0);
-		break;
-	}
-}
-
-void AlarmSet()
-{
-	if (buttonPressed())
-	{
-		pos++;
-		canPress = false;
-		numToSet = 0;
-	}
-
-	delay(100);
-
-	switch (pos)
-	{
-	case 0:
-		numToSet = ReadRotary(numToSet, 0, 2);
-		break;
-
-	case 1:
-		if (time[0] == 2)
-		{
-			numToSet = ReadRotary(numToSet, 0, 4);
-		}
-		else
-			numToSet = ReadRotary(numToSet, 0, 9);
-		break;
-
-	case 2:
-		numToSet = ReadRotary(numToSet, 0, 5);
-		break;
-
-	case 3:
-		numToSet = ReadRotary(numToSet, 0, 9);
-		break;
-	}
-
-	time[pos] = numToSet;
-
-	DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
-
-	if (pos >= 4)
-	{
-		pos = 0;
-		String hrr1 = String(time[0]);
-		String hrr2 = String(time[1]);
-		String mnn1 = String(time[2]);
-		String mnn2 = String(time[3]);
-
-		String Newhr = String(hrr1 + hrr2);
-		String Newmn = String(mnn1 + mnn2);
-
-		AlarmTime[0] = Newhr.toInt();
-		AlarmTime[1] = Newmn.toInt();
-
-		//Serial.println(AlarmTime[0]);
-		//Serial.println(AlarmTime[1]);
-
-		EEPROM.write(3, AlarmTime[0]);
-		EEPROM.write(4, AlarmTime[1]);
-		EEPROM.write(5, true);
-
-		matrix.fillScreen(0);
-		delay(500);
-		//matrix.fillScreen(colors[displayCol2]);
-		//delay(500);
-		State = Main;
 	}
 }
 
@@ -861,6 +663,27 @@ boolean onSecond()
 	}
 	else
 		return false;
+}
+
+int okeX = -7;
+void oke()
+{
+	while (okeX < 0)
+	{
+		matrix.fillScreen(0);
+		delay(80);
+
+		okeX++;
+
+		matrix.drawPixel(2 + okeX, 4, colors[2]);
+		matrix.drawLine(3 + okeX, 5, 5 + okeX, 3, colors[2]);
+
+		matrix.show();
+	}
+
+	delay(1000);
+	okeX = -7;
+	State = Main;
 }
 
 //Not really on half second, but makes a cool blink effect
@@ -973,16 +796,6 @@ int ReadRotary(int varToChange)
 		}
 	}
 }
-
-//Will replace with thermister analog read some day
-//void GetTemperature()
-//{
-//	int t1 = rtc.readTemperature(); // retrieve the value from the DS3232
-//	float temp = t1 / 4; // temperature in Celsius stored in temp
-//	delay(100);
-//	Serial.print(temp);
-//	//return temp;
-//}
 
 long tempTimer = 0;
 int deltaTime()
