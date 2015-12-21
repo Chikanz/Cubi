@@ -28,7 +28,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		//Drawing the preset night mode time
 
 		//"1"
-		if(hr2 != 2)
+		if (hr2 != 2)
 			matrix.drawLine(0 + xmod, 0, 0 + xmod, 2, Red);
 		else
 			matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
@@ -61,7 +61,6 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 				displayNum(mn1, 4 + xmod, 3, Red, false);
 				displayNum(mn2, 6 + xmod, 3, Red, false);
 			}
-
 		}
 	}
 	else if (colors[1] == matrix.Color(255, 0, 0) && hour() > 0) //If display is redded
@@ -94,7 +93,7 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		if (hourBelow10)
 		{
 			minuteAlert(displayCol1, xmod);
-			
+
 			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2]);
 			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1]);
 			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
@@ -122,11 +121,11 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 //Blink
 void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int blinkpos)
 {
-		posOffset = 4;
-		if (hr1 == 0)
-		{
-			hourBelow10 = true;
-		}
+	posOffset = 4;
+	if (hr1 == 0)
+	{
+		hourBelow10 = true;
+	}
 
 	if (hour() > 21 && State == Main)
 	{
@@ -275,9 +274,12 @@ void UpdateTime()
 	}
 }
 
+
 int tempNumToSet;
 void TimeSet()
 {
+	int b = 0;
+
 	if (buttonPressed())
 	{
 		pos++;
@@ -297,15 +299,15 @@ void TimeSet()
 	switch (pos)
 	{
 	case 0:
-		//1,0
-		if (true)
-		{
-			int a = 2;
-			int b = 0;
+	{
+		int a = 2;
+		int b = 0;
 
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
+		if (numToSet >= b && numToSet <= a)
+			numToSet = ReadRotary(numToSet);
+		else
+			numToSet = force(numToSet, b, a);
+	}
 		break;
 
 	case 1:
@@ -314,38 +316,44 @@ void TimeSet()
 			int a = 4;
 			int b = 0;
 
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
 		}
 		else
 		{
 			int a = 9;
 			int b = 0;
 
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
 		}
 		break;
 
 	case 2:
-		if (true)
-		{
-			int a = 5;
-			int b = 0;
+	{
+		int a = 5;
+		int b = 0;
 
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
-		}
+		if (numToSet >= b && numToSet <= a)
+			numToSet = ReadRotary(numToSet);
+		else
+			numToSet = force(numToSet, b, a);
+	}
 		break;
 
 	case 3:
-		if (true)
 		{
 			int a = 9;
 			int b = 0;
 
-			tempNumToSet = ReadRotary(tempNumToSet, b, a);
-			numToSet = tempNumToSet;
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
 		}
 		break;
 	}
@@ -384,7 +392,7 @@ void TimeSet()
 			0,
 			0,
 			2015
-			);		
+			);
 
 		Teensy3Clock.set(now());
 
@@ -402,7 +410,116 @@ void TimeSet()
 	}
 }
 
-void minuteAlert(int col,int xmod)
+/////////
+
+HrMn TimeSetReturn()
+{
+	int b = 0;
+
+	if (buttonPressed())
+	{
+		pos++;
+		canPress = false;
+	}
+
+	switch (pos)
+	{
+	case 0:
+	{
+		int a = 2;
+		int b = 0;
+
+		if (numToSet >= b && numToSet <= a)
+			numToSet = ReadRotary(numToSet);
+		else
+			numToSet = force(numToSet, b, a);
+	}
+	break;
+
+	case 1:
+		if (time[0] == 2)
+		{
+			int a = 4;
+			int b = 0;
+
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
+		}
+		else
+		{
+			int a = 9;
+			int b = 0;
+
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
+		}
+		break;
+
+	case 2:
+	{
+		int a = 5;
+		int b = 0;
+
+		if (numToSet >= b && numToSet <= a)
+			numToSet = ReadRotary(numToSet);
+		else
+			numToSet = force(numToSet, b, a);
+	}
+	break;
+
+	case 3:
+	{
+		int a = 9;
+		int b = 0;
+
+		if (numToSet >= b && numToSet <= a)
+			numToSet = ReadRotary(numToSet);
+		else
+			numToSet = force(numToSet, b, a);
+	}
+	break;
+	}
+
+	time[pos] = numToSet;
+
+	//DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
+
+	setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
+	setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
+	setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
+	setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
+
+	if (pos >= 4)
+	{
+		for (int i = 0; i <= 4; i++)
+		{
+			time[i] = 0;
+		}
+
+		pos = 0;
+		HrMn r;
+
+		String hrr1 = String(time[0]);
+		String hrr2 = String(time[1]);
+		String mnn1 = String(time[2]);
+		String mnn2 = String(time[3]);
+
+		String Newhr = String(hrr1 + hrr2);
+		String Newmn = String(mnn1 + mnn2);
+
+		r.Hr = Newhr.toInt();
+		r.Mn = Newmn.toInt();
+
+		return r;
+	}
+}
+
+
+void minuteAlert(int col, int xmod)
 {
 	//Serial.println(sec % 2);
 	if (!(sec % 2))

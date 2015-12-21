@@ -105,7 +105,7 @@ void menu()
 	colourIcon(12);	
 	speakerIcon(24, true);
 	timeIcon(36);
-	pirrana(48, 500);
+	pirrana(48, conveyorBelt, 500);
 	backIcon(60);
 
 	delay(menuSpeed);

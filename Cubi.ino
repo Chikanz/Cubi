@@ -12,36 +12,19 @@ EEPROM Memory allocation
 */
 
 //So many libraries the Citadel is jelly
+#include "Classes.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
-
 #include <EEPROM.h>
-
-//Phasing out
-//#include <SoftI2C.h>
-//#include <DS3232RTC.h>
-//
-
 #include <Time.h>
-
 #include <Audio.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
-
 #include <LinkedList.h>
-
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
-//#include <avr/power.h>
-
-// Audio stuff
-//AudioPlaySdWav           playWav1;       //xy=154,78
-//AudioOutputI2S           i2s1;           //xy=334,89
-//AudioConnection          patchCord1(playWav1, 0, i2s1, 0);
-//AudioConnection          patchCord2(playWav1, 1, i2s1, 1);
-//AudioControlSGTL5000     sgtl5000_1;     //xy=240,153
 
 // GUItool: begin automatically generated code
 AudioPlaySdWav           playWav1;     //xy=253,243
@@ -53,12 +36,10 @@ AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
 AudioControlSGTL5000     sgtl5000_1;     //xy=254,324
 										 // GUItool: end automatically generated code
 
-
 Encoder rotary(5, 4);  //Rotary Encoder
 
-					   //Definitions
+//Definitions
 #define PIN 6
-
 #define Green matrix.Color(0,255,0)
 #define LightGreen matrix.Color(100,255,100)
 #define Yellow matrix.Color(255,255,0)
@@ -92,6 +73,7 @@ uint16_t colors[] =
 	Purple,
 	Blue,
 	Cyan,
+	White,
 };
 
 uint16_t colorsStore[] =
@@ -106,7 +88,9 @@ uint16_t colorsStore[] =
 	Purple,
 	Blue,
 	Cyan,
+	White,
 };
+
 
 int x = matrix.width();
 int pass = 0;
@@ -164,35 +148,13 @@ int ColorToChoose = 1;
 
 int pirranaPos = 46;
 
-enum eState
-{
-	TimeSetMode,	
-	Main,	
-	SetAlarm,		
-	MenuAlarm,	
-	Brightness,
-	Alarm,			
-	ChangeColor,	
-	DisplayTest,	
-	Snake,			
-	SnakeGameOver,	
-	StaticDisplay,	
-};
-
-//
-///
-////
-eState State = Main;
-////
-///
-//
 
 int textCursor = 8;
 long Rpos = -999;
 int songToPlay;
 int moveNum = 3;
 
-int targetBrightness = 17;
+int targetBrightness = 20;
 int currentBrightness = 0;
 
 //bool displayoff = true;
@@ -200,7 +162,7 @@ bool display = true;
 int displayOnOff = 0;
 
 //int nightLevel = 0;
-int daylevel = 17;
+int daylevel = 20;
 
 //bool dimTrigger = false;
 int dimtime = 0;
@@ -209,7 +171,7 @@ int dimtime = 0;
 LinkedList<int> snakeBodyX = LinkedList<int>();
 LinkedList<int> snakeBodyY = LinkedList<int>();
 
-enum eDirection { Up, Right, Down, Left};
+enum eDirection { Up, Right, Down, Left };
 eDirection dir = Up;
 LinkedList<eDirection> dirList = LinkedList<eDirection>();
 
@@ -233,10 +195,8 @@ int heady;
 int timerTemp;
 bool mouth;
 
-
 File root;
 int fileCount;
-
 
 //Menu
 int conveyorBelt = 0;
@@ -248,7 +208,31 @@ float targetVolume = 1;
 float volume = 0;
 int fadeTimer = 0;
 
-//Compiler didn't like it when class was moved to another place, temp fix
+enum eState
+{
+	TimeSetMode,
+	Main,
+	SetAlarm,
+	MenuAlarm,
+	Brightness,
+	BrightnessProfile,
+	Alarm,
+	ChangeColor,
+	DisplayTest,
+	Snake,
+	SnakeGameOver,
+	StaticDisplay,
+};
+
+//
+///
+////
+eState State = Main;
+////
+///
+//
+
+//Compiler didn't like it when class was moved to another place, temp fix prob
 class NumConveyor
 {
 	int belt, target;
@@ -291,7 +275,7 @@ public:
 					belt--;
 			}
 			timer = 0;
-		}		
+		}
 
 		ymod = belt;
 
@@ -307,6 +291,7 @@ public:
 	}
 };
 
+//Should put this in a list ayy
 NumConveyor numConvey1;
 NumConveyor numConvey2;
 NumConveyor numConvey3;
@@ -316,7 +301,6 @@ NumConveyor setConvey1;
 NumConveyor setConvey2;
 NumConveyor setConvey3;
 NumConveyor setConvey4;
-
 
 void setup()
 {
@@ -330,7 +314,7 @@ void setup()
 	pinMode(12, OUTPUT);
 	pinMode(13, OUTPUT);
 
-	matrix.setCursor(matrix.width(), 0);	
+	matrix.setCursor(matrix.width(), 0);
 
 	//EEPROM startup
 	Serial.println("Reading from Eeprom");
@@ -385,7 +369,6 @@ void setup()
 
 	//Teensy RTC setup
 	setSyncProvider(getTeensy3Time);
-
 }
 
 //int lastNum = 0;
@@ -397,10 +380,8 @@ bool canTest = true;
 int fakeTime = 0;
 
 bool redded = false;
-
 //
 
-int i = 0;
 void loop()
 {
 	matrix.fillScreen(0);
@@ -423,10 +404,52 @@ void loop()
 		State = Alarm;
 		textCursor = 0;
 		matrix.fillScreen(0);
-		targetBrightness = 17;
+		targetBrightness = 20;
 	}
 
-	if (State == Alarm)
+	switch (State)
+	{
+	case Main:
+	{
+		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+
+		UpdateTime();
+		menu();
+
+		if (buttonPressed())
+		{
+			menuPageChange();
+			//Reset rotary to hopefully avoid overflow
+			//rotary.write(0);
+		}
+	}
+	break;
+
+	case Brightness:
+	{
+		BrightnessSelect();
+
+		if (buttonPressed())
+		{
+			State = Main;
+			Serial.print("button");
+			Serial.println(State);
+			matrix.fillScreen(0);
+			//delay(100);
+			canPress = false;
+		}
+
+		//Note: Delay is in function
+	}
+	break;
+
+	case BrightnessProfile:
+	{
+		//...
+	}
+	break;
+
+	case Alarm:
 	{
 		if (volume < targetVolume)
 		{
@@ -442,8 +465,9 @@ void loop()
 
 		PlayAlarm();
 	}
+	break;
 
-	if (State == MenuAlarm)
+	case MenuAlarm:
 	{
 		AlarmMenu();
 
@@ -455,82 +479,41 @@ void loop()
 
 		delay(100);
 	}
+	break;
 
-	if (State == SetAlarm)
+	case SetAlarm:
 	{
 		AlarmSet();
 	}
+	break;
 
-	if (State == TimeSetMode)
-	{
-		TimeSet();
-	}
-
-	if (State == Main)
-	{
-		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
-
-		UpdateTime();
-		menu();
-		
-
-		if (buttonPressed())
-		{
-			menuPageChange();
-			//Reset rotary to hopefully avoid overflow
-			//rotary.write(0);
-		}
-	}
-
-	if (State == Brightness)
-	{
-		UpdateTime();
-		//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false,0);
-		DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, 8);
-
-		if (buttonPressed())
-		{
-			State = Main;
-			Serial.print("button");
-			Serial.println(State);
-			matrix.fillScreen(0);
-			//delay(100);
-			canPress = false;
-		}
-		delay(100);
-	}
-
-	if (State == ChangeColor)
+	case ChangeColor:
 	{
 		if (hourBelow10)
-			minuteAlert(displayCol1,0);
+			minuteAlert(displayCol1, 0);
 
 		//UpdateTime();
 		changeColor();
 		delay(10);
 	}
+	break;
 
-	if (State == DisplayTest)
+	case TimeSetMode:
 	{
-		numConvey1.Update(2,0,50,colors[displayCol1]);		
-
-		delay(100);
+		TimeSet();
 	}
+	break;
 
-	if (State == Snake)
+	case Snake:
 	{
 		snake();
 	}
+	break;
 
-	if (State == StaticDisplay)
+	case SnakeGameOver:
 	{
-		staticDisplay();
-	}
-
-	if (State == SnakeGameOver)
-	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1],true);
-		displayNum(score % 10, 4, 0, colors[displayCol2],true);
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], true);
+		displayNum(score % 10, 4, 0, colors[displayCol2], true);
 
 		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
 		matrix.drawPixel(7, 7, colors[displayCol1]);
@@ -546,14 +529,44 @@ void loop()
 			State = Main;
 		}
 	}
+	break;
 
-	//Display Changes
+	case DisplayTest:
+	{	
+		matrix.drawPixel(2, 4, colors[2]);
+		matrix.drawLine(3, 5, 5, 3, colors[2]);
+	}
+	break;
+
+	case StaticDisplay:
+	{
+		staticDisplay();
+	}
+	break;
+
+	}
+
 	matrix.show();
 
 	if (digitalRead(2) == LOW)
 		canPress = true;
 }
 //
+
+
+
+int force(int num, int min, int max)
+{
+	if (num < min)
+	{
+		return min;
+	}
+
+	if (num > max)
+	{
+		return max;
+	}
+}
 
 void SetLight()
 {
@@ -583,7 +596,7 @@ void SetLight()
 
 void RedColours()
 {
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 11; i++)
 	{
 		colors[i] = matrix.Color(255, 0, 0);
 	}
@@ -591,7 +604,7 @@ void RedColours()
 
 void unRedColours()
 {
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 11; i++)
 	{
 		colors[i] = colorsStore[i];
 	}
@@ -604,6 +617,7 @@ void fixedLight()
 		RedColours();
 
 	//Dimmer
+	/*
 	if (State == Brightness)
 	{
 		displayOnOff = ReadRotary(displayOnOff, 0, 1);
@@ -641,20 +655,20 @@ void fixedLight()
 				targetBrightness = 5; //Off, Day
 			}
 		}
+		
 	}
-	
+	*/
+
 	if ((hour() == 20 && sec == 0)) //Set the light to 1 at 8:00pm
 	{
 		targetBrightness = 5;
 	}
 
-
 	if (!AlarmisSet && hour() == 8)
 	{
-		targetBrightness = 17; //If the alarm isn't set, set the birghtness back up to normal at 8
+		targetBrightness = 20; //If the alarm isn't set, set the birghtness back up to normal at 8
 		unRedColours();
 	}
-
 }
 
 int ColPos = 0;
@@ -667,7 +681,7 @@ void changeColor()
 	Serial.println(ColorToChoose);
 	delay(1);
 
-	ColorToChoose = ReadRotary(ColorToChoose, 1, 9);
+	ColorToChoose = ReadRotary(ColorToChoose, 1, 10);
 
 	if (ColPos == 0)
 		displayCol2 = ColorToChoose;
@@ -920,6 +934,7 @@ int ReadRotary(int varToChange, int min, int max)
 			oldPosition = newPosition;
 			varToChange -= 1;
 		}
+		//varToChange = force(varToChange, max, min); //Swapped to loop values
 
 		if (varToChange > max)
 		{
@@ -1065,7 +1080,7 @@ void snake()
 		{
 			if (snakeBodyX.get(i) == foodx)
 			{
-				while(foodx != snakeBodyX.get(i))
+				while (foodx != snakeBodyX.get(i))
 					foodx = random(0, 7);
 				//inBody = true;
 				Serial.println("Inbodyx!");
@@ -1251,7 +1266,7 @@ void shiftBackwards(int myarray[], int size, int shiftBy)
 	}
 }
 
-void pirrana(int startpos, int timer)
+void pirrana(int startpos, int convey, int timer)
 {
 	timerTemp += deltaTime4();
 
@@ -1269,31 +1284,31 @@ void pirrana(int startpos, int timer)
 		timerTemp = 0;
 	}
 
-	int tempConveyor = conveyorBelt - startpos;
+	int tempConveyor = convey - startpos;
 
 	if (mouth)
 	{
 		//Stem
-		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, LightGreen);
-		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, LightGreen);
-		matrix.drawPixel(tempConveyor + 1, 6, LightGreen);
-		matrix.drawPixel(tempConveyor + 5, 6, LightGreen);
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
 
 		//Head
 		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
 		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, colors[displayCol1]);
 		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, colors[displayCol1]);
 
-		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, White);
-		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, White);
+		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, colors[10]);
+		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, colors[10]);
 	}
 	else
 	{
 		//Stem
-		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, LightGreen);
-		matrix.drawPixel(tempConveyor + 1, 6, LightGreen);
-		matrix.drawPixel(tempConveyor + 5, 6, LightGreen);
-		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, LightGreen);
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
 
 		//Head
 		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
@@ -1303,15 +1318,15 @@ void pirrana(int startpos, int timer)
 		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, colors[displayCol1]);
 		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
 
-		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, White);
+		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, colors[10]);
 	}
 }
 
 void countDirectory(File dir) {
-	while (true) 
+	while (true)
 	{
 		File entry = dir.openNextFile();
-		if (!entry) 
+		if (!entry)
 		{
 			// no more files
 			break;
@@ -1324,10 +1339,10 @@ void countDirectory(File dir) {
 }
 
 //From the teesny 3 RTC example code
-unsigned long processSyncMessage() 
+unsigned long processSyncMessage()
 {
 	unsigned long pctime = 0L;
-	const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013 
+	const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
 
 	if (Serial.find("T")) //Time header
 	{
