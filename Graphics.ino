@@ -349,6 +349,44 @@ void speakerIcon(int startPos, bool play)
 	//Serial.println(moveNum);
 }
 
+void speakerIconMenu(int startPos)
+{
+	if (true)
+	{
+		timer2 += deltaTime2();
+		if (timer2 > 200)
+		{
+			moveNum--;
+			timer2 = 0;
+		}
+
+		if (moveNum < -2)
+		{
+			moveNum = 3;
+		}
+	}
+
+	int tempConveyor = conveyorBelt - startPos;
+
+	if (moveNum > -1 || conveyorBelt != conveyorTarget)
+	{
+		matrix.drawLine(tempConveyor + moveNum, 2, tempConveyor + moveNum, 5, colors[displayCol1]);
+	}
+
+	if (moveNum > -2 || conveyorBelt != conveyorTarget)
+	{
+		matrix.drawPixel(tempConveyor + moveNum + 1, 1, colors[displayCol1]);
+		matrix.drawPixel(tempConveyor + moveNum + 1, 6, colors[displayCol1]);
+	}
+
+	matrix.drawLine(tempConveyor + 3, 0, tempConveyor + 3, 7, colors[displayCol2]);
+	matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 6, colors[displayCol2]);
+	matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 5, colors[displayCol2]);
+	matrix.drawRect(tempConveyor + 6, 3, tempConveyor + 2, 2, colors[displayCol2]);
+
+	//Serial.println(moveNum);
+}
+
 void speakerIcon(bool play)
 {
 	if (play)
@@ -393,4 +431,116 @@ void timeIcon(int startpos)
 
 	matrix.drawRoundRect(tempConveyor + 1, 1, 6, 6, 1, colors[displayCol1]);
 	matrix.drawTriangle(tempConveyor + 3, 4, tempConveyor + 3, 3, tempConveyor + 4, 4, colors[displayCol1]);
+}
+
+void pirrana(int startpos, int convey, int timer)
+{
+	timerTemp += deltaTime4();
+
+	if (timerTemp > timer)
+	{
+		if (mouth)
+		{
+			mouth = false;
+		}
+		else
+		{
+			mouth = true;
+		}
+
+		timerTemp = 0;
+	}
+
+	int tempConveyor = convey - startpos;
+
+	if (mouth)
+	{
+		//Stem
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
+
+		//Head
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, colors[displayCol1]);
+		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, colors[10]);
+		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, colors[10]);
+	}
+	else
+	{
+		//Stem
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
+
+		//Head
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 3, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 2, 4, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, colors[10]);
+	}
+}
+
+void pirranaMenu(int startpos)
+{
+	timerTemp += deltaTime4();
+
+	if (timerTemp > 500)
+	{
+		if (mouth)
+		{
+			mouth = false;
+		}
+		else
+		{
+			mouth = true;
+		}
+
+		timerTemp = 0;
+	}
+
+	int tempConveyor = conveyorBelt - startpos;
+
+	if (mouth)
+	{
+		//Stem
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
+
+		//Head
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, colors[displayCol1]);
+		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, colors[10]);
+		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, colors[10]);
+	}
+	else
+	{
+		//Stem
+		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
+		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
+		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
+		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
+
+		//Head
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 3, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 2, 4, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
+
+		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, colors[10]);
+	}
 }

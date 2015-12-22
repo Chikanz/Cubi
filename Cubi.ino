@@ -364,6 +364,46 @@ eState State = Main;
 ///
 //
 
+class MenuContainer
+{
+public:
+
+	int posList;
+	int posActual;
+	void(*f)(int);
+	void(*f2)();
+	eState state;
+	bool normalCase;
+
+	MenuContainer(int _pos, void(*_f)(int), eState _state)
+	{
+		pos = posList;
+		posActual = _pos * 12;
+		f = _f;
+		state = _state;
+		normalCase = true;
+	}
+
+	MenuContainer(int _pos, void(*_f)(), eState _state)
+	{
+		pos = posList;
+		posActual = _pos * 12;
+		f2 = _f;
+		state = _state;
+		normalCase = false;
+	}
+
+
+	void Update()
+	{
+		if (normalCase)
+			(*f)(posActual);
+		else
+			(*f2)();
+	}
+
+};
+
 void loop()
 {
 	matrix.fillScreen(0);
@@ -406,8 +446,6 @@ void loop()
 
 		default:
 		{
-			DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
-
 			UpdateTime();
 			menu();
 
@@ -671,7 +709,7 @@ void oke()
 	while (okeX < 0)
 	{
 		matrix.fillScreen(0);
-		delay(80);
+		delay(50);
 
 		okeX++;
 
@@ -736,6 +774,7 @@ boolean buttonPressed()
 		return false;
 }
 
+//Loops
 int ReadRotary(int varToChange, int min, int max)
 {
 	long newPosition = rotary.read();
@@ -757,7 +796,6 @@ int ReadRotary(int varToChange, int min, int max)
 			oldPosition = newPosition;
 			varToChange -= 1;
 		}
-		//varToChange = force(varToChange, max, min); //Swapped to loop values
 
 		if (varToChange > max)
 		{
@@ -773,6 +811,7 @@ int ReadRotary(int varToChange, int min, int max)
 	}
 }
 
+//Doesn't loop
 int ReadRotary(int varToChange)
 {
 	long newPosition = rotary.read();
@@ -826,7 +865,6 @@ int deltaTime2()
 }
 
 long tempTimer3 = 0;
-
 int deltaTime3()
 {
 	int deltaTime;
@@ -845,7 +883,6 @@ int deltaTime4()
 }
 
 int backMove = 0;
-
 void backIcon(int startpos)
 {
 	/*
@@ -1076,62 +1113,6 @@ void shiftBackwards(int myarray[], int size, int shiftBy)
 			myarray[i] = myarray[i + shiftBy];	//myarray[0] == myarray[2]
 			myarray[i + shiftBy] = temp;		//myarray[2] = temp(value previously at index i)
 		}
-	}
-}
-
-void pirrana(int startpos, int convey, int timer)
-{
-	timerTemp += deltaTime4();
-
-	if (timerTemp > timer)
-	{
-		if (mouth)
-		{
-			mouth = false;
-		}
-		else
-		{
-			mouth = true;
-		}
-
-		timerTemp = 0;
-	}
-
-	int tempConveyor = convey - startpos;
-
-	if (mouth)
-	{
-		//Stem
-		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
-		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
-		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
-		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
-
-		//Head
-		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, colors[displayCol1]);
-		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, colors[displayCol1]);
-
-		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, colors[10]);
-		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, colors[10]);
-	}
-	else
-	{
-		//Stem
-		matrix.drawLine(tempConveyor + 2, 7, tempConveyor + 4, 7, colors[2]);
-		matrix.drawPixel(tempConveyor + 1, 6, colors[2]);
-		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
-		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
-
-		//Head
-		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 3, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 2, 4, colors[displayCol1]);
-
-		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
-
-		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, colors[10]);
 	}
 }
 

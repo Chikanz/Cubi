@@ -445,3 +445,8 @@ void printDigits(int digits) {
 		Serial.print('0');
 	Serial.print(digits);
 }
+
+void menuTime()
+{
+	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+}
