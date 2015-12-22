@@ -246,7 +246,7 @@ int colSwitch2;
 
 int timer3 = 0;
 bool timerSwitch = false;
-void colourIcon(int startPos)
+void colourIcon(int startPos, uint16_t col)
 {
 	//Serial.println(timer3);
 	if (timerSwitch)
@@ -349,8 +349,22 @@ void speakerIcon(int startPos, bool play)
 	//Serial.println(moveNum);
 }
 
-void speakerIconMenu(int startPos)
+void speakerIconMenu(int startPos, uint16_t col)
 {
+	uint16_t col1;
+	uint16_t col2;
+
+	if (col == colors[displayCol1])
+	{
+		col2 = colors[displayCol1];
+		col1 = colors[displayCol2];
+	}
+	else
+	{
+		col1 = colors[displayCol1];
+		col2 = colors[displayCol2];
+	}
+
 	if (true)
 	{
 		timer2 += deltaTime2();
@@ -370,19 +384,19 @@ void speakerIconMenu(int startPos)
 
 	if (moveNum > -1 || conveyorBelt != conveyorTarget)
 	{
-		matrix.drawLine(tempConveyor + moveNum, 2, tempConveyor + moveNum, 5, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + moveNum, 2, tempConveyor + moveNum, 5, col1);
 	}
 
 	if (moveNum > -2 || conveyorBelt != conveyorTarget)
 	{
-		matrix.drawPixel(tempConveyor + moveNum + 1, 1, colors[displayCol1]);
-		matrix.drawPixel(tempConveyor + moveNum + 1, 6, colors[displayCol1]);
+		matrix.drawPixel(tempConveyor + moveNum + 1, 1, col1);
+		matrix.drawPixel(tempConveyor + moveNum + 1, 6, col1);
 	}
 
-	matrix.drawLine(tempConveyor + 3, 0, tempConveyor + 3, 7, colors[displayCol2]);
-	matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 6, colors[displayCol2]);
-	matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 5, colors[displayCol2]);
-	matrix.drawRect(tempConveyor + 6, 3, tempConveyor + 2, 2, colors[displayCol2]);
+	matrix.drawLine(tempConveyor + 3, 0, tempConveyor + 3, 7, col2);
+	matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 6, col2);
+	matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 5, col2);
+	matrix.drawRect(tempConveyor + 6, 3, tempConveyor + 2, 2, col2);
 
 	//Serial.println(moveNum);
 }
@@ -424,7 +438,7 @@ void speakerIcon(bool play)
 	//Serial.println(moveNum);
 }
 
-void timeIcon(int startpos)
+void timeIcon(int startpos, uint16_t col)
 {
 	//  int tempConveyor = conveyorBelt - 16;
 	int tempConveyor = conveyorBelt - startpos;
@@ -489,21 +503,16 @@ void pirrana(int startpos, int convey, int timer)
 	}
 }
 
-void pirranaMenu(int startpos)
+void pirranaMenu(int startpos, uint16_t col)
 {
 	timerTemp += deltaTime4();
 
 	if (timerTemp > 500)
 	{
 		if (mouth)
-		{
 			mouth = false;
-		}
 		else
-		{
 			mouth = true;
-		}
-
 		timerTemp = 0;
 	}
 
@@ -518,9 +527,9 @@ void pirranaMenu(int startpos)
 		matrix.drawPixel(tempConveyor + 5, 6, colors[2]);
 
 		//Head
-		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, colors[displayCol1]);
-		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, col);
+		matrix.drawTriangle(tempConveyor + 1, 2, tempConveyor + 1, 3, tempConveyor + 2, 3, col);
+		matrix.drawTriangle(tempConveyor + 5, 2, tempConveyor + 5, 3, tempConveyor + 4, 3, col);
 
 		matrix.drawLine(tempConveyor + 1, 1, tempConveyor + 3, 3, colors[10]);
 		matrix.drawLine(tempConveyor + 4, 2, tempConveyor + 5, 1, colors[10]);
@@ -534,13 +543,30 @@ void pirranaMenu(int startpos)
 		matrix.drawLine(tempConveyor + 3, 5, tempConveyor + 3, 7, colors[2]);
 
 		//Head
-		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 3, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 2, 4, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 2, 4, tempConveyor + 4, 4, col);
+		matrix.drawLine(tempConveyor + 1, 2, tempConveyor + 1, 3, col);
+		matrix.drawLine(tempConveyor + 2, 1, tempConveyor + 2, 4, col);
 
-		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, colors[displayCol1]);
-		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, colors[displayCol1]);
+		matrix.drawLine(tempConveyor + 4, 1, tempConveyor + 4, 4, col);
+		matrix.drawLine(tempConveyor + 5, 2, tempConveyor + 5, 3, col);
 
 		matrix.drawLine(tempConveyor + 3, 1, tempConveyor + 3, 3, colors[10]);
 	}
+}
+
+void backIcon(int startpos, uint16_t col)
+{
+	int tempConveyor = conveyorBelt - startpos;
+
+	matrix.drawTriangle(tempConveyor + 2, 2, tempConveyor + 3, 1, tempConveyor + 3, 2, col);
+	matrix.drawRect(tempConveyor + 1, 3, 6, 2, col);
+	matrix.drawTriangle(tempConveyor + 2, 5, tempConveyor + 3, 5, tempConveyor + 3, 6, col);
+}
+
+void sunIcon(int startPos, uint16_t col)
+{
+	int tempConveyor = conveyorBelt - startPos;
+
+	matrix.drawRect(tempConveyor + 1, 1, 6, 6, col);
+	matrix.drawRect(tempConveyor + 3, 2, 3, 3, col);
 }

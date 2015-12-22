@@ -370,18 +370,24 @@ public:
 
 	int posList;
 	int posActual;
-	void(*f)(int);
+	void(*f)(int, uint16_t);
 	void(*f2)();
 	eState state;
 	bool normalCase;
+	uint16_t col;
 
-	MenuContainer(int _pos, void(*_f)(int), eState _state)
+	MenuContainer(int _pos, void(*_f)(int, uint16_t), eState _state)
 	{
 		pos = posList;
 		posActual = _pos * 12;
 		f = _f;
 		state = _state;
 		normalCase = true;
+
+		if (pos % 2 == 0)
+			col = colors[displayCol1];
+		else
+			col = colors[displayCol2];
 	}
 
 	MenuContainer(int _pos, void(*_f)(), eState _state)
@@ -393,15 +399,13 @@ public:
 		normalCase = false;
 	}
 
-
 	void Update()
 	{
 		if (normalCase)
-			(*f)(posActual);
+			(*f)(posActual, col);
 		else
 			(*f2)();
 	}
-
 };
 
 void loop()
@@ -449,7 +453,7 @@ void loop()
 			UpdateTime();
 			menu();
 
-			if (buttonPressed())			
+			if (buttonPressed())
 				menuPageChange();
 		}
 		break;
@@ -463,7 +467,7 @@ void loop()
 
 		if (buttonPressed())
 			oke();
-		
+
 		//Note: Delay is in function
 	}
 	break;
@@ -880,30 +884,6 @@ int deltaTime4()
 	deltaTime = millis() - tempTimer4;
 	tempTimer4 = millis();
 	return deltaTime;
-}
-
-int backMove = 0;
-void backIcon(int startpos)
-{
-	/*
-	timer3 += deltaTime3();
-
-	if (timer3 > 500)
-	{
-	timer3 = 0;
-	backMove--;
-	}
-	*/
-
-	if (backMove < -1)
-		backMove = 0;
-
-	//int tempConveyor = conveyorBelt - 24;
-	int tempConveyor = conveyorBelt - startpos;
-
-	matrix.drawTriangle(tempConveyor + backMove + 2, 2, tempConveyor + backMove + 3, 1, tempConveyor + backMove + 3, 2, colors[displayCol2]);
-	matrix.drawRect(tempConveyor + backMove + 1, 3, 6, 2, colors[displayCol2]);
-	matrix.drawTriangle(tempConveyor + backMove + 2, 5, tempConveyor + backMove + 3, 5, tempConveyor + backMove + 3, 6, colors[displayCol2]);
 }
 
 void snake()
