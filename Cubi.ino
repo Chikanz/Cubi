@@ -191,64 +191,10 @@ float targetVolume = 1;
 float volume = 0;
 int fadeTimer = 0;
 
+int sec2 = 1;
+int sec3;
+
 //Compiler didn't like it when class was moved to another place, temp fix prob
-class NumConveyor
-{
-	int belt, target;
-	int ymod = 0;
-	int speed;
-
-	uint16_t col;
-
-	long timer;
-
-	int velocity;
-
-public:
-
-	void Update(int numTarget, int x, int speed, uint16_t colour)
-	{
-		target = numTarget * 11;
-
-		num0Big(x, 0 - ymod, colour);
-		num1Big(x, 11 - ymod, colour);
-		num2Big(x, 22 - ymod, colour);
-		num3Big(x, 33 - ymod, colour);
-		num4Big(x, 44 - ymod, colour);
-		num5Big(x, 55 - ymod, colour);
-		num6Big(x, 66 - ymod, colour);
-		num7Big(x, 77 - ymod, colour);
-		num8Big(x, 88 - ymod, colour);
-		num9Big(x, 99 - ymod, colour);
-
-		timer += 51;
-
-		if (timer > speed)
-		{
-			if (belt != target)
-			{
-				if (belt < target)
-					belt++;
-
-				if (belt > target)
-					belt--;
-			}
-			timer = 0;
-		}
-
-		ymod = belt;
-
-		Serial.print("x");
-		Serial.println(x);
-
-		Serial.print("ymod");
-		Serial.println(ymod);
-
-		Serial.print("belt");
-		Serial.println(belt);
-		Serial.println("--------");
-	}
-};
 
 //Should put this in a list ayy
 NumConveyor numConvey1;
@@ -337,6 +283,40 @@ int fakeTime = 0;
 
 bool redded = false;
 int brightnessGuage = 2;
+
+void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
+{
+	target = numTarget * 11;
+
+	num0Big(x, 0 - ymod, colour);
+	num1Big(x, 11 - ymod, colour);
+	num2Big(x, 22 - ymod, colour);
+	num3Big(x, 33 - ymod, colour);
+	num4Big(x, 44 - ymod, colour);
+	num5Big(x, 55 - ymod, colour);
+	num6Big(x, 66 - ymod, colour);
+	num7Big(x, 77 - ymod, colour);
+	num8Big(x, 88 - ymod, colour);
+	num9Big(x, 99 - ymod, colour);
+
+	timer += 51;
+
+	if (timer > speed)
+	{
+		if (belt != target)
+		{
+			if (belt < target)
+				belt++;
+
+			if (belt > target)
+				belt--;
+		}
+		timer = 0;
+	}
+
+	ymod = belt;
+}
+
 //
 
 enum eState
@@ -359,7 +339,7 @@ enum eState
 //
 ///
 ////
-eState State = Main;
+eState State = DisplayTest;
 ////
 ///
 //
@@ -408,6 +388,24 @@ public:
 	}
 };
 
+//Teeeemp
+int cursorPos;
+int lastCursorPos;
+bool onOff[] =
+{
+false, //Not used
+false,
+false,
+false,
+false,
+false,
+false  //Not used
+};
+
+//
+
+HrMn napMn;
+
 void loop()
 {
 	matrix.fillScreen(0);
@@ -415,17 +413,8 @@ void loop()
 	fixedLight();
 	SetLight();
 
-	if (Serial.available() > 0)
-	{
-		time_t t = processSyncMessage();
-		if (t != 0) {
-			Teensy3Clock.set(t); // set the RTC
-			setTime(t);
-		}
-	}
-
 	//Alarm
-	if (AlarmisSet && State != Alarm && realHr == AlarmTime[0] && mn == AlarmTime[1] && sec == 0)
+	if (AlarmisSet && State != Alarm && hour() == AlarmTime[0] && minute() == AlarmTime[1] && second() == 0)
 	{
 		State = Alarm;
 		textCursor = 0;
@@ -502,7 +491,6 @@ void loop()
 
 		if (buttonPressed())
 		{
-			canPress = false;
 			AlarmPageChange();
 		}
 
@@ -562,6 +550,56 @@ void loop()
 
 	case DisplayTest:
 	{
+		napMn = TimeSetReturn(true);
+
+		oke();
+
+
+		//Brightness Profile
+		/*
+		if (cursorPos >= 1 && cursorPos <= 6)
+			cursorPos = ReadRotary(cursorPos);
+		else
+			cursorPos = force(cursorPos, 1, 6);		
+
+		if (cursorPos != lastCursorPos)
+		{
+			sec2 = 1;
+			sec3 = 0;
+			lastCursorPos = cursorPos;
+		}
+
+		if (buttonPressed())
+		{
+			if (onOff[cursorPos])
+			{
+				onOff[cursorPos] = false;
+			}
+			else
+			{
+				onOff[cursorPos] = true;
+			}
+		}
+
+		//Draw
+		for (int i = 1; i < 7; i++)
+		{
+			if (onOff[i])
+			{
+				matrix.drawPixel(i, 7, colors[1]);
+			}
+			else
+			{
+				matrix.drawPixel(i, 7, colors[6]);
+			}
+		}
+
+		if(!onHalfSecond())
+			matrix.drawPixel(cursorPos, 7, matrix.Color(0, 0, 0));
+
+		delay(100);
+		*/
+
 	}
 	break;
 
@@ -729,14 +767,12 @@ void oke()
 }
 
 //Not really on half second, but makes a cool blink effect
-int sec2 = 1;
 boolean onHalfSecond()
 {
-	//rtc.readTime(&rtcTime);
-	//int secs = second()
 	sec2++;
+	sec3 += second();
 	//Serial.println(secs);
-	if (second() % 2 == 0 && sec2 % 2 == 0)
+	if (sec3 % 2 == 0 && sec2 % 2 == 0)
 	{
 		return false;
 	}

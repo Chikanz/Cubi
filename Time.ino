@@ -278,7 +278,7 @@ int tempNumToSet;
 void TimeSet()
 {
 	HrMn NewTime;
-	NewTime = TimeSetReturn();
+	NewTime = TimeSetReturn(false);
 
 	setTime(
 		NewTime.Hr,
@@ -293,38 +293,61 @@ void TimeSet()
 
 	if (hour() > 7 && hour() < 20)
 		unRedColours();
-	
+
 	oke();
 }
 
-HrMn TimeSetReturn()
+HrMn TimeSetReturn(bool justMins)
 {
-	int b = 0;
-
-	if (buttonPressed())
+	while (1 < 2)
 	{
-		pos++;
-		canPress = false;
-	}
+		matrix.fillScreen(0);
 
-	switch (pos)
-	{
-	case 0:
-	{
-		int a = 2;
-		int b = 0;
+		if (buttonPressed())
+			pos++;
 
-		if (numToSet >= b && numToSet <= a)
-			numToSet = ReadRotary(numToSet);
-		else
-			numToSet = force(numToSet, b, a);
-	}
-	break;
+		switch (pos)
+		{
+		case 0:
+		{
+			int a = 2;
+			int b = 0;
 
-	case 1:
-		if (time[0] == 2)
+			if (!justMins)
+				a = 2;
+			else
+				a = 6;
+
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
+		}
+		break;
+
+		case 1:
 		{
 			int a = 4;
+			int b = 0;
+
+			if (time[0] == 2)
+				a = 4;
+			else
+				a = 9;
+
+			if (justMins)
+				a = 9;
+
+			if (numToSet >= b && numToSet <= a)
+				numToSet = ReadRotary(numToSet);
+			else
+				numToSet = force(numToSet, b, a);
+		}
+		break;
+
+		case 2:
+		{
+			int a = 5;
 			int b = 0;
 
 			if (numToSet >= b && numToSet <= a)
@@ -332,7 +355,9 @@ HrMn TimeSetReturn()
 			else
 				numToSet = force(numToSet, b, a);
 		}
-		else
+		break;
+
+		case 3:
 		{
 			int a = 9;
 			int b = 0;
@@ -343,63 +368,70 @@ HrMn TimeSetReturn()
 				numToSet = force(numToSet, b, a);
 		}
 		break;
-
-	case 2:
-	{
-		int a = 5;
-		int b = 0;
-
-		if (numToSet >= b && numToSet <= a)
-			numToSet = ReadRotary(numToSet);
-		else
-			numToSet = force(numToSet, b, a);
-	}
-	break;
-
-	case 3:
-	{
-		int a = 9;
-		int b = 0;
-
-		if (numToSet >= b && numToSet <= a)
-			numToSet = ReadRotary(numToSet);
-		else
-			numToSet = force(numToSet, b, a);
-	}
-	break;
-	}
-
-	time[pos] = numToSet;
-
-	//DisplayCurrentTime(time[0], time[1], time[2], time[3], true, pos);
-
-	setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
-	setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
-	setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
-	setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
-
-	if (pos >= 4)
-	{
-		for (int i = 0; i <= 4; i++)
-		{
-			time[i] = 0;
 		}
 
-		pos = 0;
-		HrMn r;
+		time[pos] = numToSet;
 
-		String hrr1 = String(time[0]);
-		String hrr2 = String(time[1]);
-		String mnn1 = String(time[2]);
-		String mnn2 = String(time[3]);
+		if (justMins)
+		{
+			setConvey3.Update(time[0], 2, 300, colors[displayCol1]);
+			setConvey4.Update(time[1], 4, 400, colors[displayCol2]);
+		}
+		else
+		{
+			setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
+			setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
+			setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
+			setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
+		}
 
-		String Newhr = String(hrr1 + hrr2);
-		String Newmn = String(mnn1 + mnn2);
+		if (pos >= 4 && !justMins)
+		{
+			//Todo reset conveyor target
 
-		r.Hr = Newhr.toInt();
-		r.Mn = Newmn.toInt();
+			pos = 0;
+			HrMn r;
 
-		return r;
+			String hrr1 = String(time[0]);
+			String hrr2 = String(time[1]);
+			String mnn1 = String(time[2]);
+			String mnn2 = String(time[3]);
+
+			String Newhr = String(hrr1 + hrr2);
+			String Newmn = String(mnn1 + mnn2);
+
+			r.Hr = Newhr.toInt();
+			r.Mn = Newmn.toInt();
+
+			for (int i = 0; i <= 4; i++)
+				time[i] = 0;
+
+			return r;
+		}
+
+		if (pos >= 2 && justMins)
+		{
+			//Todo reset conveyor target
+
+			pos = 0;
+			HrMn r;
+
+			String m1 = String(time[0]);
+			String m2 = String(time[1]);
+
+			String Newmn = String(m1 + m2);
+
+			r.Mn = Newmn.toInt();
+
+			for (int i = 0; i <= 4; i++)
+				time[i] = 0;
+
+			return r;
+		}
+
+		matrix.show();
+		if (digitalRead(2) == LOW)
+			canPress = true;
 	}
 }
 

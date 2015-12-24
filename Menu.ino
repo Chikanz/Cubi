@@ -4,18 +4,18 @@ int lastVal = 5;
 int newPos;
 int lastPos = 60;
 int menuSpeed = 50; //Lower is faster
-
 int resetTimer;
 
+//Zac's EZ menu system TM
 //First parameter must be in order
 MenuContainer menuList[] =
 {
 	MenuContainer(0,menuTime,Brightness),
-	MenuContainer(1,colourIcon,ChangeColor),
-	MenuContainer(2,speakerIconMenu,MenuAlarm),
-	MenuContainer(3,timeIcon,TimeSetMode),
-	MenuContainer(4,pirranaMenu,Snake),
-	MenuContainer(5,sunIcon,Main),
+	MenuContainer(1,speakerIconMenu,MenuAlarm),
+	MenuContainer(2,colourIcon,ChangeColor),
+	MenuContainer(3,pirranaMenu,Snake),
+	MenuContainer(4,sunIcon,BrightnessProfile),
+	MenuContainer(5,timeIcon,TimeSetMode),
 	MenuContainer(6,backIcon,Main),
 };
 

@@ -75,15 +75,13 @@ void AlarmPageChange()
 	case 0:
 		AlarmisSet = false;
 		EEPROM.write(5, false);
-		State = Main;
-		matrix.fillScreen(0);
+		oke();
 		break;
 
 	case 1:
 		Serial.println("Setting Alarm");
 		State = SetAlarm;
 		AlarmisSet = true;
-		matrix.fillScreen(0);
 		break;
 	}
 }
@@ -91,7 +89,7 @@ void AlarmPageChange()
 void AlarmSet()
 {
 	HrMn alarm;
-	alarm = TimeSetReturn();
+	alarm = TimeSetReturn(false);
 
 	AlarmTime[0] = alarm.Hr;
 	AlarmTime[1] = alarm.Mn;
@@ -99,6 +97,7 @@ void AlarmSet()
 	EEPROM.write(3, AlarmTime[0]);
 	EEPROM.write(4, AlarmTime[1]);
 	EEPROM.write(5, true);
-
+	//AlarmisSet = true;
+	//matrix.drawPixel (0, 0, Red);
 	oke();
 }

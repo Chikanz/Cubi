@@ -96,7 +96,6 @@ void displayNum(int num, int x, int y, uint16_t col, bool big)
 	}
 }
 
-
 #pragma region	Small
 void num0(int x, int y, uint16_t col)
 {
@@ -568,5 +567,5 @@ void sunIcon(int startPos, uint16_t col)
 	int tempConveyor = conveyorBelt - startPos;
 
 	matrix.drawRect(tempConveyor + 1, 1, 6, 6, col);
-	matrix.drawRect(tempConveyor + 3, 2, 3, 3, col);
+	matrix.fillRect(tempConveyor + 3, 2, 3, 3, col);
 }
