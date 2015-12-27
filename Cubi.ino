@@ -64,16 +64,16 @@ int displayCol2 = 3;
 uint16_t colors[] =
 {
 	matrix.Color(0, 0, 0),
-	Green,
-	LightGreen,
-	Yellow,
-	LightOrange,
-	Orange,
-	Red,
-	Purple,
-	Blue,
-	Cyan,
-	White,
+	Green,					//1
+	LightGreen,				//2
+	Yellow,					//3
+	LightOrange,			//4
+	Orange,					//5
+	Red,					//6
+	Purple,					//7
+	Blue,					//8
+	Cyan,					//9
+	White,					//10
 };
 
 uint16_t colorsStore[] =
@@ -284,6 +284,9 @@ int fakeTime = 0;
 bool redded = false;
 int brightnessGuage = 2;
 
+HrMn napTimer;
+bool napOn = false;
+
 void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
 {
 	target = numTarget * 11;
@@ -321,25 +324,32 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
 
 enum eState
 {
-	TimeSetMode,
 	Main,
-	SetAlarm,
-	MenuAlarm,
+	Alarm,
+
+	AlarmMenu,
+
 	Brightness,
 	BrightnessProfile,
-	Alarm,
-	ChangeColor,
-	DisplayTest,
-	Oke,
+	
 	Snake,
 	SnakeGameOver,
+
+	TimeSetMode,
+	NapSet,
+	SetAlarm,
+	ChangeColor,
+
+	Oke,
+
+	DisplayTest,
 	StaticDisplay,
 };
 
 //
 ///
 ////
-eState State = DisplayTest;
+eState State = Main;
 ////
 ///
 //
@@ -351,13 +361,19 @@ public:
 	int posList;
 	int posActual;
 	void(*f)(int, uint16_t);
-	void(*f2)();
+	void(*f2)(int, uint16_t, uint16_t);
+	void(*f3)();
 	eState state;
 	bool normalCase;
-	uint16_t col;
+	uint16_t col1;
+	uint16_t col2;
+
+	int type;
 
 	MenuContainer(int _pos, void(*_f)(int, uint16_t), eState _state)
 	{
+		type = 1; //Single Colour
+
 		pos = posList;
 		posActual = _pos * 12;
 		f = _f;
@@ -365,26 +381,61 @@ public:
 		normalCase = true;
 
 		if (pos % 2 == 0)
-			col = colors[displayCol1];
+			col1 = colors[displayCol1];
 		else
-			col = colors[displayCol2];
+			col1 = colors[displayCol2];
+	}
+
+	MenuContainer(int _pos, void(*_f)(int, uint16_t, uint16_t), eState _state)
+	{
+		type = 2; //Bi-Colour
+
+		pos = posList;
+		posActual = _pos * 12;
+		f2 = _f;
+		state = _state;
+		normalCase = true;
+
+		if (pos % 2 == 0)
+		{
+			col1 = colors[displayCol1];
+			col2 = colors[displayCol2];
+		}
+		else
+		{
+			col1 = colors[displayCol2];
+			col2 = colors[displayCol1];
+		}
 	}
 
 	MenuContainer(int _pos, void(*_f)(), eState _state)
 	{
+		type = 3; //Time
+
 		pos = posList;
 		posActual = _pos * 12;
-		f2 = _f;
+		f3 = _f;
 		state = _state;
 		normalCase = false;
 	}
 
 	void Update()
 	{
-		if (normalCase)
-			(*f)(posActual, col);
-		else
-			(*f2)();
+
+		switch (type)
+		{
+		case 1:
+			(*f)(posActual, col1);
+			break;
+
+		case 2:
+			(*f2)(posActual, col1, col2);
+			break;
+
+		case 3:
+			(*f3)();
+			break;
+		}
 	}
 };
 
@@ -404,7 +455,8 @@ false  //Not used
 
 //
 
-HrMn napMn;
+int pastSec;
+int napTimerSeconds;
 
 void loop()
 {
@@ -420,6 +472,24 @@ void loop()
 		textCursor = 0;
 		matrix.fillScreen(0);
 		targetBrightness = 20;
+	}
+
+	//Nap
+	if (napOn)
+	{
+		if (napTimerSeconds == 0)
+		{
+			State = Alarm;
+			napOn = false;
+		}
+		else
+		{
+			if (second() != pastSec)
+			{
+				pastSec = second();
+				napTimerSeconds -= 1;
+			}
+		}
 	}
 
 	switch (State)
@@ -485,9 +555,9 @@ void loop()
 	}
 	break;
 
-	case MenuAlarm:
+	case AlarmMenu:
 	{
-		AlarmMenu();
+		alarmMenu();
 
 		if (buttonPressed())
 		{
@@ -550,11 +620,6 @@ void loop()
 
 	case DisplayTest:
 	{
-		napMn = TimeSetReturn(true);
-
-		oke();
-
-
 		//Brightness Profile
 		/*
 		if (cursorPos >= 1 && cursorPos <= 6)
@@ -606,6 +671,16 @@ void loop()
 	case StaticDisplay:
 	{
 		staticDisplay();
+	}
+	break;
+
+	case NapSet:
+	{
+		napTimer = TimeSetReturn(true);
+		napOn = true;
+		napTimerSeconds = napTimer.Mn * 60;
+		pastSec = second();
+		oke();
 	}
 	break;
 	}
