@@ -11,10 +11,10 @@ int resetTimer;
 MenuContainer menuList[] =
 {
 	MenuContainer(0,menuTime,Brightness),
-	MenuContainer(1,speakerIconMenu,MenuAlarm),
+	MenuContainer(1,speakerIconMenu,AlarmMenu),
 	MenuContainer(2,colourIcon,ChangeColor),
 	MenuContainer(3,pirranaMenu,Snake),
-	MenuContainer(4,sunIcon,BrightnessProfile),
+	MenuContainer(4,bedIcon,NapSet),
 	MenuContainer(5,timeIcon,TimeSetMode),
 	MenuContainer(6,backIcon,Main),
 };
