@@ -69,27 +69,9 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], true);
 		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], true);
 		displayNum(mn2, 6 + xmod, 0, colors[displayCol2], true);
-		Serial.println("ayyyyy");
 	}
 	else
 	{
-		/*
-		if (hourBelow10)
-		{
-			//displayNum(hr1, 1, 0, colors[displayCol1]);
-			displayNum(hr2, 1 + xmod, 0, colors[displayCol2], true);
-			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
-			displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
-		}
-		else
-		{
-			displayNum(hr1, 0 + xmod, 0, colors[displayCol1], true);
-			displayNum(hr2, 2 + xmod, 0, colors[displayCol2], true);
-			displayNum(mn1, 4 + xmod, 1, colors[displayCol1], true);
-			displayNum(mn2, 6 + xmod, 1, colors[displayCol2], true);
-		}
-		*/
-
 		if (hourBelow10)
 		{
 			minuteAlert(displayCol1, xmod);
@@ -106,14 +88,6 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2]);
 			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
 			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
-
-			if (State == Brightness)
-			{
-				displayNum(hr1, 0, 0, colors[displayCol1], true);
-				displayNum(hr2, 2, 0, colors[displayCol2], true);
-				displayNum(mn1, 4, 0, colors[displayCol1], true);
-				displayNum(mn2, 6, 0, colors[displayCol2], true);
-			}
 		}
 	}
 }
@@ -437,16 +411,8 @@ HrMn TimeSetReturn(bool justMins)
 
 void minuteAlert(int col, int xmod)
 {
-	//Serial.println(sec % 2);
 	if (!(sec % 2))
-	{
 		matrix.drawPixel(0 + xmod, 0, colors[col]);
-	}
-
-	if (sec == 0)
-	{
-		matrix.drawPixel(0 + xmod, 0, matrix.Color(0, 255, 200));
-	}
 }
 
 //Teensy RTC Stuff
