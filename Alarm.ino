@@ -47,7 +47,7 @@ void PlayAlarm()
 }
 
 int alarmMenuPage = 0;
-void AlarmMenu()
+void alarmMenu()
 {
 	alarmMenuPage = ReadRotary(alarmMenuPage, 0, 1);
 
