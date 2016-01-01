@@ -1,5 +1,5 @@
 //Cubi, a playful LED powered alarm clock.
-//Zac Lucarelli 2k15
+//Zac Lucarelli 2k16
 
 /*
 EEPROM Memory allocation
@@ -23,6 +23,7 @@ EEPROM Memory allocation
 #include <SPI.h>
 #include <SD.h>
 #include <LinkedList.h>
+
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
@@ -33,8 +34,8 @@ AudioOutputI2S           i2s1;           //xy=604,246
 AudioConnection          patchCord1(playWav1, 0, mixer1, 0);
 AudioConnection          patchCord2(mixer1, 0, i2s1, 0);
 AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
-AudioControlSGTL5000     sgtl5000_1;     //xy=254,324
-										 // GUItool: end automatically generated code
+AudioControlSGTL5000     sgtl5000_1;    //xy=254,324
+// GUItool: end automatically generated code
 
 Encoder rotary(5, 4);  //Rotary Encoder
 
@@ -98,8 +99,6 @@ long oldPosition = -999;
 
 int hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2;
 
-#define melodyPin 3
-
 int temphrDisplay1, temphrDisplay2, tempmnDisplay1, tempmnDisplay2;
 
 boolean HourMode24 = false;
@@ -107,30 +106,19 @@ boolean HourMode24 = false;
 //TimeSet Stuff
 int selectedNum = 0;
 int val;
-
-int hr1temp;
-int hr2temp;
-
-int mn1temp;
-int mn2temp;
-
 int numToSet;
-int pos = 0;
+int NumSetPos = 0;
 
 boolean canPress = true;
 
 bool AlarmisSet = false;
+
 int AlarmTime[] = { 0, 0 };
-
-int time[] = { hr1temp, hr2temp, mn1temp, mn2temp };
-
-int realHr;
+int time[] = { 0, 0, 0, 0 };
 
 bool bigMode = true;
 
 int ColorToChoose = 1;
-
-int pirranaPos = 46;
 
 int textCursor = 8;
 long Rpos = -999;
@@ -140,15 +128,7 @@ int moveNum = 3;
 int targetBrightness = 20;
 int currentBrightness = 0;
 
-//bool displayoff = true;
-bool display = true;
-int displayOnOff = 0;
-
-//int nightLevel = 0;
 int daylevel = 20;
-
-//bool dimTrigger = false;
-int dimtime = 0;
 
 //Snake
 LinkedList<int> snakeBodyX = LinkedList<int>();
@@ -178,6 +158,7 @@ int heady;
 int timerTemp;
 bool mouth;
 
+//File count
 File root;
 int fileCount;
 
@@ -193,8 +174,6 @@ int fadeTimer = 0;
 
 int sec2 = 1;
 int sec3;
-
-//Compiler didn't like it when class was moved to another place, temp fix prob
 
 //Should put this in a list ayy
 NumConveyor numConvey1;
@@ -213,7 +192,7 @@ void setup()
 	matrix.setTextWrap(false);
 
 	matrix.setBrightness(50);
-	Serial.begin(9600);
+	Serial.begin(115200);
 	pinMode(2, INPUT);  //Buton
 	pinMode(3, OUTPUT); //Transistor
 	pinMode(12, OUTPUT);
@@ -287,10 +266,11 @@ int brightnessGuage = 2;
 HrMn napTimer;
 bool napOn = false;
 
-void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
+void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efontSize size)
 {
 	target = numTarget * 11;
 
+	/*
 	num0Big(x, 0 - ymod, colour);
 	num1Big(x, 11 - ymod, colour);
 	num2Big(x, 22 - ymod, colour);
@@ -301,6 +281,10 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
 	num7Big(x, 77 - ymod, colour);
 	num8Big(x, 88 - ymod, colour);
 	num9Big(x, 99 - ymod, colour);
+	*/
+
+	for (int i = 0; i < 10; i++)
+		displayNum(i, x, i*11 - ymod, colour, size);
 
 	timer += 51;
 
@@ -319,32 +303,6 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour)
 
 	ymod = belt;
 }
-
-//
-
-enum eState
-{
-	Main,
-	Alarm,
-
-	AlarmMenu,
-
-	Brightness,
-	BrightnessProfile,
-	
-	Snake,
-	SnakeGameOver,
-
-	TimeSetMode,
-	NapSet,
-	SetAlarm,
-	ChangeColor,
-
-	Oke,
-
-	DisplayTest,
-	StaticDisplay,
-};
 
 //
 ///
@@ -374,13 +332,13 @@ public:
 	{
 		type = 1; //Single Colour
 
-		pos = posList;
+		posList = _pos;
 		posActual = _pos * 12;
 		f = _f;
 		state = _state;
 		normalCase = true;
 
-		if (pos % 2 == 0)
+		if (posList % 2 == 0)
 			col1 = colors[displayCol1];
 		else
 			col1 = colors[displayCol2];
@@ -390,13 +348,13 @@ public:
 	{
 		type = 2; //Bi-Colour
 
-		pos = posList;
+		posList = _pos;
 		posActual = _pos * 12;
 		f2 = _f;
 		state = _state;
 		normalCase = true;
 
-		if (pos % 2 == 0)
+		if (posList % 2 == 0)
 		{
 			col1 = colors[displayCol1];
 			col2 = colors[displayCol2];
@@ -412,7 +370,7 @@ public:
 	{
 		type = 3; //Time
 
-		pos = posList;
+		posList = _pos;
 		posActual = _pos * 12;
 		f3 = _f;
 		state = _state;
@@ -440,17 +398,26 @@ public:
 };
 
 //Teeeemp
-int cursorPos;
+int cursorPos = 1;
 int lastCursorPos;
 bool onOff[] =
 {
-false, //Not used
 false,
 false,
 false,
 false,
 false,
-false  //Not used
+false,
+};
+
+HrMn brightnessTimes[]
+{
+	{12,34},
+	{56,78},
+	{9,03},
+	{3,4},
+	{4,5},
+	{5,6},
 };
 
 //
@@ -599,8 +566,8 @@ void loop()
 
 	case SnakeGameOver:
 	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], true);
-		displayNum(score % 10, 4, 0, colors[displayCol2], true);
+		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], Big);
+		displayNum(score % 10, 4, 0, colors[displayCol2], Big);
 
 		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
 		matrix.drawPixel(7, 7, colors[displayCol1]);
@@ -621,49 +588,37 @@ void loop()
 	case DisplayTest:
 	{
 		//Brightness Profile
-		/*
-		if (cursorPos >= 1 && cursorPos <= 6)
+		if (cursorPos > 0 && cursorPos < 7)
 			cursorPos = ReadRotary(cursorPos);
 		else
 			cursorPos = force(cursorPos, 1, 6);		
 
-		if (cursorPos != lastCursorPos)
-		{
-			sec2 = 1;
-			sec3 = 0;
-			lastCursorPos = cursorPos;
-		}
-
 		if (buttonPressed())
 		{
 			if (onOff[cursorPos])
-			{
 				onOff[cursorPos] = false;
-			}
 			else
-			{
-				onOff[cursorPos] = true;
-			}
+				onOff[cursorPos] = true;		
 		}
 
-		//Draw
+		//DisplayTime(brightnessTimes[cursorPos]);
+		displayTimeSimple(brightnessTimes[cursorPos], Med);
+
 		for (int i = 1; i < 7; i++)
 		{
 			if (onOff[i])
-			{
 				matrix.drawPixel(i, 7, colors[1]);
-			}
 			else
-			{
 				matrix.drawPixel(i, 7, colors[6]);
-			}
 		}
 
-		if(!onHalfSecond())
+		if(onHalfSecond())
 			matrix.drawPixel(cursorPos, 7, matrix.Color(0, 0, 0));
 
-		delay(100);
-		*/
+		matrix.drawPixel(0, 7, 0);
+		matrix.drawPixel(7, 7, 0);
+
+		delay(50);
 
 	}
 	break;
@@ -769,7 +724,8 @@ int ColPos = 0;
 
 void changeColor()
 {
-	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
+	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
+	menuTime();
 
 	//Code will continually think the rotary encoder is turning left unless serial.print or delay(1) is used. Wtf.
 	Serial.println(ColorToChoose);
@@ -842,17 +798,22 @@ void oke()
 }
 
 //Not really on half second, but makes a cool blink effect
+unsigned long previousMillis;
+bool halfSecondBlink;
 boolean onHalfSecond()
 {
-	sec2++;
-	sec3 += second();
-	//Serial.println(secs);
-	if (sec3 % 2 == 0 && sec2 % 2 == 0)
+	unsigned long currentMillis = millis();
+	if (currentMillis - previousMillis >= 500)
 	{
-		return false;
+		previousMillis = currentMillis;
+
+		if (halfSecondBlink)
+			halfSecondBlink = false;
+		else
+			halfSecondBlink = true;
+
+		return halfSecondBlink;
 	}
-	else
-		return true;
 }
 
 void playFile(String filename)
