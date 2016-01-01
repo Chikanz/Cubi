@@ -13,23 +13,23 @@ void staticDisplay()
 	switch (fakeTime)
 	{
 	case 0:
-		DisplayCurrentTime(0, 4, 2, 0, false, 0);
+		DisplayTime(0, 4, 2, 0, Big);
 		break;
 
 	case 1:
-		DisplayCurrentTime(1, 1, 3, 7, false, 0);
+		DisplayTime(1, 1, 3, 7, Big);
 		break;
 
 	case 2:
-		DisplayCurrentTime(1, 3, 3, 7, false, 0);
+		DisplayTime(1, 3, 3, 7, Big);
 		break;
 
 	case 3:
-		DisplayCurrentTime(0, 2, 4, 7, false, 0);
+		DisplayTime(0, 2, 4, 7, Big);
 		break;
 
 	case 4:
-		DisplayCurrentTime(1, 2, 3, 1, false, 0);
+		DisplayTime(1, 2, 3, 1, Big);
 		break;
 
 	}
