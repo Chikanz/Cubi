@@ -12,9 +12,9 @@ MenuContainer menuList[] =
 {
 	MenuContainer(0,menuTime,Brightness),
 	MenuContainer(1,speakerIconMenu,AlarmMenu),
-	MenuContainer(2,colourIcon,ChangeColor),
-	MenuContainer(3,pirranaMenu,Snake),
-	MenuContainer(4,bedIcon,NapSet),
+	MenuContainer(2,bedIcon,NapSet),
+	MenuContainer(3,colourIcon,ChangeColor),
+	MenuContainer(4,pirranaMenu,Snake),
 	MenuContainer(5,timeIcon,TimeSetMode),
 	MenuContainer(6,backIcon,Main),
 };
