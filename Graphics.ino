@@ -1,10 +1,11 @@
 //Graphics functions like icons and numbers
 #pragma region	numberzzz
 
-void displayNum(int num, int x, int y, uint16_t col, bool big)
+void displayNum(int num, int x, int y, uint16_t col, efontSize size)
 {
-	if (big)
+	switch (size)
 	{
+	case Big:
 		switch (num)
 		{
 		case 1:
@@ -47,9 +48,54 @@ void displayNum(int num, int x, int y, uint16_t col, bool big)
 			num0Big(x, y, col);
 			break;
 		}
-	}
-	else
-	{
+		break;
+
+	case Med:
+		switch (num)
+		{
+		case 1:
+			num1Med(x, y, col);
+			break;
+
+		case 2:
+			num2Med(x, y, col);
+			break;
+
+		case 3:
+			num3Med(x, y, col);
+			break;
+
+		case 4:
+			num4Med(x, y, col);
+			break;
+
+		case 5:
+			num5Med(x, y, col);
+			break;
+
+		case 6:
+			num6Med(x, y, col);
+			break;
+
+		case 7:
+			num7Med(x, y, col);
+			break;
+
+		case 8:
+			num8Med(x, y, col);
+			break;
+
+		case 9:
+			num9Med(x, y, col);
+			break;
+
+		case 0:
+			num0Med(x, y, col);
+			break;
+		}
+		break;
+
+	case Small:
 		switch (num)
 		{
 		case 1:
@@ -92,6 +138,7 @@ void displayNum(int num, int x, int y, uint16_t col, bool big)
 			num0(x, y, col);
 			break;
 		}
+		break;
 	}
 }
 
@@ -160,6 +207,76 @@ void num9(int x, int y, uint16_t col)
 {
 	matrix.drawLine(1 + x, 0 + y, 1 + x, 4 + y, col);
 	matrix.drawLine(0 + x, 0 + y, 0 + x, 2 + y, col);
+}
+#pragma endregion
+
+#pragma region	Med
+void num0Med(int x, int y, uint16_t col)
+{
+	matrix.drawRect(0 + x, 0 + y, 2, 6, col);
+}
+
+void num1Med(int x, int y, uint16_t col)
+{
+	if (x > 4)
+		matrix.drawLine(1 + x, 0 + y, 1 + x, 6 + y, col);
+	else
+		matrix.drawLine(0 + x, 0 + y, 0 + x, 6 + y, col);
+}
+
+void num2Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
+	matrix.drawLine(0 + x, 4 + y, 0 + x, 6 + y, col);
+	matrix.drawPixel(1 + x, 6 + y, col);
+}
+
+void num3Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 6 + y, col);
+	matrix.drawLine(0 + x, 3 + y, 0 + x, 3 + y, col);
+	matrix.drawLine(0 + x, 6 + y, 1 + x, 6 + y, col);
+}
+
+void num4Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 1 + x, 6 + y, col);
+}
+
+void num5Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 3 + y, col);
+	matrix.drawLine(1 + x, 4 + y, 1 + x, 6 + y, col);
+	matrix.drawPixel(0 + x, 6 + y, col);
+}
+
+void num6Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 6 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 1 + x, 6 + y, col);
+}
+
+void num7Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 6 + y, col);
+	matrix.drawPixel(0 + x, 0 + y, col);
+}
+
+void num8Med(int x, int y, uint16_t col)
+{
+	matrix.drawRect(0 + x, 0 + y, 2, 2, col);
+	matrix.drawRect(0 + x, 3 + y, 2, 4, col);
+}
+
+void num9Med(int x, int y, uint16_t col)
+{
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
 }
 #pragma endregion
 
@@ -309,7 +426,7 @@ void colourIcon(int startPos, uint16_t col)
 }
 
 int timer2;
-void speakerIconMenu(int startPos, uint16_t col1, uint16_t col2)
+void speakerIconMenu(int startPos, uint16_t col2, uint16_t col1)
 {
 	if (true)
 	{
@@ -511,7 +628,7 @@ void backIcon(int startpos, uint16_t col)
 		backMove--;
 	}
 
-  	if (backMove < -1)
+	if (backMove < -1)
 		backMove = 0;
 
 	int tempConveyor = conveyorBelt - startpos;
