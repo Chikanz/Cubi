@@ -1,19 +1,21 @@
-int posOffset = 0;
-int posX[] =
+void DisplayTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 {
-	0,
-	1,
-	0,
-	1,
+	displayTimeInner(hr1, hr2, mn1, mn2, xmod);
+}
 
-	0,
-	2,
-	4,
-	6,
-};
+void DisplayTime(HrMn time)
+{
+	int hr1, hr2, mn1, mn2, xmod;
+	hr1 = time.Hr % 10 % 10;
+	hr2 = time.Hr % 10;
+	
+	mn1 = time.Mn % 10 % 10;
+	mn2 = time.Mn % 10;
+	
+	displayTimeInner(hr1, hr2, mn1, mn2, xmod);
+}
 
-//Normal
-void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
+void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 {
 	if (hr1 == 0)
 	{
@@ -53,22 +55,22 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		{
 			if (mn2 != 1)	//Normal
 			{
-				displayNum(mn1, 3 + xmod, 3, Red, false);
-				displayNum(mn2, 6 + xmod, 3, Red, false);
+				displayNum(mn1, 3 + xmod, 3, Red, Small);
+				displayNum(mn2, 6 + xmod, 3, Red, Small);
 			}
 			else	//Align
 			{
-				displayNum(mn1, 4 + xmod, 3, Red, false);
-				displayNum(mn2, 6 + xmod, 3, Red, false);
+				displayNum(mn1, 4 + xmod, 3, Red, Small);
+				displayNum(mn2, 6 + xmod, 3, Red, Small);
 			}
 		}
 	}
 	else if (colors[1] == matrix.Color(255, 0, 0) && hour() > 0) //If display is redded
 	{
 		//displayNum(hr1, 1, 0, colors[displayCol1]);
-		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], true);
-		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], true);
-		displayNum(mn2, 6 + xmod, 0, colors[displayCol2], true);
+		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], Big);
+		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], Big);
+		displayNum(mn2, 6 + xmod, 0, colors[displayCol2], Big);
 	}
 	else
 	{
@@ -76,137 +78,34 @@ void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 		{
 			minuteAlert(displayCol1, xmod);
 
-			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2]);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1]);
-			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
-
-			Serial.println("1");
+			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2],Big);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1],Big);
+			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2],Big);			
 		}
 		else
 		{
-			numConvey1.Update(hr1, 0 + conveyorBelt, 100, colors[displayCol1]);
-			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2]);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1]);
-			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2]);
+			numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1], Big);
+			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2], Big);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1], Big);
+			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], Big);
 		}
 	}
 }
 
-//Blink
-void DisplayCurrentTime(int hr1, int hr2, int mn1, int mn2, boolean Blink, int blinkpos)
+void displayTimeSimple(HrMn time, efontSize size)
 {
-	posOffset = 4;
-	if (hr1 == 0)
-	{
-		hourBelow10 = true;
-	}
+	int hr1, hr2, mn1, mn2;
 
-	if (hour() > 21 && State == Main)
-	{
-		//Drawing the preset night mode time
+	hr1 = time.Hr % 10 % 10;
+	hr2 = time.Hr % 10;
 
-		//"1"
-		matrix.drawLine(0, 0, 0, 2, Red);
-		//1,2 or 3
-		switch (hr2)
-		{
-		case 0:
-			matrix.drawLine(2, 0, 2, 2, Red);
-			matrix.drawLine(3, 0, 3, 2, Red);
-			break;
+	mn1 = time.Mn % 10 % 10;
+	mn2 = time.Mn % 10;
 
-		case 1:
-			matrix.drawLine(2, 0, 2, 2, Red);
-			break;
-
-		case 2:
-			matrix.drawLine(3, 0, 3, 2, Red);
-			matrix.drawPixel(2, 0, Red);
-			matrix.drawPixel(4, 2, Red);
-			break;
-		}
-
-		if (!hourBelow10)
-		{
-			displayNum(mn1, 2, 4, Red, false);
-			displayNum(mn2, 5, 4, Red, false);
-		}
-	}
-	else
-	{
-		//Normal display
-		if (!Blink)
-		{
-			if (hourBelow10 && bigMode)
-			{
-				//displayNum(hr1, 1, 0, colors[displayCol1]);
-				displayNum(hr2, 1, 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
-			}
-			else
-			{
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
-			}
-		}
-		else
-		{
-			switch (blinkpos)
-			{
-			case 0:
-				if (onHalfSecond())
-					displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				/*
-				else
-				displayNum(hr1, posX[0 + posOffset], 0, colors[0]);
-				*/
-
-				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
-				break;
-
-			case 1:
-				if (onHalfSecond())
-				{
-					displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				}
-				/*
-				else
-				{
-				//Serial.println("off");
-				displayNum(hr2, posX[1 + posOffset], 0, colors[0]);
-				}
-				*/
-
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
-				break;
-
-			case 2:
-				if (onHalfSecond())
-					displayNum(mn1, posX[2 + posOffset], 1, colors[displayCol1], true);
-
-				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(mn2, posX[3 + posOffset], 0, colors[displayCol2], true);
-				break;
-
-			case 3:
-				if (onHalfSecond())
-					displayNum(mn2, posX[3 + posOffset], 1, colors[displayCol2], true);
-
-				displayNum(hr1, posX[0 + posOffset], 0, colors[displayCol1], true);
-				displayNum(hr2, posX[1 + posOffset], 0, colors[displayCol2], true);
-				displayNum(mn1, posX[2 + posOffset], 0, colors[displayCol1], true);
-				break;
-			}
-		}
-	}
+	numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1],size);
+	numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2],size);
+	numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1],size);
+	numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2],size);
 }
 
 void UpdateTime()
@@ -278,9 +177,9 @@ HrMn TimeSetReturn(bool justMins)
 		matrix.fillScreen(0);
 
 		if (buttonPressed())
-			pos++;
+			NumSetPos++;
 
-		switch (pos)
+		switch (NumSetPos)
 		{
 		case 0:
 		{
@@ -344,26 +243,26 @@ HrMn TimeSetReturn(bool justMins)
 		break;
 		}
 
-		time[pos] = numToSet;
+		time[NumSetPos] = numToSet;
 
 		if (justMins)
 		{
-			setConvey3.Update(time[0], 2, 300, colors[displayCol1]);
-			setConvey4.Update(time[1], 4, 400, colors[displayCol2]);
+			setConvey3.Update(time[0], 2, 300, colors[displayCol1], Big);
+			setConvey4.Update(time[1], 4, 400, colors[displayCol2], Big);
 		}
 		else
 		{
-			setConvey1.Update(time[0], 0, 200, colors[displayCol1]);
-			setConvey2.Update(time[1], 2, 250, colors[displayCol2]);
-			setConvey3.Update(time[2], 4, 300, colors[displayCol1]);
-			setConvey4.Update(time[3], 6, 400, colors[displayCol2]);
+			setConvey1.Update(time[0], 0, 200, colors[displayCol1], Big);
+			setConvey2.Update(time[1], 2, 250, colors[displayCol2], Big);
+			setConvey3.Update(time[2], 4, 300, colors[displayCol1], Big);
+			setConvey4.Update(time[3], 6, 400, colors[displayCol2], Big);
 		}
 
-		if (pos >= 4 && !justMins)
+		if (NumSetPos >= 4 && !justMins)
 		{
 			//Todo reset conveyor target
 
-			pos = 0;
+			NumSetPos = 0;
 			HrMn r;
 
 			String hrr1 = String(time[0]);
@@ -383,11 +282,11 @@ HrMn TimeSetReturn(bool justMins)
 			return r;
 		}
 
-		if (pos >= 2 && justMins)
+		if (NumSetPos >= 2 && justMins)
 		{
 			//Todo reset conveyor target
 
-			pos = 0;
+			NumSetPos = 0;
 			HrMn r;
 
 			String m1 = String(time[0]);
@@ -446,5 +345,5 @@ void printDigits(int digits) {
 
 void menuTime()
 {
-	DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+	DisplayTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
 }
