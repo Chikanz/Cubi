@@ -284,7 +284,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 	*/
 
 	for (int i = 0; i < 10; i++)
-		displayNum(i, x, i*11 - ymod, colour, size);
+		displayNum(i, x, i * 11 - ymod, colour, size);
 
 	timer += 51;
 
@@ -307,7 +307,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = Main;
+eState State = DisplayTest;
 ////
 ///
 //
@@ -379,7 +379,6 @@ public:
 
 	void Update()
 	{
-
 		switch (type)
 		{
 		case 1:
@@ -398,26 +397,17 @@ public:
 };
 
 //Teeeemp
-int cursorPos = 1;
-int lastCursorPos;
-bool onOff[] =
-{
-false,
-false,
-false,
-false,
-false,
-false,
-};
+int cursorPos = 0;
 
-HrMn brightnessTimes[]
+BrigtnessContainer BProfile[]
 {
-	{12,34},
-	{56,78},
-	{9,03},
-	{3,4},
-	{4,5},
-	{5,6},
+	{true,{8,0},20},
+	{true,{ 9,0 }, 0},
+	{false,{ 0,0 },0 },
+	{false,{ 0,0 },0 },
+	{false,{ 0,0 },0 },
+	{false,{ 0,0 },0 },
+	{false,{ 0,0 },0 }, //Back button, just in case.
 };
 
 //
@@ -429,7 +419,7 @@ void loop()
 {
 	matrix.fillScreen(0);
 
-	fixedLight();
+	//fixedLight();
 	SetLight();
 
 	//Alarm
@@ -487,14 +477,10 @@ void loop()
 	}
 	break;
 
-	case Brightness:
+	case Brightness: //Note: Delay is in function
 	{
-		BrightnessSelect();
-
-		if (buttonPressed())
-			oke();
-
-		//Note: Delay is in function
+		targetBrightness = BrightnessReturn(false);
+		oke();
 	}
 	break;
 
@@ -587,39 +573,61 @@ void loop()
 
 	case DisplayTest:
 	{
+		Serial.print("Cursor: ");
+		Serial.println(cursorPos);
+
 		//Brightness Profile
-		if (cursorPos > 0 && cursorPos < 7)
+		//Force the cursor pos and get input
+		if (cursorPos >= 0 && cursorPos <= 6)
 			cursorPos = ReadRotary(cursorPos);
 		else
-			cursorPos = force(cursorPos, 1, 6);		
+			cursorPos = force(cursorPos, 0, 6);
 
+		//Button press
 		if (buttonPressed())
 		{
-			if (onOff[cursorPos])
-				onOff[cursorPos] = false;
+			if (cursorPos == 6)
+			{
+				State = Main;
+			}
 			else
-				onOff[cursorPos] = true;		
+			{
+				if (BProfile[cursorPos].active)
+				{
+					BProfile[cursorPos].active = false;
+					BProfile[cursorPos].time = { 0,0 };
+				}
+				else
+				{
+					BProfile[cursorPos].active = true;
+					BProfile[cursorPos].time = TimeSetReturn(false);
+					BProfile[cursorPos].level = BrightnessReturn(false);
+					oke(false);
+				}
+			}
 		}
 
-		//DisplayTime(brightnessTimes[cursorPos]);
-		displayTimeSimple(brightnessTimes[cursorPos], Med);
+		//Display the time above selection
+		if (cursorPos == 6)
+			backIcon(0, colors[displayCol2]);
+		else if (BProfile[cursorPos].active)
+			displayTimeSimple(BProfile[cursorPos].time, Med, false);
 
-		for (int i = 1; i < 7; i++)
+		//Draw Pixels
+		for (int i = 0; i < 6; i++)
 		{
-			if (onOff[i])
-				matrix.drawPixel(i, 7, colors[1]);
+			if (BProfile[i].active)
+				matrix.drawPixel(i + 1, 7, colors[1]);
 			else
-				matrix.drawPixel(i, 7, colors[6]);
+				matrix.drawPixel(i + 1, 7, colors[6]);
 		}
+		matrix.drawPixel(7, 7, colors[displayCol1]);
 
-		if(onHalfSecond())
-			matrix.drawPixel(cursorPos, 7, matrix.Color(0, 0, 0));
-
-		matrix.drawPixel(0, 7, 0);
-		matrix.drawPixel(7, 7, 0);
+		//Create a blink effect
+		if (onHalfSecond())
+			matrix.drawPixel(cursorPos + 1, 7, matrix.Color(0, 0, 0));
 
 		delay(50);
-
 	}
 	break;
 
@@ -724,6 +732,13 @@ int ColPos = 0;
 
 void changeColor()
 {
+	//Check if this works ayyy lmao
+	HrMn t = { hour(),minute() };
+	displayTimeSimple(t, Big, true);
+
+	if (hourBelow10)
+		minuteAlert(displayCol1, 0);
+
 	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
 	menuTime();
 
@@ -796,6 +811,29 @@ void oke()
 	okeX = -7;
 	State = Main;
 }
+
+void oke(bool returnToMain)
+{
+	while (okeX < 0)
+	{
+		matrix.fillScreen(0);
+		delay(50);
+
+		okeX++;
+
+		matrix.drawPixel(2 + okeX, 4, colors[2]);
+		matrix.drawLine(3 + okeX, 5, 5 + okeX, 3, colors[2]);
+
+		matrix.show();
+	}
+
+	delay(1000);
+	okeX = -7;
+	if (returnToMain)
+		State = Main;
+}
+
+
 
 //Not really on half second, but makes a cool blink effect
 unsigned long previousMillis;
