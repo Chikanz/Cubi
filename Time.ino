@@ -6,10 +6,10 @@ void DisplayTime(int hr1, int hr2, int mn1, int mn2, int xmod)
 void DisplayTime(HrMn time)
 {
 	int hr1, hr2, mn1, mn2, xmod;
-	hr1 = time.Hr % 10 % 10;
+	hr1 = time.Hr / 10 % 10;
 	hr2 = time.Hr % 10;
 	
-	mn1 = time.Mn % 10 % 10;
+	mn1 = time.Mn / 10 % 10;
 	mn2 = time.Mn % 10;
 	
 	displayTimeInner(hr1, hr2, mn1, mn2, xmod);
@@ -92,20 +92,31 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 	}
 }
 
-void displayTimeSimple(HrMn time, efontSize size)
+void displayTimeSimple(HrMn time, efontSize size, bool scroll)
 {
 	int hr1, hr2, mn1, mn2;
 
-	hr1 = time.Hr % 10 % 10;
+	hr1 = time.Hr / 10 % 10;
 	hr2 = time.Hr % 10;
 
-	mn1 = time.Mn % 10 % 10;
+	mn1 = time.Mn / 10 % 10;
 	mn2 = time.Mn % 10;
 
-	numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1],size);
-	numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2],size);
-	numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1],size);
-	numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2],size);
+	if (scroll)
+	{
+		numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1], size);
+		numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2], size);
+		numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1], size);
+		numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], size);
+	}
+	else
+	{
+		displayNum(hr2, 2, 0, colors[displayCol2], size);
+		displayNum(hr1, 0, 0, colors[displayCol1], size);
+		displayNum(mn1, 4, 0, colors[displayCol1], size);
+		displayNum(mn2, 6, 0, colors[displayCol2], size);
+	}
+	
 }
 
 void UpdateTime()
@@ -247,14 +258,14 @@ HrMn TimeSetReturn(bool justMins)
 
 		if (justMins)
 		{
-			setConvey3.Update(time[0], 2, 300, colors[displayCol1], Big);
+			setConvey3.Update(time[0], 2, 400, colors[displayCol1], Big);
 			setConvey4.Update(time[1], 4, 400, colors[displayCol2], Big);
 		}
 		else
 		{
-			setConvey1.Update(time[0], 0, 200, colors[displayCol1], Big);
-			setConvey2.Update(time[1], 2, 250, colors[displayCol2], Big);
-			setConvey3.Update(time[2], 4, 300, colors[displayCol1], Big);
+			setConvey1.Update(time[0], 0, 400, colors[displayCol1], Big);
+			setConvey2.Update(time[1], 2, 400, colors[displayCol2], Big);
+			setConvey3.Update(time[2], 4, 400, colors[displayCol1], Big);
 			setConvey4.Update(time[3], 6, 400, colors[displayCol2], Big);
 		}
 
