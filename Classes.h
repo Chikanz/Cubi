@@ -55,4 +55,11 @@ class NumConveyor
 public:
 	void Update(int numTarget, int x, int speed, uint16_t colour, efontSize size);
 };
+
+struct BrigtnessContainer
+{
+	bool active;
+	HrMn time;
+	int level;
+};
 #endif
