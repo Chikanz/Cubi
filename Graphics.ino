@@ -213,7 +213,7 @@ void num9(int x, int y, uint16_t col)
 #pragma region	Med
 void num0Med(int x, int y, uint16_t col)
 {
-	matrix.drawRect(0 + x, 0 + y, 2, 6, col);
+	matrix.drawRect(0 + x, 0 + y, 2, 7, col);
 }
 
 void num1Med(int x, int y, uint16_t col)
@@ -228,7 +228,7 @@ void num2Med(int x, int y, uint16_t col)
 {
 	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
 	matrix.drawLine(1 + x, 0 + y, 1 + x, 3 + y, col);
-	matrix.drawLine(0 + x, 4 + y, 0 + x, 6 + y, col);
+	matrix.drawLine(0 + x, 3 + y, 0 + x, 6 + y, col);
 	matrix.drawPixel(1 + x, 6 + y, col);
 }
 
@@ -250,7 +250,7 @@ void num5Med(int x, int y, uint16_t col)
 {
 	matrix.drawLine(0 + x, 0 + y, 1 + x, 0 + y, col);
 	matrix.drawLine(0 + x, 0 + y, 0 + x, 3 + y, col);
-	matrix.drawLine(1 + x, 4 + y, 1 + x, 6 + y, col);
+	matrix.drawLine(1 + x, 3 + y, 1 + x, 6 + y, col);
 	matrix.drawPixel(0 + x, 6 + y, col);
 }
 
