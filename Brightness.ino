@@ -6,7 +6,7 @@ int brightnessLevels[] =
 	20,
 	10,
 	5,
-	2,
+	1,
 	1,
 	0,
 };
@@ -14,10 +14,9 @@ uint16_t dotCol = colors[displayCol2];
 
 int BrightnessReturn(bool setNow)
 {	
-	int prevbright = targetBrightness;
-	int bright;
+	int prevbright = brightnessLevel;
+	brightnessGuage = brightnessLevel;
 
-	//TODO: Find the set brightness and set it to brightnessGuage
 	while (1 < 2)
 	{
 		matrix.fillScreen(0);
@@ -35,23 +34,25 @@ int BrightnessReturn(bool setNow)
 		if (brightnessGuage == 7)
 			matrix.fillScreen(0);
 
-		targetBrightness = brightnessLevels[brightnessGuage];
-		bright = brightnessLevels[brightnessGuage];
+		SetBrightness(brightnessGuage);
+		
 		SetLight();
 
 		if (brightnessGuage == 6)
-			RedColours();
+			redColours();
 		else
 			unRedColours();
 
 		if (buttonPressed())
 		{
 			
-			if(!setNow)
-				targetBrightness = prevbright;
+			if (!setNow)
+			{
+				SetBrightness(prevbright);
+				unRedColours();
+			}
 
-			brightnessGuage = 2;
-			return bright;
+			return brightnessGuage;
 		}
 
 		if (digitalRead(2) == LOW)
@@ -60,4 +61,68 @@ int BrightnessReturn(bool setNow)
 		delay(20);
 		matrix.show();
 	}
+}
+
+void brightnessProfile()
+{
+	//Brightness Profile
+	//Force the cursor pos and get input
+	if (cursorPos >= 0 && cursorPos <= 6)
+		cursorPos = ReadRotary(cursorPos);
+	else
+		cursorPos = force(cursorPos, 0, 6);
+
+	//Button press
+	if (buttonPressed())
+	{
+		if (cursorPos == 6)
+		{
+			EEPROM.put(10, BProfile);
+			cursorPos = 0;
+			oke(true);
+		}
+		else
+		{
+			if (BProfile[cursorPos].active)
+			{
+				BProfile[cursorPos].active = false;
+				BProfile[cursorPos].time = { 0,0 };
+			}
+			else
+			{
+				BProfile[cursorPos].active = true;
+				BProfile[cursorPos].time = TimeSetReturn(false);
+				BProfile[cursorPos].level = BrightnessReturn(false);
+				oke(false);
+			}
+		}
+	}
+
+	//Display the time above selection
+	if (cursorPos == 6)
+		backIcon(0, 0, colors[displayCol2], false);
+	else if (BProfile[cursorPos].active)
+		displayTimeSimple(BProfile[cursorPos].time, Med, false);
+
+	//Draw Pixels
+	for (int i = 0; i < 6; i++)
+	{
+		if (BProfile[i].active)
+			matrix.drawPixel(i + 1, 7, colors[1]);
+		else
+			matrix.drawPixel(i + 1, 7, colors[6]);
+	}
+	matrix.drawPixel(7, 7, colors[displayCol1]);
+
+	//Create a blink effect
+	if (onHalfSecond())
+		matrix.drawPixel(cursorPos + 1, 7, matrix.Color(0, 0, 0));
+
+	delay(50);
+}
+
+void SetBrightness(int level)
+{
+	brightnessLevel = level;
+	targetBrightness = brightnessLevels[level];
 }

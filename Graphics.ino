@@ -638,6 +638,26 @@ void backIcon(int startpos, uint16_t col)
 	matrix.drawTriangle(tempConveyor + backMove + 2, 5, tempConveyor + backMove + 3, 5, tempConveyor + backMove + 3, 6, col);
 }
 
+void backIcon(int x, int y, uint16_t col, bool animated)
+{
+	if(animated)
+		timer3 += deltaTime3();
+
+	if (timer3 > 500)
+	{
+		timer3 = 0;
+		backMove--;
+	}
+
+	if (backMove < -1)
+		backMove = 0;
+
+
+	matrix.drawTriangle(x + backMove + 2, y + 2, x + backMove + 3, y + 1, x + backMove + 3, y + 2, col);
+	matrix.drawRect(x + backMove + 1, y + 3, 6, 2, col);
+	matrix.drawTriangle(x + backMove + 2, y + 5, x + backMove + 3, y + 5, x + backMove + 3, y + 6, col);
+}
+
 void sunIcon(int startPos, uint16_t col)
 {
 	int tempConveyor = conveyorBelt - startPos;

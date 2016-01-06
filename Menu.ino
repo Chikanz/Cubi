@@ -16,7 +16,7 @@ MenuContainer menuList[] =
 	MenuContainer(3,colourIcon,ChangeColor),
 	MenuContainer(4,pirranaMenu,Snake),
 	MenuContainer(5,timeIcon,TimeSetMode),
-	MenuContainer(6,backIcon,Main),
+	MenuContainer(6,backIcon,BrightnessProfile),
 };
 
 int menuSize = sizeof(menuList) / sizeof(menuList[0]);

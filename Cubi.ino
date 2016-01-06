@@ -9,6 +9,7 @@ EEPROM Memory allocation
 3 - AlarmTime1
 4 - AlarmTime2
 5 - AlarmIsSet
+10- BrightnessProfileArray
 */
 
 //So many libraries the Citadel is jelly
@@ -162,7 +163,7 @@ bool mouth;
 File root;
 int fileCount;
 
-//Menu
+//Menu stuff
 int conveyorBelt = 0;
 int conveyorTarget = 0;
 bool canBounce = false;
@@ -185,6 +186,32 @@ NumConveyor setConvey1;
 NumConveyor setConvey2;
 NumConveyor setConvey3;
 NumConveyor setConvey4;
+
+//BrightnessProfile Stuff
+BrigtnessContainer BProfile[]
+{
+	{ true,{ 8,0 },20 },
+	{ true,{ 9,0 }, 0 },
+	{ false,{ 0,0 },0 },
+	{ false,{ 0,0 },0 },
+	{ false,{ 0,0 },0 },
+	{ false,{ 0,0 },0 },
+	{ false,{ 0,0 },0 }, //Back button, just in case.
+};
+int cursorPos = 0;
+int brightnessGuage = 2;
+int brightnessLevel = 2;
+
+//Time Stuff
+bool hourBelow10;
+bool redded = false;
+int fakeTime = 0;
+
+//Nap timer stuff
+HrMn napTimer;
+bool napOn = false;
+int pastSec;
+int napTimerSeconds;
 
 void setup()
 {
@@ -210,6 +237,14 @@ void setup()
 
 	AlarmisSet = EEPROM.read(5);
 	songToPlay = EEPROM.read(6);
+
+	EEPROM.get(10, BProfile);      
+
+	if (BProfile == 0)
+	{
+		//TODO: Setup default Bprofile state if EEPROM is empty
+	}
+
 	Serial.println("Done reading from Eeprom!");
 
 	//Audio
@@ -255,17 +290,6 @@ void setup()
 	setSyncProvider(getTeensy3Time);
 }
 
-bool hourBelow10;
-bool canTest = true;
-
-int fakeTime = 0;
-
-bool redded = false;
-int brightnessGuage = 2;
-
-HrMn napTimer;
-bool napOn = false;
-
 void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efontSize size)
 {
 	target = numTarget * 11;
@@ -307,7 +331,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = DisplayTest;
+eState State = Main;
 ////
 ///
 //
@@ -397,29 +421,13 @@ public:
 };
 
 //Teeeemp
-int cursorPos = 0;
-
-BrigtnessContainer BProfile[]
-{
-	{true,{8,0},20},
-	{true,{ 9,0 }, 0},
-	{false,{ 0,0 },0 },
-	{false,{ 0,0 },0 },
-	{false,{ 0,0 },0 },
-	{false,{ 0,0 },0 },
-	{false,{ 0,0 },0 }, //Back button, just in case.
-};
 
 //
-
-int pastSec;
-int napTimerSeconds;
 
 void loop()
 {
 	matrix.fillScreen(0);
 
-	//fixedLight();
 	SetLight();
 
 	//Alarm
@@ -428,7 +436,7 @@ void loop()
 		State = Alarm;
 		textCursor = 0;
 		matrix.fillScreen(0);
-		targetBrightness = 20;
+		SetBrightness(2);
 	}
 
 	//Nap
@@ -446,6 +454,19 @@ void loop()
 				pastSec = second();
 				napTimerSeconds -= 1;
 			}
+		}
+	}
+
+	//Brightness
+	for (int i = 0; i < 6; i++)
+	{
+		if (BProfile[i].active && BProfile[i].time.Hr == hour() && BProfile[i].time.Mn == minute() && second() == 0)
+		{
+			SetBrightness(BProfile[i].level);
+			if (BProfile[i].level == 6)
+				redColours();
+			else
+				unRedColours();
 		}
 	}
 
@@ -479,14 +500,14 @@ void loop()
 
 	case Brightness: //Note: Delay is in function
 	{
-		targetBrightness = BrightnessReturn(false);
+		SetBrightness(BrightnessReturn(true));
 		oke();
 	}
 	break;
 
 	case BrightnessProfile:
 	{
-		//...
+		brightnessProfile();
 	}
 	break;
 
@@ -573,61 +594,7 @@ void loop()
 
 	case DisplayTest:
 	{
-		Serial.print("Cursor: ");
-		Serial.println(cursorPos);
-
-		//Brightness Profile
-		//Force the cursor pos and get input
-		if (cursorPos >= 0 && cursorPos <= 6)
-			cursorPos = ReadRotary(cursorPos);
-		else
-			cursorPos = force(cursorPos, 0, 6);
-
-		//Button press
-		if (buttonPressed())
-		{
-			if (cursorPos == 6)
-			{
-				State = Main;
-			}
-			else
-			{
-				if (BProfile[cursorPos].active)
-				{
-					BProfile[cursorPos].active = false;
-					BProfile[cursorPos].time = { 0,0 };
-				}
-				else
-				{
-					BProfile[cursorPos].active = true;
-					BProfile[cursorPos].time = TimeSetReturn(false);
-					BProfile[cursorPos].level = BrightnessReturn(false);
-					oke(false);
-				}
-			}
-		}
-
-		//Display the time above selection
-		if (cursorPos == 6)
-			backIcon(0, colors[displayCol2]);
-		else if (BProfile[cursorPos].active)
-			displayTimeSimple(BProfile[cursorPos].time, Med, false);
-
-		//Draw Pixels
-		for (int i = 0; i < 6; i++)
-		{
-			if (BProfile[i].active)
-				matrix.drawPixel(i + 1, 7, colors[1]);
-			else
-				matrix.drawPixel(i + 1, 7, colors[6]);
-		}
-		matrix.drawPixel(7, 7, colors[displayCol1]);
-
-		//Create a blink effect
-		if (onHalfSecond())
-			matrix.drawPixel(cursorPos + 1, 7, matrix.Color(0, 0, 0));
-
-		delay(50);
+		
 	}
 	break;
 
@@ -694,7 +661,7 @@ void SetLight()
 	}
 }
 
-void RedColours()
+void redColours()
 {
 	for (int i = 0; i < 11; i++)
 	{
@@ -707,24 +674,6 @@ void unRedColours()
 	for (int i = 0; i < 11; i++)
 	{
 		colors[i] = colorsStore[i];
-	}
-}
-
-void fixedLight()
-{
-	//Red
-	if (hour() > 21 || hour() < 7)
-		RedColours();
-
-	if ((hour() == 20 && sec == 0)) //Set the light to 1 at 8:00pm
-	{
-		targetBrightness = 5;
-	}
-
-	if (!AlarmisSet && hour() == 8)
-	{
-		targetBrightness = 20; //If the alarm isn't set, set the birghtness back up to normal at 8
-		unRedColours();
 	}
 }
 
