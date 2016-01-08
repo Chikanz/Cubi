@@ -7,7 +7,7 @@ int brightnessLevels[] =
 	10,
 	5,
 	1,
-	1,
+	1, // Redded, 6
 	0,
 };
 uint16_t dotCol = colors[displayCol2];
@@ -24,7 +24,7 @@ int BrightnessReturn(bool setNow)
 		pirrana(-2, 0, 500);
 
 		if (brightnessGuage >= 0 && brightnessGuage <= 7)
-			brightnessGuage = ReadRotary(brightnessGuage);
+			brightnessGuage = ReadRotary(brightnessGuage, false);
 		else
 			brightnessGuage = force(brightnessGuage, 0, 7);
 
@@ -45,7 +45,6 @@ int BrightnessReturn(bool setNow)
 
 		if (buttonPressed())
 		{
-			
 			if (!setNow)
 			{
 				SetBrightness(prevbright);
@@ -66,9 +65,10 @@ int BrightnessReturn(bool setNow)
 void brightnessProfile()
 {
 	//Brightness Profile
+
 	//Force the cursor pos and get input
 	if (cursorPos >= 0 && cursorPos <= 6)
-		cursorPos = ReadRotary(cursorPos);
+		cursorPos = ReadRotary(cursorPos, true);
 	else
 		cursorPos = force(cursorPos, 0, 6);
 
@@ -100,9 +100,9 @@ void brightnessProfile()
 
 	//Display the time above selection
 	if (cursorPos == 6)
-		backIcon(0, 0, colors[displayCol2], false);
+		backIcon(1, 0, colors[displayCol2], false);
 	else if (BProfile[cursorPos].active)
-		displayTimeSimple(BProfile[cursorPos].time, Med, false);
+		displayTimeSimple(BProfile[cursorPos].time, Med, false,false);
 
 	//Draw Pixels
 	for (int i = 0; i < 6; i++)
