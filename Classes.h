@@ -62,4 +62,10 @@ struct BrigtnessContainer
 	HrMn time;
 	int level;
 };
+
+struct AlarmContainer
+{
+	bool active;
+	HrMn time;
+};
 #endif
