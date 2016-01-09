@@ -8,10 +8,10 @@ void DisplayTime(HrMn time)
 	int hr1, hr2, mn1, mn2, xmod;
 	hr1 = time.Hr / 10 % 10;
 	hr2 = time.Hr % 10;
-	
+
 	mn1 = time.Mn / 10 % 10;
 	mn2 = time.Mn % 10;
-	
+
 	displayTimeInner(hr1, hr2, mn1, mn2, xmod);
 }
 
@@ -25,7 +25,7 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 		hourBelow10 = false;
 
 	//Night Mode
-	if ((hour() > 21 || hour() == 0) && (State == Main || State == Brightness || State == DisplayTest))
+	if (brightnessLevel == 6)
 	{
 		//Drawing the preset night mode time
 
@@ -78,9 +78,9 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 		{
 			minuteAlert(displayCol1, xmod);
 
-			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2],Big);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1],Big);
-			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2],Big);			
+			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2], Big);
+			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1], Big);
+			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], Big);
 		}
 		else
 		{
@@ -92,8 +92,11 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 	}
 }
 
-void displayTimeSimple(HrMn time, efontSize size, bool scroll)
+void displayTimeSimple(HrMn time, efontSize size, bool scroll, bool hr24)
 {
+	if (hour() > 12 && hr24)
+		time.Hr -= 12;
+
 	int hr1, hr2, mn1, mn2;
 
 	hr1 = time.Hr / 10 % 10;
@@ -104,19 +107,27 @@ void displayTimeSimple(HrMn time, efontSize size, bool scroll)
 
 	if (scroll)
 	{
-		numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1], size);
-		numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2], size);
-		numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1], size);
-		numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], size);
+		numConvey1.Update(hr1, 0, 10, colors[displayCol1], size);
+		numConvey2.Update(hr2, 2, 75, colors[displayCol2], size);
+		numConvey3.Update(mn1, 4, 50, colors[displayCol1], size);
+		numConvey4.Update(mn2, 6, 50, colors[displayCol2], size);
 	}
 	else
 	{
-		displayNum(hr2, 2, 0, colors[displayCol2], size);
-		displayNum(hr1, 0, 0, colors[displayCol1], size);
-		displayNum(mn1, 4, 0, colors[displayCol1], size);
-		displayNum(mn2, 6, 0, colors[displayCol2], size);
+		if (hr1 != 0)
+		{
+			displayNum(hr1, 0, 0, colors[displayCol1], size);
+			displayNum(hr2, 2, 0, colors[displayCol2], size);
+			displayNum(mn1, 4, 0, colors[displayCol1], size);
+			displayNum(mn2, 6, 0, colors[displayCol2], size);
+		}
+		else
+		{
+			displayNum(hr2, 1, 0, colors[displayCol2], size);
+			displayNum(mn1, 4, 0, colors[displayCol1], size);
+			displayNum(mn2, 6, 0, colors[displayCol2], size);
+		}
 	}
-	
 }
 
 void UpdateTime()
@@ -203,7 +214,7 @@ HrMn TimeSetReturn(bool justMins)
 				a = 6;
 
 			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
+				numToSet = ReadRotary(numToSet, false);
 			else
 				numToSet = force(numToSet, b, a);
 		}
@@ -223,7 +234,7 @@ HrMn TimeSetReturn(bool justMins)
 				a = 9;
 
 			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
+				numToSet = ReadRotary(numToSet, false);
 			else
 				numToSet = force(numToSet, b, a);
 		}
@@ -235,7 +246,7 @@ HrMn TimeSetReturn(bool justMins)
 			int b = 0;
 
 			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
+				numToSet = ReadRotary(numToSet, false);
 			else
 				numToSet = force(numToSet, b, a);
 		}
@@ -247,7 +258,7 @@ HrMn TimeSetReturn(bool justMins)
 			int b = 0;
 
 			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet);
+				numToSet = ReadRotary(numToSet, false);
 			else
 				numToSet = force(numToSet, b, a);
 		}
@@ -319,6 +330,71 @@ HrMn TimeSetReturn(bool justMins)
 	}
 }
 
+Date DateReturn()
+{
+	while (1 < 2)
+	{
+		SetLight();
+		matrix.fillScreen(0);
+
+		HrMn year; //THIS MAKES SENSE I DO THE GOOD CODE
+		year.Hr = 20;
+		int yr1, yr2;
+
+		if (buttonPressed())
+			NumSetPos++;
+
+		switch (NumSetPos)
+		{
+		case 0:
+		{
+			if (numToSet >= 0 && numToSet <= 9)
+				numToSet = ReadRotary(numToSet, false);
+			else
+				numToSet = force(numToSet, 0, 9);
+			yr1 = numToSet;
+
+			year.Mn = yr1 * 10 + yr2; //Combine
+			displayTimeSimple(year, Med, true, false);
+		}
+		break;
+
+		case 1:
+		{
+			if (numToSet >= 0 && numToSet <= 9)
+				numToSet = ReadRotary(numToSet, false);
+			else
+				numToSet = force(numToSet, 0, 9);
+			yr2 = numToSet;
+
+			year.Mn = yr1 * 10 + yr2; //Combine
+			displayTimeSimple(year, Med, true, false);
+		}
+		break;
+
+		case 2:
+		{
+
+		}
+		break;
+		}
+
+		if (NumSetPos >= 4)
+		{
+			//Todo reset conveyor target
+
+			NumSetPos = 0;
+			Date d;
+			d.year = year.Hr * 1000 + year.Mn * 10;
+			return d;
+		}
+
+		matrix.show();
+		if (digitalRead(2) == LOW)
+			canPress = true;
+	}
+}
+
 void minuteAlert(int col, int xmod)
 {
 	if (!(sec % 2))
@@ -357,4 +433,18 @@ void printDigits(int digits) {
 void menuTime()
 {
 	DisplayTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+}
+
+//Thanks to abishur of DaniWeb for this function
+int calcDays(int month, int year)
+{
+	int Days;
+	if (month == 4 || month == 6 || month == 9 || month == 11) Days = 30;
+	else if (month == 2) {
+		bool isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+		if (isLeapYear) Days = 29;
+		else Days = 28;
+	}
+	else Days = 31;
+	return Days;
 }
