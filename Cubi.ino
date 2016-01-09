@@ -213,6 +213,23 @@ bool napOn = false;
 int pastSec;
 int napTimerSeconds;
 
+//Per day alarm
+AlarmContainer Alarms[]
+{
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+	{ false,{ 0,0 } },
+};
+
+int fadeMod = 101;
+int cursorFadeTimer;
+int prevCursorPos;
+bool fadeDirection = true; //true = up, false = down
+
 void setup()
 {
 	matrix.begin();
@@ -239,6 +256,7 @@ void setup()
 	songToPlay = EEPROM.read(6);
 
 	EEPROM.get(10, BProfile);      
+	EEPROM.get(10 + sizeof(BProfile), Alarms);
 
 	if (BProfile == 0)
 	{
@@ -331,7 +349,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = Main;
+eState State = DisplayTest;
 ////
 ///
 //
@@ -431,12 +449,14 @@ void loop()
 	SetLight();
 
 	//Alarm
-	if (AlarmisSet && State != Alarm && hour() == AlarmTime[0] && minute() == AlarmTime[1] && second() == 0)
+	for (int i = 0; i < 7; i++)
 	{
-		State = Alarm;
-		textCursor = 0;
-		matrix.fillScreen(0);
-		SetBrightness(2);
+		if (day() == i && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
+		{
+			State = Alarm;
+			textCursor = 0;
+			SetBrightness(2);
+		}
 	}
 
 	//Nap
@@ -544,7 +564,8 @@ void loop()
 
 	case SetAlarm:
 	{
-		AlarmSet();
+		//AlarmSet();
+		perDayAlarm();
 	}
 	break;
 
@@ -594,7 +615,9 @@ void loop()
 
 	case DisplayTest:
 	{
-		
+		currentBrightness = 30;
+		Date test;
+		test = DateReturn();
 	}
 	break;
 
@@ -682,8 +705,8 @@ int ColPos = 0;
 void changeColor()
 {
 	//Check if this works ayyy lmao
-	HrMn t = { hour(),minute() };
-	displayTimeSimple(t, Big, true);
+	HrMn t = { hour(),minute()};
+	displayTimeSimple(t, Big, true, false);
 
 	if (hourBelow10)
 		minuteAlert(displayCol1, 0);
@@ -782,8 +805,6 @@ void oke(bool returnToMain)
 		State = Main;
 }
 
-
-
 //Not really on half second, but makes a cool blink effect
 unsigned long previousMillis;
 bool halfSecondBlink;
@@ -875,7 +896,7 @@ int ReadRotary(int varToChange, int min, int max)
 }
 
 //Doesn't loop
-int ReadRotary(int varToChange)
+int ReadRotary(int varToChange, bool invert)
 {
 	long newPosition = rotary.read();
 	// Serial.println(newPosition);
@@ -887,14 +908,20 @@ int ReadRotary(int varToChange)
 		{
 			Serial.println("Left");
 			oldPosition = newPosition;
-			return varToChange += 1;
+			if(!invert)
+				return varToChange += 1;
+			else
+				return varToChange -= 1;
 		}
 
 		if ((newPosition / 4) < (oldPosition / 4))
 		{
 			Serial.println("Right");
 			oldPosition = newPosition;
-			return varToChange -= 1;
+			if (!invert)
+				return varToChange -= 1;
+			else
+				return varToChange += 1;
 		}
 	}
 }
@@ -992,7 +1019,7 @@ void snake()
 	matrix.drawPixel(foodx, foody, colors[displayCol2]);
 
 	//Get input
-	int inputDirMod = ReadRotary(inputDirMod);
+	int inputDirMod = ReadRotary(inputDirMod, false);
 
 	//Intuituve direction instead of fixed state direction
 	switch (dir)
