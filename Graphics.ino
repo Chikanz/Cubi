@@ -356,6 +356,7 @@ void num9Big(int x, int y, uint16_t col)
 
 #pragma endregion
 
+#pragma region Icons
 int colSwitch1;
 int colSwitch2;
 
@@ -363,7 +364,6 @@ int timer3 = 0;
 bool timerSwitch = false;
 void colourIcon(int startPos, uint16_t col)
 {
-	//Serial.println(timer3);
 	if (timerSwitch)
 		timer3 += deltaTime3();
 
@@ -374,20 +374,8 @@ void colourIcon(int startPos, uint16_t col)
 		rnd = random(1, 4);
 		colSwitch1 += rnd;
 
-		//Serial.println("Random: ");
-		//Serial.println(rnd);
-
 		rnd = random(1, 4);
 		colSwitch2 += rnd;
-		//Serial.println("Random: ");
-		//Serial.println(rnd);
-
-		//Serial.println();
-		//Serial.print("ColSwitch1:");
-		//Serial.println(colSwitch1);
-		//Serial.println();
-		//Serial.print("ColSwitch2:");
-		//Serial.println(colSwitch2);
 
 		timer3 = 0;
 	}
@@ -618,13 +606,14 @@ void pirranaMenu(int startpos, uint16_t col)
 }
 
 int backMove = 0;
+int timer50;
 void backIcon(int startpos, uint16_t col)
 {
-	timer3 += deltaTime3();
+	timer50 += deltaTime3();
 
-	if (timer3 > 500)
+	if (timer50 > 500)
 	{
-		timer3 = 0;
+		timer50 = 0;
 		backMove--;
 	}
 
@@ -678,3 +667,117 @@ void bedIcon(int startPos, uint16_t col1, uint16_t col2)
 	matrix.drawLine(tempConveyor + 1, tempConveyor + 0, tempConveyor + 1, tempConveyor + 1, col2);
 	matrix.drawLine(tempConveyor + 2, tempConveyor + 1, tempConveyor + 2, tempConveyor + 2, col2);
 }
+
+#pragma endregion
+
+#pragma region Days Of The Week
+
+void sunday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//S
+	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col1);
+	matrix.drawPixel(x + 2, y + 0, col1);
+	matrix.drawPixel(x + 0, y + 2, col1);
+
+	//U
+	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
+	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
+	matrix.drawPixel(x + 4, y + 2, col2);
+}
+
+void monday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//M
+	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col1);
+	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col1);
+	matrix.drawPixel(x + 1, y + 0, col1);
+
+	//O
+	matrix.drawRect(x + 3, y + 0, 3, 3, col2);
+}
+
+void tuesday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//T
+	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col1);
+	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col1);
+
+	//U
+	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
+	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
+	matrix.drawPixel(x + 4, y + 2, col2);
+}
+
+void wednesday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//U
+	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col1);
+	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col1);
+	matrix.drawPixel(x + 1, y + 2, col1);
+
+	//E
+	matrix.drawRect(x + 3, y + 0, 2, 3, col2);
+	matrix.drawPixel(x + 5, y + 0, col2);
+	matrix.drawPixel(x + 5, y + 2, col2);
+}
+
+void thursday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//T
+	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col1);
+	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col1);
+
+	//U
+	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
+	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
+	matrix.drawPixel(x + 4, y + 1, col2);
+}
+
+void friday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//F
+	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0,col1);
+
+	//R
+	matrix.drawTriangle(x + 3, y + 0, x + 3, y + 2, x + 5, y + 0, col2);
+	matrix.drawPixel(x + 5, y + 2, col2);
+}
+
+void saturday(int x, int y, uint16_t col1, uint16_t col2)
+{
+	//S
+	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col1);
+	matrix.drawPixel(x + 2, y + 0, col1);
+	matrix.drawPixel(x + 0, y + 2, col1);
+
+	//A
+	matrix.drawRect(x + 3, y + 0, 3, 2, col2);
+	matrix.drawPixel(x + 3, y + 2, col2);
+	matrix.drawPixel(x + 5, y + 2, col2);
+}
+
+#pragma endregion
+
+#pragma 
+
+#pragma region templates
+void drawLine(int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+{
+	matrix.drawLine(x + x1, y + y1, x + x2, y + y2, col);
+}
+
+void drawPixel(int x1, int y1, int x, int y, uint16_t col)
+{
+	matrix.drawPixel(x + x1, y + y1, col);
+}
+
+void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+{
+	matrix.drawTriangle(x + x0, y + y0, x + x1, y + y1, x + x2, y + y2, col);
+}
+
+void drawLine(int x0, int y0, int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+{
+	matrix.drawTriangle(x + x0, y + y0, x + x1, y + y1, x + x2, y + y2, col);
+}
+#pragma endregion
