@@ -276,7 +276,7 @@ void num8Med(int x, int y, uint16_t col)
 void num9Med(int x, int y, uint16_t col)
 {
 	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
-	matrix.drawLine(1 + x, 0 + y, 1 + x, 7 + y, col);
+	matrix.drawLine(1 + x, 0 + y, 1 + x, 6 + y, col);
 }
 #pragma endregion
 
@@ -710,7 +710,7 @@ void tuesday(int x, int y, uint16_t col1, uint16_t col2)
 
 void wednesday(int x, int y, uint16_t col1, uint16_t col2)
 {
-	//U
+	//"W"
 	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col1);
 	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col1);
 	matrix.drawPixel(x + 1, y + 2, col1);
@@ -758,26 +758,290 @@ void saturday(int x, int y, uint16_t col1, uint16_t col2)
 
 #pragma endregion
 
-#pragma 
+#pragma region Months
+
+//Together
+
+void jan(int x, int y, uint16_t col1, uint16_t col2)
+{
+	j(x,y,col1);
+	a(x + 3,y,col2);
+}
+void feb(int x, int y, uint16_t col1, uint16_t col2)
+{
+	f(x, y, col1);
+	e(x + 3, y, col2);
+}
+void march(int x, int y, uint16_t col1, uint16_t col2)
+{
+	m(x, y, col1);
+	a(x + 3, y, col2);
+}
+void april(int x, int y, uint16_t col1, uint16_t col2)
+{
+	a(x, y, col1);
+	p(x + 3, y, col2);
+}
+void may(int x, int y, uint16_t col1, uint16_t col2)
+{
+	m(x, y, col1);
+	a(x + 3, y, col2);
+}
+void june(int x, int y, uint16_t col1, uint16_t col2)
+{
+	j(x, y, col1);
+	u(x + 3, y, col2);
+}
+void july(int x, int y, uint16_t col1, uint16_t col2) //Well fuck
+{
+	j(x, y, col1);
+	u(x + 3, y, col2);
+}
+void august(int x, int y, uint16_t col1, uint16_t col2)
+{
+	a(x, y, col1);
+	u(x + 3, y, col2);
+}
+void sep(int x, int y, uint16_t col1, uint16_t col2)
+{
+	s(x, y, col1);
+	e(x + 3, y, col2);
+}
+void oct(int x, int y, uint16_t col1, uint16_t col2)
+{
+	o(x, y, col1);
+	c(x + 3, y, col2);
+}
+void nov(int x, int y, uint16_t col1, uint16_t col2)
+{
+	n(x, y, col1);
+	o(x + 3, y, col2);
+}
+void dec(int x, int y, uint16_t col1, uint16_t col2)
+{
+	d(x, y, col1);
+	e(x + 3, y, col2);
+}
+
+//Apart
+void jan(int x, int y, uint16_t col)
+{
+	j(x, y, col);
+	a(x + 4, y, col);
+}
+void feb(int x, int y, uint16_t col)
+{
+	f(x, y, col);
+	e(x + 4, y, col);
+}
+void march(int x, int y, uint16_t col)
+{
+	m(x, y, col);
+	a(x + 4, y, col);
+}
+void april(int x, int y, uint16_t col)
+{
+	a(x, y, col);
+	p(x + 4, y, col);
+}
+void may(int x, int y, uint16_t col)
+{
+	m(x, y, col);
+	a(x + 4, y, col);
+}
+void june(int x, int y, uint16_t col)
+{
+	j(x, y, col);
+	u(x + 4, y, col);
+}
+void july(int x, int y, uint16_t col) //Well fuck
+{
+	j(x, y, col);
+	u(x + 4, y, col);
+}
+void august(int x, int y, uint16_t col)
+{
+	a(x, y, col);
+	u(x + 4, y, col);
+}
+void sep(int x, int y, uint16_t col)
+{
+	s(x, y, col);
+	e(x + 4, y, col);
+}
+void oct(int x, int y, uint16_t col)
+{
+	o(x, y, col);
+	c(x + 4, y, col);
+}
+void nov(int x, int y, uint16_t col)
+{
+	n(x, y, col);
+	o(x + 4, y, col);
+}
+void dec(int x, int y, uint16_t col)
+{
+	d(x, y, col);
+	e(x + 4, y, col);
+}
+
+void displayMonth(int month)
+{
+	switch (month)
+	{
+		case 0:
+			jan(0, 0, colors[displayCol1]);
+			break;
+		case 1:
+			feb(0, 0, colors[displayCol1]);
+			break;
+		case 2:
+			march(0, 0, colors[displayCol1]);
+			break;
+		case 3:
+			april(0, 0, colors[displayCol1]);
+			break;
+		case 4:
+			may(0, 0, colors[displayCol1]);
+			break;
+		case 5:
+			june(0, 0, colors[displayCol1]);
+			break;
+		case 6:
+			july(0, 0, colors[displayCol1]);
+			break;
+		case 7:
+			august(0, 0, colors[displayCol1]);
+			break;
+		case 8:
+			sep(0, 0, colors[displayCol1]);
+			break;
+		case 9:
+			oct(0, 0, colors[displayCol1]);
+			break;
+		case 10:
+			nov(0, 0, colors[displayCol1]);
+			break;
+		case 11:
+			dec(0, 0, colors[displayCol1]);
+			break;
+	}
+}
+
+#pragma endregion
+
+#pragma region Letters
+
+void a(int x, int y, uint16_t col)
+{
+	matrix.drawRect(x + 0, y + 0, 3, 2, col);
+	matrix.drawPixel(x + 0, y + 2, col);
+	matrix.drawPixel(x + 2, y + 2, col);
+}
+//void b(int x, int y, uint16_t col);
+void c(int x, int y, uint16_t col)
+{
+	drawRect(0, 0, 3, 3, x, y, col);
+	drawPixel(2, 1, x, y, 0);
+}
+void d(int x, int y, uint16_t col)
+{
+	drawRect(0, 0, 3, 3, x, y, col);
+	drawPixel(2, 0, x, y, 0);
+}
+void e(int x, int y, uint16_t col)
+{
+	matrix.drawRect(x + 0, y + 0, 2, 3, col);
+	matrix.drawPixel(x + 2, y + 0, col);
+	matrix.drawPixel(x + 2, y + 2, col);
+}
+void f(int x, int y, uint16_t col)
+{
+	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
+}
+//void g(int x, int y, uint16_t col);
+//void i(int x, int y, uint16_t col);
+void j(int x, int y, uint16_t col)
+{
+	drawRect(0, 0, 3, 3, x, y, col);
+	drawLine(0, 0, 1, 0, x, y, 0);
+}
+//void k(int x, int y, uint16_t col);
+//void l(int x, int y, uint16_t col);
+void m(int x, int y, uint16_t col)
+{
+	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+	matrix.drawPixel(x + 1, y + 0, col);
+}
+void n(int x, int y, uint16_t col) 
+{
+	drawRect(0, 0, 3, 3, x, y, col);
+	drawPixel(1, 2, x, y, 0);
+}
+void o(int x, int y, uint16_t col)
+{
+	matrix.drawRect(x + 0, y + 0, 3, 3, col);
+}
+void p(int x, int y, uint16_t col)
+{
+	drawRect(0, 0, 3, 2, x, y, col);
+	drawPixel(0, 2, x, y, col);
+}
+//void q(int x, int y, uint16_t col);
+void r(int x, int y, uint16_t col)
+{
+	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
+	matrix.drawPixel(x + 2, y + 2, col);
+}
+void s(int x, int y, uint16_t col)
+{
+	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col);
+	matrix.drawPixel(x + 2, y + 0, col);
+	matrix.drawPixel(x + 0, y + 2, col);
+}
+void t(int x, int y, uint16_t col)
+{
+	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col);
+	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col);
+}
+void u(int x, int y, uint16_t col) 
+{
+	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+	matrix.drawPixel(x + 1, y + 2, col);
+}
+//void v(int x, int y, uint16_t col);
+//void w(int x, int y, uint16_t col);
+//void x(int x, int y, uint16_t col);
+//void y(int x, int y, uint16_t col);
+//void z(int x, int y, uint16_t col);
+
+#pragma endregion
 
 #pragma region templates
-void drawLine(int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+void drawLine(int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawLine(x + x1, y + y1, x + x2, y + y2, col);
+	matrix.drawLine(xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
 }
 
-void drawPixel(int x1, int y1, int x, int y, uint16_t col)
+void drawPixel(int x1, int y1, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawPixel(x + x1, y + y1, col);
+	matrix.drawPixel(xmod+ x1, ymod+ y1, col);
 }
 
-void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawTriangle(x + x0, y + y0, x + x1, y + y1, x + x2, y + y2, col);
+	matrix.drawTriangle(xmod+ x0, ymod+ y0, xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
 }
 
-void drawLine(int x0, int y0, int x1, int y1, int x2, int y2, int x, int y, uint16_t col)
+void drawLine(int x0, int y0, int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawTriangle(x + x0, y + y0, x + x1, y + y1, x + x2, y + y2, col);
+	matrix.drawTriangle(xmod+ x0, ymod+ y0, xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
+}
+
+void drawRect(int x0, int y0, int w, int h, int xmod, int ymod, uint16_t col)
+{
+	matrix.drawRect(xmod+ x0, ymod+ y0, w, h, col);
 }
 #pragma endregion
