@@ -98,6 +98,8 @@ void AlarmSet()
 	//AlarmisSet = true;
 	//matrix.drawPixel (0, 0, Red);
 	oke();
+	matrix.fillScreen(0);
+	
 }
 
 void perDayAlarm()
@@ -108,7 +110,7 @@ void perDayAlarm()
 	if (cursorPos >= 0 && cursorPos <= 7)
 		cursorPos = ReadRotary(cursorPos, true);
 	else
-		cursorPos = force(cursorPos, 0, 7);
+		cursorPos = constrain(cursorPos, 0, 7);
 
 	//Button press
 	if (buttonPressed())
