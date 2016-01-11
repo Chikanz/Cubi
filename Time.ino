@@ -37,18 +37,18 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 		//1,2 or 3
 		switch (hr2)
 		{
-		case 0:
-			matrix.drawRect(2 + xmod, 0, 2, 3, Red);
-			break;
+			case 0:
+				matrix.drawRect(2 + xmod, 0, 2, 3, Red);
+				break;
 
-		case 1:
-			matrix.drawLine(2 + xmod, 0, 2 + xmod, 2, Red);
-			break;
+			case 1:
+				matrix.drawLine(2 + xmod, 0, 2 + xmod, 2, Red);
+				break;
 
-		case 2:
-			matrix.drawLine(2 + xmod, 0, 3 + xmod, 0, Red);
-			matrix.drawLine(3 + xmod, 1, 4 + xmod, 1, Red);
-			break;
+			case 2:
+				matrix.drawLine(2 + xmod, 0, 3 + xmod, 0, Red);
+				matrix.drawLine(3 + xmod, 1, 4 + xmod, 1, Red);
+				break;
 		}
 
 		if (!hourBelow10)
@@ -172,98 +172,84 @@ void UpdateTime()
 int tempNumToSet;
 void TimeSet()
 {
-	HrMn NewTime;
-	NewTime = TimeSetReturn(false);
+	HrMn t;
+	Date d;
+	d = DateReturn();
+	t = TimeSetReturn(false);
 
 	setTime(
-		NewTime.Hr,
-		NewTime.Mn,
+		t.Hr,
+		t.Mn,
 		0,
-		0,
-		0,
-		2015
+		d.day,
+		d.month,
+		d.year
 		);
 
 	Teensy3Clock.set(now());
-
-	if (hour() > 7 && hour() < 20)
-		unRedColours();
-
 	oke();
 }
 
 HrMn TimeSetReturn(bool justMins)
 {
+	int a; //Max
+	int b; //Min
 	while (1 < 2)
 	{
 		matrix.fillScreen(0);
 
 		if (buttonPressed())
+		{
 			NumSetPos++;
+			numToSet = 0;
+		}
 
 		switch (NumSetPos)
 		{
-		case 0:
-		{
-			int a = 2;
-			int b = 0;
-
-			if (!justMins)
+			case 0:
+			{
 				a = 2;
-			else
-				a = 6;
+				b = 0;
 
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		break;
+				if (!justMins)
+					a = 2;
+				else
+					a = 6;
+			}
+			break;
 
-		case 1:
-		{
-			int a = 4;
-			int b = 0;
-
-			if (time[0] == 2)
+			case 1:
+			{
 				a = 4;
-			else
+				b = 0;
+
+				if (time[0] == 2)
+					a = 4;
+				else
+					a = 9;
+
+				if (justMins)
+					a = 9;
+			}
+			break;
+
+			case 2:
+			{
+				a = 5;
+				b = 0;
+			}
+			break;
+
+			case 3:
+			{
 				a = 9;
-
-			if (justMins)
-				a = 9;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, b, a);
+				b = 0;
+			}
+			break;
 		}
-		break;
 
-		case 2:
-		{
-			int a = 5;
-			int b = 0;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		break;
-
-		case 3:
-		{
-			int a = 9;
-			int b = 0;
-
-			if (numToSet >= b && numToSet <= a)
-				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, b, a);
-		}
-		break;
-		}
+		numToSet = ReadRotary(numToSet, false);
+		numToSet = constrain(numToSet, b, a);
 
 		time[NumSetPos] = numToSet;
 
@@ -332,61 +318,129 @@ HrMn TimeSetReturn(bool justMins)
 
 Date DateReturn()
 {
+	Date r;
+
+	HrMn year; //THIS MAKES SENSE I DO THE GOOD CODE
+	year.Hr = 20;
+	year.Mn = 16;
+	int yr1, yr2;
+	int day1, day2;
+	int dayMax, day1Max, day2Max;
+
 	while (1 < 2)
 	{
 		SetLight();
 		matrix.fillScreen(0);
 
-		HrMn year; //THIS MAKES SENSE I DO THE GOOD CODE
-		year.Hr = 20;
-		int yr1, yr2;
-
 		if (buttonPressed())
+		{
+			numToSet = 0;
 			NumSetPos++;
+
+			//One time events
+			switch (NumSetPos)
+			{
+				case 3:
+					dayMax = calcDays(r.month, 2016); //?
+					Serial.println(dayMax);
+					day1Max = dayMax / 10 % 10;
+					day2Max = dayMax % 10;
+					break;
+			}
+		}
 
 		switch (NumSetPos)
 		{
-		case 0:
-		{
-			if (numToSet >= 0 && numToSet <= 9)
+			case 0:
+			{
+				//Year1
 				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, 0, 9);
-			yr1 = numToSet;
+				numToSet = constrain(numToSet, 1, 9);
 
-			year.Mn = yr1 * 10 + yr2; //Combine
-			displayTimeSimple(year, Med, true, false);
-		}
-		break;
+				yr1 = numToSet;
 
-		case 1:
-		{
-			if (numToSet >= 0 && numToSet <= 9)
+				year.Mn = yr1 * 10;
+				displayTimeSimple(year, Med, false, false);
+			}
+			break;
+
+			case 1:
+			{
+				//Year2
+				if (numToSet >= 0 && numToSet <= 9)
+					numToSet = ReadRotary(numToSet, false);
+				else
+					numToSet = constrain(numToSet, 0, 9);
+				yr2 = numToSet;
+
+				year.Mn = (yr1 * 10) + yr2; //Combine
+				displayTimeSimple(year, Med, false, false);
+			}
+			break;
+
+			case 2:
+			{
+				//Month
 				numToSet = ReadRotary(numToSet, false);
-			else
-				numToSet = force(numToSet, 0, 9);
-			yr2 = numToSet;
+				numToSet = constrain(numToSet, 0, 11);
 
-			year.Mn = yr1 * 10 + yr2; //Combine
-			displayTimeSimple(year, Med, true, false);
+				r.month = numToSet;
+				displayMonth(r.month);
+
+				//Faff
+				displayNum(0, 0, 3, colors[displayCol2], Small);
+				displayNum(0, 3, 3, colors[displayCol2], Small);
+			}
+			break;
+
+			case 3:
+			{
+				//Day1
+				numToSet = ReadRotary(numToSet, false);
+				numToSet = constrain(numToSet, 0, day1Max);
+
+				day1 = numToSet;
+
+				displayNum(numToSet, 0, 3, colors[displayCol2], Small);
+				displayNum(0, 3, 3, colors[displayCol2], Small);
+
+				//Faff
+				displayMonth(r.month);
+			}
+			break;
+
+			case 4:
+			{
+				//Day2
+				int m;
+
+				if (day1 == day1Max)
+					m = day2Max;
+				else
+					m = 9;
+
+				numToSet = ReadRotary(numToSet, false);
+				numToSet = constrain(numToSet, 0, m);
+
+				day2 = numToSet;
+
+				displayNum(day1, 0, 3, colors[displayCol2], Small);
+				displayNum(numToSet, 3, 3, colors[displayCol2], Small);
+
+				//Faff
+				displayMonth(r.month);
+			}
+			break;
 		}
-		break;
 
-		case 2:
+		if (NumSetPos >= 5)
 		{
-
-		}
-		break;
-		}
-
-		if (NumSetPos >= 4)
-		{
-			//Todo reset conveyor target
+			r.year = year.Mn;
+			//r.month
+			r.day = day1 * 10 + day2;
 
 			NumSetPos = 0;
-			Date d;
-			d.year = year.Hr * 1000 + year.Mn * 10;
-			return d;
+			return r;
 		}
 
 		matrix.show();
@@ -435,16 +489,21 @@ void menuTime()
 	DisplayTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
 }
 
-//Thanks to abishur of DaniWeb for this function
-int calcDays(int month, int year)
-{
-	int Days;
-	if (month == 4 || month == 6 || month == 9 || month == 11) Days = 30;
-	else if (month == 2) {
-		bool isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-		if (isLeapYear) Days = 29;
-		else Days = 28;
+//Thanks to Collin Biedenkapp from Stack overflow
+int calcDays(int month, int year) {
+	if (month == 0 || month == 2 || month == 4 || month == 6 || month == 7 || month == 9 || month == 11)
+		return 31;
+	else if (month == 3 || month == 5 || month == 8 || month == 10)
+		return 30;
+	else {
+		if (year % 4 == 0) {
+			if (year % 100 == 0) {
+				if (year % 400 == 0)
+					return 29;
+				return 28;
+			}
+			return 29;
+		}
+		return 28;
 	}
-	else Days = 31;
-	return Days;
 }
