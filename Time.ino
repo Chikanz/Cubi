@@ -18,9 +18,7 @@ void DisplayTime(HrMn time)
 void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 {
 	if (hr1 == 0)
-	{
 		hourBelow10 = true;
-	}
 	else
 		hourBelow10 = false;
 
@@ -28,51 +26,53 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 	if (brightnessLevel == 6)
 	{
 		//Drawing the preset night mode time
+		if (hour() >= 20)
+		{
+			//"1"
+			if (hr2 != 2)
+				matrix.drawLine(0 + xmod, 0, 0 + xmod, 2, Red);
+			else
+				matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
+			//1,2 or 3
+			switch (hr2)
+			{
+				case 0:
+					matrix.drawRect(2 + xmod, 0, 2, 3, Red);
+					break;
 
-		//"1"
-		if (hr2 != 2)
-			matrix.drawLine(0 + xmod, 0, 0 + xmod, 2, Red);
+				case 1:
+					matrix.drawLine(2 + xmod, 0, 2 + xmod, 2, Red);
+					break;
+
+				case 2:
+					matrix.drawLine(2 + xmod, 0, 3 + xmod, 0, Red);
+					matrix.drawLine(3 + xmod, 1, 4 + xmod, 1, Red);
+					break;
+			}
+
+			if (!hourBelow10)
+			{
+				if (mn2 != 1)	//Normal
+				{
+					displayNum(mn1, 3 + xmod, 3, Red, Small);
+					displayNum(mn2, 6 + xmod, 3, Red, Small);
+				}
+				else	//Align
+				{
+					displayNum(mn1, 4 + xmod, 3, Red, Small);
+					displayNum(mn2, 6 + xmod, 3, Red, Small);
+				}
+			}
+		}
 		else
-			matrix.drawLine(0 + xmod, 0, 0 + xmod, 1, Red);
-		//1,2 or 3
-		switch (hr2)
 		{
-			case 0:
-				matrix.drawRect(2 + xmod, 0, 2, 3, Red);
-				break;
-
-			case 1:
-				matrix.drawLine(2 + xmod, 0, 2 + xmod, 2, Red);
-				break;
-
-			case 2:
-				matrix.drawLine(2 + xmod, 0, 3 + xmod, 0, Red);
-				matrix.drawLine(3 + xmod, 1, 4 + xmod, 1, Red);
-				break;
+			//displayNum(hr1, 1, 0, colors[displayCol1]);
+			displayNum(hr2, 0 + xmod, 0, colors[displayCol2], Big);
+			displayNum(mn1, 3 + xmod, 0, colors[displayCol1], Big);
+			displayNum(mn2, 6 + xmod, 0, colors[displayCol2], Big);
 		}
-
-		if (!hourBelow10)
-		{
-			if (mn2 != 1)	//Normal
-			{
-				displayNum(mn1, 3 + xmod, 3, Red, Small);
-				displayNum(mn2, 6 + xmod, 3, Red, Small);
-			}
-			else	//Align
-			{
-				displayNum(mn1, 4 + xmod, 3, Red, Small);
-				displayNum(mn2, 6 + xmod, 3, Red, Small);
-			}
-		}
-	}
-	else if (colors[1] == matrix.Color(255, 0, 0) && hour() > 0) //If display is redded
-	{
-		//displayNum(hr1, 1, 0, colors[displayCol1]);
-		displayNum(hr2, 0 + xmod, 0, colors[displayCol2], Big);
-		displayNum(mn1, 3 + xmod, 0, colors[displayCol1], Big);
-		displayNum(mn2, 6 + xmod, 0, colors[displayCol2], Big);
-	}
-	else
+	} //Night
+	else//Normals
 	{
 		if (hourBelow10)
 		{
@@ -169,13 +169,25 @@ void UpdateTime()
 	}
 }
 
+HrMnSplit split(HrMn t)
+{
+	HrMnSplit r;
+	r.hr1 = t.Hr / 10 % 10;
+	r.hr2 = t.Hr % 10;
+
+	r.mn1 = t.Mn / 10 % 10;
+	r.mn2 = t.Mn % 10;
+
+	return r;
+}
+
 int tempNumToSet;
 void TimeSet()
 {
 	HrMn t;
 	Date d;
 	d = DateReturn();
-	t = TimeSetReturn(false);
+	t = TimeSetReturn(false, { 0, 0 });
 
 	setTime(
 		t.Hr,
@@ -190,18 +202,35 @@ void TimeSet()
 	oke();
 }
 
-HrMn TimeSetReturn(bool justMins)
+HrMn TimeSetReturn(bool justMins, HrMn set)
 {
+	int numToSet;
+	int NumSetPos;
+
 	int a; //Max
 	int b; //Min
+	int timeToSet[4];
+
+	HrMnSplit s = split(set);
+
+	time[0] = s.hr1;
+	time[1] = s.hr2;
+	time[2] = s.mn1;
+	time[3] = s.mn2;
+
+	for (int i = 0; i < 4; i++)
+		timeToSet[i] = time[i];
+
+	numToSet = timeToSet[NumSetPos];
+	
 	while (1 < 2)
 	{
 		matrix.fillScreen(0);
 
 		if (buttonPressed())
 		{
+			numToSet = timeToSet[NumSetPos + 1];
 			NumSetPos++;
-			numToSet = 0;
 		}
 
 		switch (NumSetPos)
@@ -318,12 +347,14 @@ HrMn TimeSetReturn(bool justMins)
 
 Date DateReturn()
 {
+	int NumSetPos = 0;
+	int numToSet = 0;
 	Date r;
 
 	HrMn year; //THIS MAKES SENSE I DO THE GOOD CODE
 	year.Hr = 20;
 	year.Mn = 16;
-	int yr1, yr2;
+	int yr1 = 1, yr2 = 6; 
 	int day1, day2;
 	int dayMax, day1Max, day2Max;
 
@@ -354,12 +385,10 @@ Date DateReturn()
 			case 0:
 			{
 				//Year1
-				numToSet = ReadRotary(numToSet, false);
-				numToSet = constrain(numToSet, 1, 9);
+				yr1 = ReadRotary(yr1, false);
+				yr1 = constrain(yr1, 1, 9);
 
-				yr1 = numToSet;
-
-				year.Mn = yr1 * 10;
+				year.Mn = (yr1 * 10) + yr2; //Combine
 				displayTimeSimple(year, Med, false, false);
 			}
 			break;
@@ -367,11 +396,10 @@ Date DateReturn()
 			case 1:
 			{
 				//Year2
-				if (numToSet >= 0 && numToSet <= 9)
-					numToSet = ReadRotary(numToSet, false);
+				if (yr2 >= 0 && yr2 <= 9)
+					yr2 = ReadRotary(yr2, false);
 				else
-					numToSet = constrain(numToSet, 0, 9);
-				yr2 = numToSet;
+					yr2 = constrain(yr2, 0, 9);
 
 				year.Mn = (yr1 * 10) + yr2; //Combine
 				displayTimeSimple(year, Med, false, false);
