@@ -9,10 +9,13 @@ EEPROM Memory allocation
 3 - AlarmTime1
 4 - AlarmTime2
 5 - AlarmIsSet
+6 - PrevBrightness
 10- BrightnessProfileArray
 */
 
 //So many libraries the Citadel is jelly
+#pragma region Include
+
 #include "Classes.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
@@ -24,23 +27,40 @@ EEPROM Memory allocation
 #include <SPI.h>
 #include <SD.h>
 #include <LinkedList.h>
-
+#include <gamma.h>
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
+#pragma endregion
+
+#pragma region Audio Connections
 // GUItool: begin automatically generated code
-AudioPlaySdWav           playWav1;     //xy=253,243
-AudioMixer4              mixer1;         //xy=446,247
-AudioOutputI2S           i2s1;           //xy=604,246
-AudioConnection          patchCord1(playWav1, 0, mixer1, 0);
-AudioConnection          patchCord2(mixer1, 0, i2s1, 0);
-AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
-AudioControlSGTL5000     sgtl5000_1;    //xy=254,324
+AudioInputI2S            i2sIn;          //xy=246,183
+AudioPlaySdWav           playWav1;       //xy=261,318
+AudioMixer4              mixer1;         //xy=451,323
+AudioMixer4              mixer2;         //xy=452,195
+AudioOutputI2S           i2sOut;         //xy=604,324
+AudioAnalyzeFFT256       fft256;         //xy=640,221
+AudioConnection          patchCord1(i2sIn, 0, mixer2, 0);
+AudioConnection          patchCord2(i2sIn, 1, mixer2, 1);
+AudioConnection          patchCord3(playWav1, 0, mixer1, 0);
+AudioConnection          patchCord4(playWav1, 1, mixer1, 1);
+AudioConnection          patchCord5(mixer1, 0, i2sOut, 0);
+AudioConnection          patchCord6(mixer1, 0, i2sOut, 1);
+AudioConnection          patchCord7(mixer2, fft256);
+AudioControlSGTL5000     sgtl5000_1;     //xy=254,414
 // GUItool: end automatically generated code
 
-Encoder rotary(5, 4);  //Rotary Encoder
+//AudioPlaySdWav           playWav1;     //xy=253,243
+//AudioMixer4              mixer1;         //xy=446,247
+//AudioOutputI2S           i2s1;           //xy=604,246
+//AudioConnection          patchCord1(playWav1, 0, mixer1, 0);
+//AudioConnection          patchCord2(mixer1, 0, i2s1, 0);
+//AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
+//AudioControlSGTL5000     sgtl5000_1;    //xy=254,324
+#pragma endregion
 
-//Definitions
+#pragma region Definitions
 #define PIN 6
 #define Green matrix.Color(0,255,0)
 #define LightGreen matrix.Color(100,255,100)
@@ -51,17 +71,24 @@ Encoder rotary(5, 4);  //Rotary Encoder
 #define Purple matrix.Color(255,0,255)
 #define Cyan matrix.Color(0,255,255)
 #define White matrix.Color(255,255,255)
-
 #define Blue matrix.Color(0,150,255)
 
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 	NEO_MATRIX_TOP + NEO_MATRIX_LEFT +
 	+NEO_MATRIX_PROGRESSIVE,
 	NEO_GRB + NEO_KHZ800);
+#pragma endregion
 
+#define SDCARD_CS_PIN    10
+#define SDCARD_MOSI_PIN  7
+#define SDCARD_SCK_PIN   14
+
+#pragma region Colours
 //Default display colours
 int displayCol1 = 9;
 int displayCol2 = 3;
+
+int ColorToChoose = 1;
 
 uint16_t colors[] =
 {
@@ -92,11 +119,15 @@ uint16_t colorsStore[] =
 	Cyan,
 	White,
 };
+#pragma endregion
 
+
+Encoder rotary(5, 4);  //Rotary Encoder
+long oldPosition = -999;
+
+#pragma region TimeSet
 int hr, mn;
 int sec;
-
-long oldPosition = -999;
 
 int hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2;
 
@@ -104,25 +135,20 @@ int temphrDisplay1, temphrDisplay2, tempmnDisplay1, tempmnDisplay2;
 
 boolean HourMode24 = false;
 
-//TimeSet Stuff
 int selectedNum = 0;
 int val;
-int numToSet;
-int NumSetPos = 0;
 
 boolean canPress = true;
+#pragma endregion
 
-bool AlarmisSet = false;
+#pragma region Alarm
+bool AlarmKill = false;
 
 int AlarmTime[] = { 0, 0 };
 int time[] = { 0, 0, 0, 0 };
 
 bool bigMode = true;
 
-int ColorToChoose = 1;
-
-int textCursor = 8;
-long Rpos = -999;
 int songToPlay;
 int moveNum = 3;
 
@@ -130,8 +156,9 @@ int targetBrightness = 20;
 int currentBrightness = 0;
 
 int daylevel = 20;
+#pragma endregion
 
-//Snake
+#pragma region Snake
 LinkedList<int> snakeBodyX = LinkedList<int>();
 LinkedList<int> snakeBodyY = LinkedList<int>();
 
@@ -158,25 +185,29 @@ int heady;
 
 int timerTemp;
 bool mouth;
+#pragma endregion
 
-//File count
+#pragma region File Count
 File root;
 int fileCount;
+#pragma endregion
 
-//Menu stuff
+#pragma region Menu stuff
 int conveyorBelt = 0;
 int conveyorTarget = 0;
 bool canBounce = false;
 int menuPage = -1;
+#pragma endregion
 
+#pragma region Alarm Volume
 float targetVolume = 1;
 float volume = 0;
-int fadeTimer = 0;
 
 int sec2 = 1;
 int sec3;
+#pragma endregion
 
-//Should put this in a list ayy
+#pragma region Should put this in a list ayy
 NumConveyor numConvey1;
 NumConveyor numConvey2;
 NumConveyor numConvey3;
@@ -186,8 +217,9 @@ NumConveyor setConvey1;
 NumConveyor setConvey2;
 NumConveyor setConvey3;
 NumConveyor setConvey4;
+#pragma endregion
 
-//BrightnessProfile Stuff
+#pragma region BrightnessProfile Stuff
 BrigtnessContainer BProfile[]
 {
 	{ true,{ 8,0 },20 },
@@ -198,22 +230,26 @@ BrigtnessContainer BProfile[]
 	{ false,{ 0,0 },0 },
 	{ false,{ 0,0 },0 }, //Back button, just in case.
 };
+
 int cursorPos = 0;
 int brightnessGuage = 2;
 int brightnessLevel = 2;
+#pragma endregion
 
-//Time Stuff
+#pragma region Time Stuff
 bool hourBelow10;
 bool redded = false;
 int fakeTime = 0;
+#pragma endregion
 
-//Nap timer stuff
+#pragma region Nap timer stuff
 HrMn napTimer;
 bool napOn = false;
 int pastSec;
 int napTimerSeconds;
+#pragma endregion
 
-//Per day alarm
+#pragma region Per day alarm
 AlarmContainer Alarms[]
 {
 	{ false,{ 0,0 } },
@@ -229,22 +265,31 @@ int fadeMod = 101;
 int cursorFadeTimer;
 int prevCursorPos;
 bool fadeDirection = true; //true = up, false = down
+#pragma endregion
 
-void setup()
+#pragma region Spectrum stuff
+const int myInput = AUDIO_INPUT_MIC;
+float scale = 100.0;
+float level[8];
+int   shown[8];
+#pragma endregion
+
+
+void oldSetup()
 {
 	matrix.begin();
 	matrix.setTextWrap(false);
 
-	matrix.setBrightness(50);
 	Serial.begin(115200);
+
+#pragma region PinMode
 	pinMode(2, INPUT);  //Buton
 	pinMode(3, OUTPUT); //Transistor
 	pinMode(12, OUTPUT);
 	pinMode(13, OUTPUT);
+#pragma endregion
 
-	matrix.setCursor(matrix.width(), 0);
-
-	//EEPROM startup
+#pragma region EEPROM startup
 	Serial.println("Reading from Eeprom");
 	displayCol1 = EEPROM.read(1);
 	displayCol2 = EEPROM.read(2);
@@ -252,11 +297,13 @@ void setup()
 	AlarmTime[0] = EEPROM.read(3);
 	AlarmTime[1] = EEPROM.read(4);
 
-	AlarmisSet = EEPROM.read(5);
+	AlarmKill = EEPROM.read(5);
 	songToPlay = EEPROM.read(6);
 
-	EEPROM.get(10, BProfile);      
+	EEPROM.get(10, BProfile);
 	EEPROM.get(10 + sizeof(BProfile), Alarms);
+
+	SetBrightness(EEPROM.read(6)); //Remember prev brightness
 
 	if (BProfile == 0)
 	{
@@ -264,14 +311,20 @@ void setup()
 	}
 
 	Serial.println("Done reading from Eeprom!");
+#pragma endregion
 
-	//Audio
-	AudioMemory(5);
+#pragma region Audio
 
+	AudioMemory(12);
 	sgtl5000_1.enable();
-	mixer1.gain(0, 0);
+	sgtl5000_1.inputSelect(AUDIO_INPUT_MIC);
+	sgtl5000_1.volume(0.5);
 
-	//SD card
+	//mixer2.gain(0, 0.5);
+	//mixer2.gain(1, 0.5);
+#pragma endregion
+
+#pragma region SD card
 	SPI.setMOSI(7);
 	SPI.setSCK(14);
 
@@ -283,8 +336,9 @@ void setup()
 			delay(500);
 		}
 	}
+#pragma endregion
 
-	//Snake
+#pragma region Snake
 	snakeBodyX.add(3);
 	snakeBodyX.add(3);
 
@@ -296,16 +350,104 @@ void setup()
 	dirList.add(Left);
 	dirList.add(Down);
 	dirList.add(Left);
+#pragma endregion
 
-	//Directory Read SD card
+#pragma region Directory Read SD card
 	root = SD.open("/");
 	countDirectory(root);
 	fileCount -= 1;
 	Serial.println("Files in dir:");
 	Serial.print(fileCount);
+#pragma endregion
 
 	//Teensy RTC setup
 	setSyncProvider(getTeensy3Time);
+}
+
+void setup()
+{
+	matrix.begin();
+	matrix.setBrightness(30);
+	
+#pragma region Audio
+	AudioMemory(12);
+
+	sgtl5000_1.enable();
+	sgtl5000_1.inputSelect(myInput);
+	sgtl5000_1.volume(0.5);
+
+	mixer1.gain(0, 0.5);
+	mixer1.gain(1, 0.5);
+#pragma endregion
+
+#pragma region PinMode
+	pinMode(2, INPUT);  //Buton
+	pinMode(3, OUTPUT); //Transistor
+	pinMode(12, OUTPUT);
+	pinMode(13, OUTPUT); // RX pin audio shield, LED
+#pragma endregion
+
+#pragma region EEPROM startup
+	Serial.println("Reading from Eeprom");
+	displayCol1 = EEPROM.read(1);
+	displayCol2 = EEPROM.read(2);
+
+	AlarmTime[0] = EEPROM.read(3);
+	AlarmTime[1] = EEPROM.read(4);
+
+	AlarmKill = EEPROM.read(5);
+	songToPlay = EEPROM.read(6);
+
+	EEPROM.get(10, BProfile);
+	EEPROM.get(10 + sizeof(BProfile), Alarms);
+
+	SetBrightness(EEPROM.read(6)); //Remember prev brightness
+
+	if (BProfile == 0)
+	{
+		//TODO: Setup default Bprofile state if EEPROM is empty
+	}
+
+	Serial.println("Done reading from Eeprom!");
+#pragma endregion
+
+#pragma region SD card
+
+SPI.setMOSI(SDCARD_MOSI_PIN);
+SPI.setSCK(SDCARD_SCK_PIN);
+if (!(SD.begin(SDCARD_CS_PIN)))
+{
+	// stop here, but print a message repetitively
+	while (1) {
+		Serial.println("Unable to access the SD card");
+		delay(500);
+	}
+}
+#pragma endregion
+
+#pragma region Snake
+snakeBodyX.add(3);
+snakeBodyX.add(3);
+
+snakeBodyY.add(1);
+snakeBodyY.add(2);
+
+dirList.add(Up);
+dirList.add(Right);
+dirList.add(Left);
+dirList.add(Down);
+dirList.add(Left);
+#pragma endregion
+
+#pragma region Directory Read SD card
+root = SD.open("/");
+countDirectory(root);
+fileCount -= 1;
+Serial.println("Files in dir:");
+Serial.print(fileCount);
+#pragma endregion
+
+setSyncProvider(getTeensy3Time);
 }
 
 void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efontSize size)
@@ -349,7 +491,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = DisplayTest;
+eState State = Main;
 ////
 ///
 //
@@ -379,11 +521,6 @@ public:
 		f = _f;
 		state = _state;
 		normalCase = true;
-
-		if (posList % 2 == 0)
-			col1 = colors[displayCol1];
-		else
-			col1 = colors[displayCol2];
 	}
 
 	MenuContainer(int _pos, void(*_f)(int, uint16_t, uint16_t), eState _state)
@@ -395,17 +532,6 @@ public:
 		f2 = _f;
 		state = _state;
 		normalCase = true;
-
-		if (posList % 2 == 0)
-		{
-			col1 = colors[displayCol1];
-			col2 = colors[displayCol2];
-		}
-		else
-		{
-			col1 = colors[displayCol2];
-			col2 = colors[displayCol1];
-		}
 	}
 
 	MenuContainer(int _pos, void(*_f)(), eState _state)
@@ -423,39 +549,52 @@ public:
 	{
 		switch (type)
 		{
-		case 1:
-			(*f)(posActual, col1);
-			break;
+			case 1:
+				(*f)(posActual, col1);
 
-		case 2:
-			(*f2)(posActual, col1, col2);
-			break;
+				if (posList % 2 == 0)
+					col1 = colors[displayCol2];
+				else
+					col1 = colors[displayCol1];
+				break;
 
-		case 3:
-			(*f3)();
-			break;
+			case 2:
+				(*f2)(posActual, col1, col2);
+
+				if (posList % 2 == 0)
+				{
+					col1 = colors[displayCol2];
+					col2 = colors[displayCol1];
+				}
+				else
+				{
+					col1 = colors[displayCol1];
+					col2 = colors[displayCol2];
+				}
+				break;
+
+			case 3:
+				(*f3)();
+				break;
 		}
 	}
 };
 
-//Teeeemp
-
-//
-
 void loop()
 {
+	
 	matrix.fillScreen(0);
-
 	SetLight();
 
 	//Alarm
 	for (int i = 0; i < 7; i++)
 	{
-		if (day() == i && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
+		if (!AlarmKill && weekday() == i + 1 && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
 		{
 			State = Alarm;
-			textCursor = 0;
-			SetBrightness(2);
+			//textCursor = 0;
+			SetBrightness(1);
+			unRedColours();
 		}
 	}
 
@@ -492,150 +631,216 @@ void loop()
 
 	switch (State)
 	{
-	case Main:
-	{
-		switch (brightnessGuage)
+		case Main:
 		{
-		case 7:
-		{
-			matrix.fillScreen(0);
+			//GetTemp();
 
-			if (buttonPressed())
-				State = Brightness;
+			switch (brightnessGuage)
+			{
+				case 7:
+				{
+					matrix.fillScreen(0);
+
+					if (buttonPressed())
+						State = Brightness;
+				}
+				break;
+
+				default:
+				{
+					UpdateTime();
+					menu();
+
+					if (buttonPressed())
+						menuPageChange();
+				}
+				break;
+			}
 		}
 		break;
 
-		default:
+		case Brightness:
 		{
-			UpdateTime();
-			menu();
-
-			if (buttonPressed())
-				menuPageChange();
+			SetBrightness(BrightnessReturn(true));
+			oke();
 		}
 		break;
-		}
-	}
-	break;
 
-	case Brightness: //Note: Delay is in function
-	{
-		SetBrightness(BrightnessReturn(true));
-		oke();
-	}
-	break;
-
-	case BrightnessProfile:
-	{
-		brightnessProfile();
-	}
-	break;
-
-	case Alarm:
-	{
-		if (volume < targetVolume)
+		case BrightnessProfile:
 		{
-			volume += 0.002;
-			fadeTimer = 0;
+			brightnessProfile();
 		}
-		else
-			fadeTimer += 51;
+		break;
 
-		Serial.print("Volume:");
-		Serial.println(volume);
-		mixer1.gain(0, volume);
-
-		PlayAlarm();
-	}
-	break;
-
-	case AlarmMenu:
-	{
-		alarmMenu();
-
-		if (buttonPressed())
+		case Alarm:
 		{
-			AlarmPageChange();
+			if (volume < targetVolume)
+				volume += 0.002;
+
+			Serial.print("Volume:");
+			Serial.println(volume);
+
+			mixer1.gain(0, volume);
+			mixer1.gain(1, volume);
+
+			PlayAlarm();
 		}
+		break;
 
-		delay(100);
-	}
-	break;
-
-	case SetAlarm:
-	{
-		//AlarmSet();
-		perDayAlarm();
-	}
-	break;
-
-	case ChangeColor:
-	{
-		if (hourBelow10)
-			minuteAlert(displayCol1, 0);
-
-		//UpdateTime();
-		changeColor();
-		delay(10);
-	}
-	break;
-
-	case TimeSetMode:
-	{
-		TimeSet();
-	}
-	break;
-
-	case Snake:
-	{
-		snake();
-	}
-	break;
-
-	case SnakeGameOver:
-	{
-		displayNum(score / 10 % 10, 1, 0, colors[displayCol1], Big);
-		displayNum(score % 10, 4, 0, colors[displayCol2], Big);
-
-		matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
-		matrix.drawPixel(7, 7, colors[displayCol1]);
-		matrix.show();
-
-		if (buttonPressed())
+		case AlarmMenu:
 		{
-			headx = 3;
-			heady = 3;
-			snakeLength = 3;
-			score = 0;
-
-			State = Main;
+			alarmMenu();
+			if (buttonPressed()) AlarmPageChange();
+			delay(10);
 		}
-	}
-	break;
+		break;
 
-	case DisplayTest:
-	{
-		currentBrightness = 30;
-		Date test;
-		test = DateReturn();
-	}
-	break;
+		case SetAlarm:
+		{
+			//AlarmSet();
+			perDayAlarm();
+		}
+		break;
 
-	case StaticDisplay:
-	{
-		staticDisplay();
-	}
-	break;
+		case ChangeColor:
+		{
+			if (hourBelow10)
+				minuteAlert(displayCol1, 0);
 
-	case NapSet:
-	{
-		napTimer = TimeSetReturn(true);
-		napOn = true;
-		napTimerSeconds = napTimer.Mn * 60;
-		pastSec = second();
-		oke();
-	}
-	break;
+			//UpdateTime();
+			changeColor();
+			delay(10);
+		}
+		break;
+
+		case TimeSetMode:
+		{
+			TimeSet();
+		}
+		break;
+
+		case Snake:
+		{
+			snake();
+		}
+		break;
+
+		case SnakeGameOver:
+		{
+			displayNum(score / 10 % 10, 1, 0, colors[displayCol1], Big);
+			displayNum(score % 10, 4, 0, colors[displayCol2], Big);
+
+			matrix.drawLine(7, 0, 7, 5, colors[displayCol1]);
+			matrix.drawPixel(7, 7, colors[displayCol1]);
+			matrix.show();
+
+			if (buttonPressed())
+			{
+				headx = 3;
+				heady = 3;
+				snakeLength = 3;
+				score = 0;
+
+				State = Main;
+			}
+		}
+		break;
+
+		case DisplayTest:
+		{
+			uint16_t n = matrix.Color(0, 0, 0);
+			uint32_t i, j;
+			int x, y;
+			matrix.setBrightness(30);
+			for (i = 0; i < 256; i++) {
+				for (j = 0; j < matrix.numPixels(); j++)
+				{
+					//x = j;
+					matrix.setPixelColor(j, draw565to32(Wheel((j + i) & 255)));
+					//matrix.drawPixel(j, y, draw565to32(Wheel((j + i) & 255)));
+					//x++;
+				}
+				matrix.drawLine(0, 5, 0, 7, n);
+				matrix.drawLine(1, 0, 1, 3, n);
+
+				matrix.drawLine(2, 0, 2, 7, n);
+
+				matrix.drawLine(3, 1, 3, 3, n);
+				matrix.drawLine(4, 5, 4, 6, n);
+
+				matrix.drawLine(5, 0, 5, 7, n);
+
+				matrix.show();
+
+				delay(10);
+			}
+		}
+		break;
+
+		case StaticDisplay:
+		{
+			staticDisplay();
+		}
+		break;
+
+		case NapSet:
+		{
+			napTimer = TimeSetReturn(true, { 0, 0 });
+			napOn = true;
+			napTimerSeconds = napTimer.Mn * 60;
+			pastSec = second();
+			oke();
+		}
+		break;
+
+		case Party:
+		{
+			pinMode(13, INPUT);
+			if (fft256.available())
+			{
+				//level[0] =  fft1024.read(0);
+				//level[1] =  fft1024.read(1);
+				//level[0] =  fft1024.read(2, 3);
+				level[0] = fft256.read(4, 6);
+				level[1] = fft256.read(7, 10);
+				//level[1] =  fft1024.read(11, 15);
+				level[2] = fft256.read(16, 22);
+				level[3] = fft256.read(23, 32);
+				level[4] = fft256.read(33, 46);
+				level[5] = fft256.read(47, 66);
+				level[6] = fft256.read(67, 93);
+				level[7] = fft256.read(94, 131);
+
+				//fft256.averageTogether(100);
+
+				//Serial.print(fft256.read(4, 6));
+			}
+
+			/*for (int i = 0; i < 8; i++)
+			{*/
+				int val = level[i] * scale;
+				if (val > 8) val = 8;
+
+				if (val >= shown[i])
+				{
+					shown[i] = val;
+				}
+				else
+				{
+					if (shown[i] > 0) shown[i] = shown[i] - 1;
+					val = shown[i];
+				}
+				matrix.drawLine(i, 8, i, 8 - shown[i], matrix.Color(0, 255, 255));
+
+			delay(50);
+
+			if (buttonPressed())
+			{
+				State == Main;
+			}
+			
+		}
+		break;
 	}
 
 	matrix.show();
@@ -643,20 +848,7 @@ void loop()
 	if (digitalRead(2) == LOW)
 		canPress = true;
 }
-//
 
-int force(int num, int min, int max)
-{
-	if (num < min)
-	{
-		return min;
-	}
-
-	if (num > max)
-	{
-		return max;
-	}
-}
 
 void SetLight()
 {
@@ -705,7 +897,7 @@ int ColPos = 0;
 void changeColor()
 {
 	//Check if this works ayyy lmao
-	HrMn t = { hour(),minute()};
+	HrMn t = { hour(),minute() };
 	displayTimeSimple(t, Big, true, false);
 
 	if (hourBelow10)
@@ -730,14 +922,14 @@ void changeColor()
 	{
 		switch (ColPos)
 		{
-		case 1:
-			displayCol1 = ColorToChoose;
-			EEPROM.write(1, displayCol1);
-			break;
+			case 1:
+				displayCol1 = ColorToChoose;
+				EEPROM.write(1, displayCol1);
+				break;
 
-		case 2:
-			EEPROM.write(2, displayCol2);
-			break;
+			case 2:
+				EEPROM.write(2, displayCol2);
+				break;
 		}
 		ColPos++;
 	}
@@ -908,7 +1100,7 @@ int ReadRotary(int varToChange, bool invert)
 		{
 			Serial.println("Left");
 			oldPosition = newPosition;
-			if(!invert)
+			if (!invert)
 				return varToChange += 1;
 			else
 				return varToChange -= 1;
@@ -1024,61 +1216,61 @@ void snake()
 	//Intuituve direction instead of fixed state direction
 	switch (dir)
 	{
-	case Up:
-		if (inputDirMod == 1)
-		{
-			dir = Left;
-			inputDirMod = 0;
-		}
+		case Up:
+			if (inputDirMod == 1)
+			{
+				dir = Left;
+				inputDirMod = 0;
+			}
 
-		if (inputDirMod == -1)
-		{
-			dir = Right;
-			inputDirMod = 0;
-		}
-		break;
+			if (inputDirMod == -1)
+			{
+				dir = Right;
+				inputDirMod = 0;
+			}
+			break;
 
-	case Right:
-		if (inputDirMod == 1)
-		{
-			dir = Up;
-			inputDirMod = 0;
-		}
+		case Right:
+			if (inputDirMod == 1)
+			{
+				dir = Up;
+				inputDirMod = 0;
+			}
 
-		if (inputDirMod == -1)
-		{
-			dir = Down;
-			inputDirMod = 0;
-		}
-		break;
+			if (inputDirMod == -1)
+			{
+				dir = Down;
+				inputDirMod = 0;
+			}
+			break;
 
-	case Down:
-		if (inputDirMod == -1)
-		{
-			dir = Left;
-			inputDirMod = 0;
-		}
+		case Down:
+			if (inputDirMod == -1)
+			{
+				dir = Left;
+				inputDirMod = 0;
+			}
 
-		if (inputDirMod == 1)
-		{
-			dir = Right;
-			inputDirMod = 0;
-		}
-		break;
+			if (inputDirMod == 1)
+			{
+				dir = Right;
+				inputDirMod = 0;
+			}
+			break;
 
-	case Left:
-		if (inputDirMod == -1)
-		{
-			dir = Up;
-			inputDirMod = 0;
-		}
+		case Left:
+			if (inputDirMod == -1)
+			{
+				dir = Up;
+				inputDirMod = 0;
+			}
 
-		if (inputDirMod == 1)
-		{
-			dir = Down;
-			inputDirMod = 0;
-		}
-		break;
+			if (inputDirMod == 1)
+			{
+				dir = Down;
+				inputDirMod = 0;
+			}
+			break;
 	}
 
 	//remove tail
@@ -1213,4 +1405,74 @@ unsigned long processSyncMessage()
 		}
 	}
 	return pctime;
+}
+
+//Thanks to the adafruit learning system for this code
+void GetTemp()
+{
+	const int numSamples = 5;
+
+	int samples[numSamples];
+	int average = 0;
+
+	//Take samples
+	for (int i = 0; i < numSamples; i++) {
+		samples[i] = analogRead(A0);
+		delay(10);
+	}
+
+	//Average all the samples out
+	for (int i = 0; i < numSamples; i++) {
+		average += samples[i];
+	}
+	average /= numSamples;
+
+	Serial.print("Average analog reading ");
+	Serial.println(average);
+
+	// convert the value to resistance
+	average = 1023 / average - 1;
+	average = 10000 / average;
+	Serial.print("Thermistor resistance ");
+	Serial.println(average);
+
+	float steinhart;
+	steinhart = average / 10000;				// (R/Ro)
+	steinhart = log(steinhart);                 // ln(R/Ro)
+	steinhart /= 3950;							// 1/B * ln(R/Ro)
+	steinhart += 1.0 / (25 + 273.15);			// + (1/To)
+	steinhart = 1.0 / steinhart;                // Invert
+	steinhart -= 273.15;                        // convert to C
+
+	Serial.print("Temperature ");
+	Serial.print(steinhart);
+	Serial.println(" *C");
+}
+
+uint32_t draw565to32(uint16_t color)
+{
+	uint32_t bits = (uint32_t)color;
+	uint32_t blue = bits & 0x001F;     // 5 bits blue
+	uint32_t green = bits & 0x07E0;    // 6 bits green
+	uint32_t red = bits & 0xF800;      // 5 bits red
+
+									   // Return shifted bits with alpha set to 0xFF
+	return (red << 8) | (green << 5) | (blue << 3) | 0xFF000000;
+}
+
+uint32_t Wheel(byte WheelPos)
+{
+	Serial.println(WheelPos);
+	WheelPos = 255 - WheelPos;
+	if (WheelPos < 85) {
+		return matrix.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+	}
+	else if (WheelPos < 170) {
+		WheelPos -= 85;
+		return matrix.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+	}
+	else {
+		WheelPos -= 170;
+		return matrix.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+	}
 }

@@ -25,7 +25,7 @@ void menu()
 {	
 	lastPos = (menuSize - 1) * 12;
 
-	menuPage = ReadRotary(menuPage);
+	menuPage = ReadRotary(menuPage, false);
 
 	//Bounce
 	if (menuPage < 0 && canBounce)

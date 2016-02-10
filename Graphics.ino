@@ -5,140 +5,140 @@ void displayNum(int num, int x, int y, uint16_t col, efontSize size)
 {
 	switch (size)
 	{
-	case Big:
-		switch (num)
-		{
-		case 1:
-			num1Big(x, y, col);
+		case Big:
+			switch (num)
+			{
+				case 1:
+					num1Big(x, y, col);
+					break;
+
+				case 2:
+					num2Big(x, y, col);
+					break;
+
+				case 3:
+					num3Big(x, y, col);
+					break;
+
+				case 4:
+					num4Big(x, y, col);
+					break;
+
+				case 5:
+					num5Big(x, y, col);
+					break;
+
+				case 6:
+					num6Big(x, y, col);
+					break;
+
+				case 7:
+					num7Big(x, y, col);
+					break;
+
+				case 8:
+					num8Big(x, y, col);
+					break;
+
+				case 9:
+					num9Big(x, y, col);
+					break;
+
+				case 0:
+					num0Big(x, y, col);
+					break;
+			}
 			break;
 
-		case 2:
-			num2Big(x, y, col);
+		case Med:
+			switch (num)
+			{
+				case 1:
+					num1Med(x, y, col);
+					break;
+
+				case 2:
+					num2Med(x, y, col);
+					break;
+
+				case 3:
+					num3Med(x, y, col);
+					break;
+
+				case 4:
+					num4Med(x, y, col);
+					break;
+
+				case 5:
+					num5Med(x, y, col);
+					break;
+
+				case 6:
+					num6Med(x, y, col);
+					break;
+
+				case 7:
+					num7Med(x, y, col);
+					break;
+
+				case 8:
+					num8Med(x, y, col);
+					break;
+
+				case 9:
+					num9Med(x, y, col);
+					break;
+
+				case 0:
+					num0Med(x, y, col);
+					break;
+			}
 			break;
 
-		case 3:
-			num3Big(x, y, col);
-			break;
+		case Small:
+			switch (num)
+			{
+				case 1:
+					num1(x, y, col);
+					break;
 
-		case 4:
-			num4Big(x, y, col);
-			break;
+				case 2:
+					num2(x, y, col);
+					break;
 
-		case 5:
-			num5Big(x, y, col);
-			break;
+				case 3:
+					num3(x, y, col);
+					break;
 
-		case 6:
-			num6Big(x, y, col);
-			break;
+				case 4:
+					num4(x, y, col);
+					break;
 
-		case 7:
-			num7Big(x, y, col);
-			break;
+				case 5:
+					num5(x, y, col);
+					break;
 
-		case 8:
-			num8Big(x, y, col);
-			break;
+				case 6:
+					num6(x, y, col);
+					break;
 
-		case 9:
-			num9Big(x, y, col);
-			break;
+				case 7:
+					num7(x, y, col);
+					break;
 
-		case 0:
-			num0Big(x, y, col);
-			break;
-		}
-		break;
+				case 8:
+					num8(x, y, col);
+					break;
 
-	case Med:
-		switch (num)
-		{
-		case 1:
-			num1Med(x, y, col);
-			break;
+				case 9:
+					num9(x, y, col);
+					break;
 
-		case 2:
-			num2Med(x, y, col);
+				case 0:
+					num0(x, y, col);
+					break;
+			}
 			break;
-
-		case 3:
-			num3Med(x, y, col);
-			break;
-
-		case 4:
-			num4Med(x, y, col);
-			break;
-
-		case 5:
-			num5Med(x, y, col);
-			break;
-
-		case 6:
-			num6Med(x, y, col);
-			break;
-
-		case 7:
-			num7Med(x, y, col);
-			break;
-
-		case 8:
-			num8Med(x, y, col);
-			break;
-
-		case 9:
-			num9Med(x, y, col);
-			break;
-
-		case 0:
-			num0Med(x, y, col);
-			break;
-		}
-		break;
-
-	case Small:
-		switch (num)
-		{
-		case 1:
-			num1(x, y, col);
-			break;
-
-		case 2:
-			num2(x, y, col);
-			break;
-
-		case 3:
-			num3(x, y, col);
-			break;
-
-		case 4:
-			num4(x, y, col);
-			break;
-
-		case 5:
-			num5(x, y, col);
-			break;
-
-		case 6:
-			num6(x, y, col);
-			break;
-
-		case 7:
-			num7(x, y, col);
-			break;
-
-		case 8:
-			num8(x, y, col);
-			break;
-
-		case 9:
-			num9(x, y, col);
-			break;
-
-		case 0:
-			num0(x, y, col);
-			break;
-		}
-		break;
 	}
 }
 
@@ -452,8 +452,21 @@ void speakerIconMenu(int startPos, uint16_t col2, uint16_t col1)
 	//Serial.println(moveNum);
 }
 
-void speakerIcon(bool play)
+void speakerIcon(bool play, bool invert)
 {
+	uint16_t col1, col2;
+
+	if (!invert)
+	{
+		col1 = displayCol1;
+		col2 = displayCol2;
+	}
+	else
+	{
+		col1 = displayCol2;
+		col2 = displayCol1;
+	}
+
 	if (play)
 	{
 		timer2 += deltaTime2();
@@ -472,19 +485,19 @@ void speakerIcon(bool play)
 
 	if (moveNum > -1)
 	{
-		matrix.drawLine(moveNum, 2, moveNum, 5, colors[displayCol1]);
+		matrix.drawLine(moveNum, 2, moveNum, 5, colors[col1]);
 	}
 
 	if (moveNum > -2)
 	{
-		matrix.drawPixel(moveNum + 1, 1, colors[displayCol1]);
-		matrix.drawPixel(moveNum + 1, 6, colors[displayCol1]);
+		matrix.drawPixel(moveNum + 1, 1, colors[col1]);
+		matrix.drawPixel(moveNum + 1, 6, colors[col1]);
 	}
 
-	matrix.drawLine(3, 0, 3, 7, colors[displayCol2]);
-	matrix.drawLine(4, 1, 4, 6, colors[displayCol2]);
-	matrix.drawLine(5, 2, 5, 5, colors[displayCol2]);
-	matrix.drawRect(6, 3, 2, 2, colors[displayCol2]);
+	matrix.drawLine(3, 0, 3, 7, colors[col2]);
+	matrix.drawLine(4, 1, 4, 6, colors[col2]);
+	matrix.drawLine(5, 2, 5, 5, colors[col2]);
+	matrix.drawRect(6, 3, 2, 2, colors[col2]);
 
 	//Serial.println(moveNum);
 }
@@ -609,7 +622,7 @@ int backMove = 0;
 int timer50;
 void backIcon(int startpos, uint16_t col)
 {
-	timer50 += deltaTime3();
+	timer50 += 51;
 
 	if (timer50 > 500)
 	{
@@ -629,7 +642,7 @@ void backIcon(int startpos, uint16_t col)
 
 void backIcon(int x, int y, uint16_t col, bool animated)
 {
-	if(animated)
+	if (animated)
 		timer3 += deltaTime3();
 
 	if (timer3 > 500)
@@ -640,7 +653,6 @@ void backIcon(int x, int y, uint16_t col, bool animated)
 
 	if (backMove < -1)
 		backMove = 0;
-
 
 	matrix.drawTriangle(x + backMove + 2, y + 2, x + backMove + 3, y + 1, x + backMove + 3, y + 2, col);
 	matrix.drawRect(x + backMove + 1, y + 3, 6, 2, col);
@@ -667,7 +679,6 @@ void bedIcon(int startPos, uint16_t col1, uint16_t col2)
 	matrix.drawLine(tempConveyor + 1, tempConveyor + 0, tempConveyor + 1, tempConveyor + 1, col2);
 	matrix.drawLine(tempConveyor + 2, tempConveyor + 1, tempConveyor + 2, tempConveyor + 2, col2);
 }
-
 #pragma endregion
 
 #pragma region Days Of The Week
@@ -736,7 +747,7 @@ void thursday(int x, int y, uint16_t col1, uint16_t col2)
 void friday(int x, int y, uint16_t col1, uint16_t col2)
 {
 	//F
-	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0,col1);
+	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col1);
 
 	//R
 	matrix.drawTriangle(x + 3, y + 0, x + 3, y + 2, x + 5, y + 0, col2);
@@ -764,8 +775,8 @@ void saturday(int x, int y, uint16_t col1, uint16_t col2)
 
 void jan(int x, int y, uint16_t col1, uint16_t col2)
 {
-	j(x,y,col1);
-	a(x + 3,y,col2);
+	j(x, y, col1);
+	a(x + 3, y, col2);
 }
 void feb(int x, int y, uint16_t col1, uint16_t col2)
 {
@@ -974,7 +985,7 @@ void m(int x, int y, uint16_t col)
 	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
 	matrix.drawPixel(x + 1, y + 0, col);
 }
-void n(int x, int y, uint16_t col) 
+void n(int x, int y, uint16_t col)
 {
 	drawRect(0, 0, 3, 3, x, y, col);
 	drawPixel(1, 2, x, y, 0);
@@ -1005,7 +1016,7 @@ void t(int x, int y, uint16_t col)
 	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col);
 	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col);
 }
-void u(int x, int y, uint16_t col) 
+void u(int x, int y, uint16_t col)
 {
 	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
 	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
@@ -1022,26 +1033,26 @@ void u(int x, int y, uint16_t col)
 #pragma region templates
 void drawLine(int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawLine(xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
+	matrix.drawLine(xmod + x1, ymod + y1, xmod + x2, ymod + y2, col);
 }
 
 void drawPixel(int x1, int y1, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawPixel(xmod+ x1, ymod+ y1, col);
+	matrix.drawPixel(xmod + x1, ymod + y1, col);
 }
 
 void drawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawTriangle(xmod+ x0, ymod+ y0, xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
+	matrix.drawTriangle(xmod + x0, ymod + y0, xmod + x1, ymod + y1, xmod + x2, ymod + y2, col);
 }
 
 void drawLine(int x0, int y0, int x1, int y1, int x2, int y2, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawTriangle(xmod+ x0, ymod+ y0, xmod+ x1, ymod+ y1, xmod+ x2, ymod+ y2, col);
+	matrix.drawTriangle(xmod + x0, ymod + y0, xmod + x1, ymod + y1, xmod + x2, ymod + y2, col);
 }
 
 void drawRect(int x0, int y0, int w, int h, int xmod, int ymod, uint16_t col)
 {
-	matrix.drawRect(xmod+ x0, ymod+ y0, w, h, col);
+	matrix.drawRect(xmod + x0, ymod + y0, w, h, col);
 }
 #pragma endregion

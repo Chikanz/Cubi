@@ -26,7 +26,7 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 	if (brightnessLevel == 6)
 	{
 		//Drawing the preset night mode time
-		if (hour() >= 20)
+		if (hour() >= 20 || hour() == 0)
 		{
 			//"1"
 			if (hr2 != 2)
@@ -204,6 +204,8 @@ void TimeSet()
 
 HrMn TimeSetReturn(bool justMins, HrMn set)
 {
+	int flashTimer;
+
 	int numToSet;
 	int NumSetPos;
 
@@ -226,12 +228,6 @@ HrMn TimeSetReturn(bool justMins, HrMn set)
 	while (1 < 2)
 	{
 		matrix.fillScreen(0);
-
-		if (buttonPressed())
-		{
-			numToSet = timeToSet[NumSetPos + 1];
-			NumSetPos++;
-		}
 
 		switch (NumSetPos)
 		{
@@ -293,6 +289,20 @@ HrMn TimeSetReturn(bool justMins, HrMn set)
 			setConvey2.Update(time[1], 2, 400, colors[displayCol2], Big);
 			setConvey3.Update(time[2], 4, 400, colors[displayCol1], Big);
 			setConvey4.Update(time[3], 6, 400, colors[displayCol2], Big);
+		}
+
+		if (buttonPressed())
+		{
+			numToSet = timeToSet[NumSetPos + 1];
+			NumSetPos++;
+			flashTimer = 700;
+		}
+
+		//Flash
+		if (flashTimer > 0)
+		{
+			matrix.drawRect((NumSetPos - 1) * 2 , 0, 2, 8, matrix.Color(0, 0, 0));
+			flashTimer -= 51;
 		}
 
 		if (NumSetPos >= 4 && !justMins)

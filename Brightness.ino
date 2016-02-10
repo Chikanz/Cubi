@@ -13,7 +13,7 @@ int brightnessLevels[] =
 uint16_t dotCol = colors[displayCol2];
 
 int BrightnessReturn(bool setNow)
-{	
+{
 	int prevbright = brightnessLevel;
 	brightnessGuage = brightnessLevel;
 
@@ -23,10 +23,8 @@ int BrightnessReturn(bool setNow)
 
 		pirrana(-2, 0, 500);
 
-		if (brightnessGuage >= 0 && brightnessGuage <= 7)
-			brightnessGuage = ReadRotary(brightnessGuage, false);
-		else
-			brightnessGuage = force(brightnessGuage, 0, 7);
+		brightnessGuage = ReadRotary(brightnessGuage, false);
+		brightnessGuage = constrain(brightnessGuage, 0, 7);
 
 		matrix.drawLine(0, 0, 0, 8, colors[displayCol2]);
 		matrix.drawPixel(0, brightnessGuage, dotCol);
@@ -34,8 +32,8 @@ int BrightnessReturn(bool setNow)
 		if (brightnessGuage == 7)
 			matrix.fillScreen(0);
 
-		SetBrightness(brightnessGuage);
-		
+		SetBrightness(brightnessGuage, true);
+
 		SetLight();
 
 		if (brightnessGuage == 6)
@@ -67,10 +65,8 @@ void brightnessProfile()
 	//Brightness Profile
 
 	//Force the cursor pos and get input
-	if (cursorPos >= 0 && cursorPos <= 6)
-		cursorPos = ReadRotary(cursorPos, true);
-	else
-		cursorPos = force(cursorPos, 0, 6);
+	cursorPos = ReadRotary(cursorPos, true);
+	cursorPos = constrain(cursorPos, 0, 6);
 
 	//Button press
 	if (buttonPressed())
@@ -91,7 +87,7 @@ void brightnessProfile()
 			else
 			{
 				BProfile[cursorPos].active = true;
-				BProfile[cursorPos].time = TimeSetReturn(false);
+				BProfile[cursorPos].time = TimeSetReturn(false, {0, 0});
 				BProfile[cursorPos].level = BrightnessReturn(false);
 				oke(false);
 			}
@@ -102,7 +98,7 @@ void brightnessProfile()
 	if (cursorPos == 6)
 		backIcon(1, 0, colors[displayCol2], false);
 	else if (BProfile[cursorPos].active)
-		displayTimeSimple(BProfile[cursorPos].time, Med, false,false);
+		displayTimeSimple(BProfile[cursorPos].time, Med, false, false);
 
 	//Draw Pixels
 	for (int i = 0; i < 6; i++)
@@ -122,6 +118,15 @@ void brightnessProfile()
 }
 
 void SetBrightness(int level)
+{
+	brightnessLevel = level;
+	targetBrightness = brightnessLevels[level];
+	EEPROM.write(6, brightnessLevel);
+	Serial.println("Writing brightnes to EEPROM");
+}
+
+//Don't write to the eepRom 
+void SetBrightness(int level,bool dontWrite)
 {
 	brightnessLevel = level;
 	targetBrightness = brightnessLevels[level];
