@@ -39,15 +39,15 @@ AudioInputI2S            i2sIn;          //xy=246,183
 AudioPlaySdWav           playWav1;       //xy=261,318
 AudioMixer4              mixer1;         //xy=451,323
 AudioMixer4              mixer2;         //xy=452,195
-AudioOutputI2S           i2sOut;         //xy=604,324
-AudioAnalyzeFFT256       fft256;         //xy=640,221
+AudioOutputI2S           i2sOut;         //xy=604,3246
+AudioAnalyzeFFT1024       fft1024;         //xy=640,221
 AudioConnection          patchCord1(i2sIn, 0, mixer2, 0);
 AudioConnection          patchCord2(i2sIn, 1, mixer2, 1);
 AudioConnection          patchCord3(playWav1, 0, mixer1, 0);
 AudioConnection          patchCord4(playWav1, 1, mixer1, 1);
 AudioConnection          patchCord5(mixer1, 0, i2sOut, 0);
 AudioConnection          patchCord6(mixer1, 0, i2sOut, 1);
-AudioConnection          patchCord7(mixer2, fft256);
+AudioConnection          patchCord7(mixer2, fft1024);
 AudioControlSGTL5000     sgtl5000_1;     //xy=254,414
 // GUItool: end automatically generated code
 
@@ -120,7 +120,6 @@ uint16_t colorsStore[] =
 	White,
 };
 #pragma endregion
-
 
 Encoder rotary(5, 4);  //Rotary Encoder
 long oldPosition = -999;
@@ -269,11 +268,10 @@ bool fadeDirection = true; //true = up, false = down
 
 #pragma region Spectrum stuff
 const int myInput = AUDIO_INPUT_MIC;
-float scale = 100.0;
+float scale = 60.0;
 float level[8];
 int   shown[8];
 #pragma endregion
-
 
 void oldSetup()
 {
@@ -368,7 +366,7 @@ void setup()
 {
 	matrix.begin();
 	matrix.setBrightness(30);
-	
+
 #pragma region Audio
 	AudioMemory(12);
 
@@ -384,7 +382,7 @@ void setup()
 	pinMode(2, INPUT);  //Buton
 	pinMode(3, OUTPUT); //Transistor
 	pinMode(12, OUTPUT);
-	pinMode(13, OUTPUT); // RX pin audio shield, LED
+	//pinMode(13, OUTPUT); // RX pin audio shield, LED
 #pragma endregion
 
 #pragma region EEPROM startup
@@ -413,41 +411,41 @@ void setup()
 
 #pragma region SD card
 
-SPI.setMOSI(SDCARD_MOSI_PIN);
-SPI.setSCK(SDCARD_SCK_PIN);
-if (!(SD.begin(SDCARD_CS_PIN)))
-{
-	// stop here, but print a message repetitively
-	while (1) {
-		Serial.println("Unable to access the SD card");
-		delay(500);
+	SPI.setMOSI(SDCARD_MOSI_PIN);
+	SPI.setSCK(SDCARD_SCK_PIN);
+	if (!(SD.begin(SDCARD_CS_PIN)))
+	{
+		// stop here, but print a message repetitively
+		while (1) {
+			Serial.println("Unable to access the SD card");
+			delay(500);
+		}
 	}
-}
 #pragma endregion
 
 #pragma region Snake
-snakeBodyX.add(3);
-snakeBodyX.add(3);
+	snakeBodyX.add(3);
+	snakeBodyX.add(3);
 
-snakeBodyY.add(1);
-snakeBodyY.add(2);
+	snakeBodyY.add(1);
+	snakeBodyY.add(2);
 
-dirList.add(Up);
-dirList.add(Right);
-dirList.add(Left);
-dirList.add(Down);
-dirList.add(Left);
+	dirList.add(Up);
+	dirList.add(Right);
+	dirList.add(Left);
+	dirList.add(Down);
+	dirList.add(Left);
 #pragma endregion
 
 #pragma region Directory Read SD card
-root = SD.open("/");
-countDirectory(root);
-fileCount -= 1;
-Serial.println("Files in dir:");
-Serial.print(fileCount);
+	root = SD.open("/");
+	countDirectory(root);
+	fileCount -= 1;
+	Serial.println("Files in dir:");
+	Serial.print(fileCount);
 #pragma endregion
 
-setSyncProvider(getTeensy3Time);
+	setSyncProvider(getTeensy3Time);
 }
 
 void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efontSize size)
@@ -491,7 +489,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = Main;
+eState State = Party;
 ////
 ///
 //
@@ -580,9 +578,11 @@ public:
 	}
 };
 
+int scaleTimer = 0;
+int lastScale = scale + 5;
+
 void loop()
 {
-	
 	matrix.fillScreen(0);
 	SetLight();
 
@@ -795,29 +795,36 @@ void loop()
 
 		case Party:
 		{
-			pinMode(13, INPUT);
-			if (fft256.available())
+			
+			Serial.println(scale);
+
+			if (fft1024.available())
 			{
-				//level[0] =  fft1024.read(0);
-				//level[1] =  fft1024.read(1);
-				//level[0] =  fft1024.read(2, 3);
-				level[0] = fft256.read(4, 6);
-				level[1] = fft256.read(7, 10);
-				//level[1] =  fft1024.read(11, 15);
-				level[2] = fft256.read(16, 22);
-				level[3] = fft256.read(23, 32);
-				level[4] = fft256.read(33, 46);
-				level[5] = fft256.read(47, 66);
-				level[6] = fft256.read(67, 93);
-				level[7] = fft256.read(94, 131);
+				//level[0] = fft1024.read(0);
+				//level[1] = fft1024.read(1);
+				//level[2] = fft1024.read(2, 3);
+				//level[3] = fft1024.read(4, 6);
+				level[0] = fft1024.read(7, 10);
+				level[1] = fft1024.read(11, 15);
+				level[2] = fft1024.read(16, 22);
+				level[3] = fft1024.read(23, 32);
+				level[4] = fft1024.read(33, 46);
+				level[5] = fft1024.read(47, 66);
+				level[6] = fft1024.read(67, 93);
+				level[7] = fft1024.read(94, 131);
 
-				//fft256.averageTogether(100);
+				/*level[8] = fft1024.read(132, 184);
+				level[13] = fft1024.read(185, 257);
+				level[14] = fft1024.read(258, 359);
+				level[15] = fft1024.read(360, 511);*/
 
-				//Serial.print(fft256.read(4, 6));
+				fft1024.averageTogether(5);
+
+				//Serial.print(fft1024.read(4, 6));
 			}
 
-			/*for (int i = 0; i < 8; i++)
-			{*/
+			for (int i = 0; i < 8; i++)
+			{
 				int val = level[i] * scale;
 				if (val > 8) val = 8;
 
@@ -831,14 +838,32 @@ void loop()
 					val = shown[i];
 				}
 				matrix.drawLine(i, 8, i, 8 - shown[i], matrix.Color(0, 255, 255));
+			}
 
-			delay(50);
+			scale = ReadRotary(scale, 5.0, false);
+			scale = constrain(scale, 0, 200);
 
-			if (buttonPressed())
+			if (scale != lastScale)
 			{
-				State == Main;
+				scaleTimer = 2000;
+				lastScale = scale;
 			}
 			
+			if(scaleTimer > 0 && scale == lastScale)
+				scaleTimer -= 35;
+			
+			if (scaleTimer > 0) 
+			{
+				matrix.drawPixel(7, 0, matrix.Color(
+					map(scale, 0, 200, 0, 255),
+					map(scale, 0, 200, 200, 255),
+					0));
+			}
+
+			if (buttonPressed())
+				State = Main;
+
+			delay(50);
 		}
 		break;
 	}
@@ -848,7 +873,6 @@ void loop()
 	if (digitalRead(2) == LOW)
 		canPress = true;
 }
-
 
 void SetLight()
 {
@@ -1114,6 +1138,34 @@ int ReadRotary(int varToChange, bool invert)
 				return varToChange -= 1;
 			else
 				return varToChange += 1;
+		}
+	}
+}
+
+//Multipler
+int ReadRotary(int varToChange, float multipler, bool invert)
+{
+	long newPosition = rotary.read();	
+	if (newPosition != oldPosition)
+	{
+		if ((newPosition / 4) > (oldPosition / 4))
+		{
+			Serial.println("Left");
+			oldPosition = newPosition;
+			if (!invert)
+				return varToChange += 1 * multipler;
+			else
+				return varToChange -= 1 * multipler;
+		}
+
+		if ((newPosition / 4) < (oldPosition / 4))
+		{
+			Serial.println("Right");
+			oldPosition = newPosition;
+			if (!invert)
+				return varToChange -= 1 * multipler;
+			else
+				return varToChange += 1 * multipler;
 		}
 	}
 }
