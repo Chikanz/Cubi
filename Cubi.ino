@@ -16,8 +16,8 @@ EEPROM Memory allocation
 //So many libraries the Citadel is jelly
 #pragma region Include
 
-#include "Classes.h"
 #include <Adafruit_GFX.h>
+#include "Classes.h"
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
@@ -77,11 +77,11 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
 	NEO_MATRIX_TOP + NEO_MATRIX_LEFT +
 	+NEO_MATRIX_PROGRESSIVE,
 	NEO_GRB + NEO_KHZ800);
-#pragma endregion
 
 #define SDCARD_CS_PIN    10
 #define SDCARD_MOSI_PIN  7
 #define SDCARD_SCK_PIN   14
+#pragma endregion
 
 #pragma region Colours
 //Default display colours
@@ -194,8 +194,6 @@ int fileCount;
 #pragma region Menu stuff
 int conveyorBelt = 0;
 int conveyorTarget = 0;
-bool canBounce = false;
-int menuPage = -1;
 #pragma endregion
 
 #pragma region Alarm Volume
@@ -272,95 +270,6 @@ float scale = 60.0;
 float level[8];
 int   shown[8];
 #pragma endregion
-
-void oldSetup()
-{
-	matrix.begin();
-	matrix.setTextWrap(false);
-
-	Serial.begin(115200);
-
-#pragma region PinMode
-	pinMode(2, INPUT);  //Buton
-	pinMode(3, OUTPUT); //Transistor
-	pinMode(12, OUTPUT);
-	pinMode(13, OUTPUT);
-#pragma endregion
-
-#pragma region EEPROM startup
-	Serial.println("Reading from Eeprom");
-	displayCol1 = EEPROM.read(1);
-	displayCol2 = EEPROM.read(2);
-
-	AlarmTime[0] = EEPROM.read(3);
-	AlarmTime[1] = EEPROM.read(4);
-
-	AlarmKill = EEPROM.read(5);
-	songToPlay = EEPROM.read(6);
-
-	EEPROM.get(10, BProfile);
-	EEPROM.get(10 + sizeof(BProfile), Alarms);
-
-	SetBrightness(EEPROM.read(6)); //Remember prev brightness
-
-	if (BProfile == 0)
-	{
-		//TODO: Setup default Bprofile state if EEPROM is empty
-	}
-
-	Serial.println("Done reading from Eeprom!");
-#pragma endregion
-
-#pragma region Audio
-
-	AudioMemory(12);
-	sgtl5000_1.enable();
-	sgtl5000_1.inputSelect(AUDIO_INPUT_MIC);
-	sgtl5000_1.volume(0.5);
-
-	//mixer2.gain(0, 0.5);
-	//mixer2.gain(1, 0.5);
-#pragma endregion
-
-#pragma region SD card
-	SPI.setMOSI(7);
-	SPI.setSCK(14);
-
-	if (!(SD.begin(10)))
-	{
-		while (!(SD.begin(10)))
-		{
-			Serial.println("Unable to access the SD card");
-			delay(500);
-		}
-	}
-#pragma endregion
-
-#pragma region Snake
-	snakeBodyX.add(3);
-	snakeBodyX.add(3);
-
-	snakeBodyY.add(1);
-	snakeBodyY.add(2);
-
-	dirList.add(Up);
-	dirList.add(Right);
-	dirList.add(Left);
-	dirList.add(Down);
-	dirList.add(Left);
-#pragma endregion
-
-#pragma region Directory Read SD card
-	root = SD.open("/");
-	countDirectory(root);
-	fileCount -= 1;
-	Serial.println("Files in dir:");
-	Serial.print(fileCount);
-#pragma endregion
-
-	//Teensy RTC setup
-	setSyncProvider(getTeensy3Time);
-}
 
 void setup()
 {
@@ -489,7 +398,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 //
 ///
 ////
-eState State = Party;
+eState State = Main;
 ////
 ///
 //
@@ -578,6 +487,141 @@ public:
 	}
 };
 
+class Menu
+{
+public:
+	int menuVal;
+	int lastVal = 5;
+	int newPos;
+	int lastPos = 60;
+	int menuSpeed = 45; //Lower is faster
+	int resetTimer;
+	int menuSize = 7;
+
+	bool canBounce = false;
+	int menuPage = -1;
+
+	//int conveyorBelt;
+	//int conveyorTarget;
+
+	MenuContainer* menuList;
+	
+	Menu(MenuContainer* _menuList, int _menuSpeed)
+	{
+		//menuSize = sizeof(_menuList) / sizeof(_menuList[0]);
+		menuList = _menuList;
+		menuSpeed = _menuSpeed;
+	}
+	
+	void Update()
+	{
+		lastPos = (menuSize - 1) * 12;
+
+		menuPage = ReadRotary(menuPage, false);
+
+		//Serial.println(menuPage);
+
+		//Bounce
+		if (menuPage < 0 && canBounce)
+		{
+			conveyorTarget = -5;
+			canBounce = false;
+		}
+
+		if (menuPage > menuSize - 1 && canBounce)
+		{
+			conveyorTarget = lastPos + 5;
+			canBounce = false;
+		}
+
+		if (conveyorBelt < -4)
+		{
+			conveyorTarget = 0;
+			menuPage = 0;
+		}
+
+		if (conveyorBelt > lastPos + 4)
+		{
+			conveyorTarget = lastPos;
+		}
+
+		if (menuPage > menuSize - 1)
+			menuPage = menuSize - 1;
+
+		if (menuPage < 0)
+			menuPage = 0;
+
+		if (lastVal != menuPage)
+		{
+			conveyorTarget = menuList[menuPage].posActual;
+
+			lastVal = menuPage;
+			resetTimer = 0;
+		}
+
+		//Reset Pos Timer (tried to use a delta time function but behaved weirdly)
+		if (lastVal == menuPage && conveyorTarget != 0)
+			resetTimer += 52;
+
+		if (conveyorTarget == 0)
+			resetTimer = 0;
+
+		if (resetTimer > 10000) // 10 Seconds
+		{
+			conveyorTarget = 0;
+			menuPage = 0;
+		}
+
+		ConveyBelt(menuSpeed);
+
+		for (int i = 0; i < menuSize; i++)
+			menuList[i].Update();
+
+		delay(menuSpeed);
+	}
+
+	long timer;
+	void ConveyBelt(int speed)
+	{
+		timer += deltaTime();
+		if (timer > speed)
+		{
+			if (conveyorBelt < conveyorTarget)
+				conveyorBelt += 1;
+
+			if (conveyorBelt > conveyorTarget)
+				conveyorBelt -= 1;
+
+			if (conveyorBelt == conveyorTarget)
+				canBounce = true;
+
+			timer = 0;
+		}
+
+		conveyorBelt = conveyorBelt;
+		conveyorTarget = conveyorTarget;
+	}
+
+	void PageChange()
+	{
+		State = menuList[menuPage].state;
+		conveyorBelt = -8;
+	}
+};
+
+MenuContainer MainMenuList[7] =
+{
+	MenuContainer(0,menuTime,Brightness),
+	MenuContainer(1,speakerIconMenu,AlarmMenu),
+	MenuContainer(2,bedIcon,NapSet),
+	MenuContainer(3,colourIcon,ChangeColor),
+	MenuContainer(4,pirranaMenu,Snake),
+	MenuContainer(5,timeIcon,TimeSetMode),
+	MenuContainer(6,backIcon,BrightnessProfile),
+};
+
+Menu MainMenu(MainMenuList,50);
+
 int scaleTimer = 0;
 int lastScale = scale + 5;
 
@@ -649,12 +693,12 @@ void loop()
 				default:
 				{
 					UpdateTime();
-					menu();
+					MainMenu.Update();
 
 					if (buttonPressed())
-						menuPageChange();
+						MainMenu.PageChange();
+					break;
 				}
-				break;
 			}
 		}
 		break;
@@ -795,7 +839,6 @@ void loop()
 
 		case Party:
 		{
-			
 			Serial.println(scale);
 
 			if (fft1024.available())
@@ -848,11 +891,11 @@ void loop()
 				scaleTimer = 2000;
 				lastScale = scale;
 			}
-			
-			if(scaleTimer > 0 && scale == lastScale)
+
+			if (scaleTimer > 0 && scale == lastScale)
 				scaleTimer -= 35;
-			
-			if (scaleTimer > 0) 
+
+			if (scaleTimer > 0)
 			{
 				matrix.drawPixel(7, 0, matrix.Color(
 					map(scale, 0, 200, 0, 255),
@@ -1145,7 +1188,7 @@ int ReadRotary(int varToChange, bool invert)
 //Multipler
 int ReadRotary(int varToChange, float multipler, bool invert)
 {
-	long newPosition = rotary.read();	
+	long newPosition = rotary.read();
 	if (newPosition != oldPosition)
 	{
 		if ((newPosition / 4) > (oldPosition / 4))
