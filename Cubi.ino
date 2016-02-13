@@ -413,7 +413,6 @@ public:
 	void(*f2)(int, uint16_t, uint16_t);
 	void(*f3)();
 	eState state;
-	bool normalCase;
 	uint16_t col1;
 	uint16_t col2;
 
@@ -427,7 +426,6 @@ public:
 		posActual = _pos * 12;
 		f = _f;
 		state = _state;
-		normalCase = true;
 	}
 
 	MenuContainer(int _pos, void(*_f)(int, uint16_t, uint16_t), eState _state)
@@ -438,7 +436,6 @@ public:
 		posActual = _pos * 12;
 		f2 = _f;
 		state = _state;
-		normalCase = true;
 	}
 
 	MenuContainer(int _pos, void(*_f)(), eState _state)
@@ -449,7 +446,6 @@ public:
 		posActual = _pos * 12;
 		f3 = _f;
 		state = _state;
-		normalCase = false;
 	}
 
 	void Update()
@@ -496,7 +492,7 @@ public:
 	int lastPos = 60;
 	int menuSpeed = 45; //Lower is faster
 	int resetTimer;
-	int menuSize = 7;
+	int menuSize;
 
 	bool canBounce = false;
 	int menuPage = -1;
@@ -505,21 +501,22 @@ public:
 	//int conveyorTarget;
 
 	MenuContainer* menuList;
-	
-	Menu(MenuContainer* _menuList, int _menuSpeed)
+
+	Menu(MenuContainer* _menuList, int _menuSpeed, int _size)
 	{
-		//menuSize = sizeof(_menuList) / sizeof(_menuList[0]);
 		menuList = _menuList;
 		menuSpeed = _menuSpeed;
+		menuSize = _size;
 	}
-	
-	void Update()
+
+	void Update(int page)
 	{
 		lastPos = (menuSize - 1) * 12;
 
-		menuPage = ReadRotary(menuPage, false);
-
-		//Serial.println(menuPage);
+		if (page == 666)
+			menuPage = ReadRotary(menuPage, false);
+		else
+			menuPage = page;
 
 		//Bounce
 		if (menuPage < 0 && canBounce)
@@ -560,7 +557,7 @@ public:
 		}
 
 		//Reset Pos Timer (tried to use a delta time function but behaved weirdly)
-		if (lastVal == menuPage && conveyorTarget != 0)
+		if (lastVal == menuPage && conveyorTarget != 0 && page == 666)
 			resetTimer += 52;
 
 		if (conveyorTarget == 0)
@@ -609,21 +606,34 @@ public:
 	}
 };
 
-MenuContainer MainMenuList[7] =
+MenuContainer MainMenuList[8] =
 {
 	MenuContainer(0,menuTime,Brightness),
 	MenuContainer(1,speakerIconMenu,AlarmMenu),
 	MenuContainer(2,bedIcon,NapSet),
-	MenuContainer(3,colourIcon,ChangeColor),
-	MenuContainer(4,pirranaMenu,Snake),
-	MenuContainer(5,timeIcon,TimeSetMode),
-	MenuContainer(6,backIcon,BrightnessProfile),
+	MenuContainer(3,musicIcon,Party),
+	MenuContainer(4,colourIcon,ChangeColor),
+	MenuContainer(5,pirranaMenu,Snake),
+	MenuContainer(6,timeIcon,TimeSetMode),
+	MenuContainer(7,backIcon,BrightnessProfile),
 };
 
-Menu MainMenu(MainMenuList,50);
+Menu MainMenu(MainMenuList, 50, 7);
 
+MenuContainer PartyMenuList[3] =
+{
+	MenuContainer(0,menuTime,Party),
+	MenuContainer(1,PartyMode,Party),
+	MenuContainer(2,TempDisplay,Party)
+};
+
+Menu PartyMenu(PartyMenuList, 50, 3);
+
+bool pageDirection = true; //True is up false is down
 int scaleTimer = 0;
 int lastScale = scale + 5;
+int pageTimer;
+int pageTarget;
 
 void loop()
 {
@@ -677,8 +687,6 @@ void loop()
 	{
 		case Main:
 		{
-			//GetTemp();
-
 			switch (brightnessGuage)
 			{
 				case 7:
@@ -693,7 +701,7 @@ void loop()
 				default:
 				{
 					UpdateTime();
-					MainMenu.Update();
+					MainMenu.Update(666);
 
 					if (buttonPressed())
 						MainMenu.PageChange();
@@ -839,74 +847,44 @@ void loop()
 
 		case Party:
 		{
-			Serial.println(scale);
-
-			if (fft1024.available())
+			pageTimer += 51;
+			if (pageTimer > 10000)
 			{
-				//level[0] = fft1024.read(0);
-				//level[1] = fft1024.read(1);
-				//level[2] = fft1024.read(2, 3);
-				//level[3] = fft1024.read(4, 6);
-				level[0] = fft1024.read(7, 10);
-				level[1] = fft1024.read(11, 15);
-				level[2] = fft1024.read(16, 22);
-				level[3] = fft1024.read(23, 32);
-				level[4] = fft1024.read(33, 46);
-				level[5] = fft1024.read(47, 66);
-				level[6] = fft1024.read(67, 93);
-				level[7] = fft1024.read(94, 131);
+				if(pageDirection)
+					pageTarget += 1;
+				else
+					pageTarget -= 1;
+				pageTimer = 0;
 
-				/*level[8] = fft1024.read(132, 184);
-				level[13] = fft1024.read(185, 257);
-				level[14] = fft1024.read(258, 359);
-				level[15] = fft1024.read(360, 511);*/
+				if (pageTarget == 2)
+					pageDirection = false;
 
-				fft1024.averageTogether(5);
-
-				//Serial.print(fft1024.read(4, 6));
+				if (pageTarget == 0)
+					pageDirection = true;
 			}
 
-			for (int i = 0; i < 8; i++)
+			if (pageTarget == 1)
 			{
-				int val = level[i] * scale;
-				if (val > 8) val = 8;
+				scale = ReadRotary(scale, 5.0, false);
+				scale = constrain(scale, 0, 200);
+			}
 
-				if (val >= shown[i])
+			UpdateTime();
+			PartyMenu.Update(pageTarget);
+
+			if (buttonPressed())
+			{
+				if (pageTarget != 0)
 				{
-					shown[i] = val;
+					pageTarget = 0;
+					pageDirection = true;
 				}
 				else
 				{
-					if (shown[i] > 0) shown[i] = shown[i] - 1;
-					val = shown[i];
+					State = Main;
+					pageTimer = 0;
 				}
-				matrix.drawLine(i, 8, i, 8 - shown[i], matrix.Color(0, 255, 255));
 			}
-
-			scale = ReadRotary(scale, 5.0, false);
-			scale = constrain(scale, 0, 200);
-
-			if (scale != lastScale)
-			{
-				scaleTimer = 2000;
-				lastScale = scale;
-			}
-
-			if (scaleTimer > 0 && scale == lastScale)
-				scaleTimer -= 35;
-
-			if (scaleTimer > 0)
-			{
-				matrix.drawPixel(7, 0, matrix.Color(
-					map(scale, 0, 200, 0, 255),
-					map(scale, 0, 200, 200, 255),
-					0));
-			}
-
-			if (buttonPressed())
-				State = Main;
-
-			delay(50);
 		}
 		break;
 	}
@@ -1502,46 +1480,66 @@ unsigned long processSyncMessage()
 	return pctime;
 }
 
-//Thanks to the adafruit learning system for this code
-void GetTemp()
+//Thanks to the adafruit learning system for this function
+#define THERMISTORNOMINAL 10000      
+#define TEMPERATURENOMINAL 25   // temp. for nominal resistance (almost always 25 C)
+#define NUMSAMPLES 60
+#define BCOEFFICIENT 3950 // The beta coefficient of the thermistor (usually 3000-4000)
+#define SERIESRESISTOR 4300 // the value of the 'other' resistor
+
+bool canGetTemp = true;
+int sampleCount;
+int samples[60];
+int samplesArraySize;
+
+int GetTemp()
 {
-	const int numSamples = 5;
+	uint8_t i;
+	float average;
 
-	int samples[numSamples];
-	int average = 0;
+	samples[sampleCount] = analogRead(A2);
 
-	//Take samples
-	for (int i = 0; i < numSamples; i++) {
-		samples[i] = analogRead(A0);
-		delay(10);
-	}
+	samplesArraySize += 1;
+	if (samplesArraySize > NUMSAMPLES)
+		samplesArraySize = NUMSAMPLES;
 
-	//Average all the samples out
-	for (int i = 0; i < numSamples; i++) {
+	Serial.println(sampleCount);
+
+	// average all the samples out
+	average = 0;
+	for (i = 0; i< samplesArraySize; i++)
 		average += samples[i];
-	}
-	average /= numSamples;
+	
+	average /= samplesArraySize;
+
+	sampleCount += 1;
+	if (sampleCount > NUMSAMPLES)
+		sampleCount = 0;
 
 	Serial.print("Average analog reading ");
 	Serial.println(average);
 
 	// convert the value to resistance
 	average = 1023 / average - 1;
-	average = 10000 / average;
+	average = SERIESRESISTOR / average;
 	Serial.print("Thermistor resistance ");
 	Serial.println(average);
 
 	float steinhart;
-	steinhart = average / 10000;				// (R/Ro)
-	steinhart = log(steinhart);                 // ln(R/Ro)
-	steinhart /= 3950;							// 1/B * ln(R/Ro)
-	steinhart += 1.0 / (25 + 273.15);			// + (1/To)
-	steinhart = 1.0 / steinhart;                // Invert
-	steinhart -= 273.15;                        // convert to C
+	steinhart = average / THERMISTORNOMINAL;     // (R/Ro)
+	steinhart = log(steinhart);                  // ln(R/Ro)
+	steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
+	steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
+	steinhart = 1.0 / steinhart;                 // Invert
+	steinhart -= 273.15;                         // convert to C
 
 	Serial.print("Temperature ");
-	Serial.print(steinhart);
+	Serial.print(round(steinhart));	
 	Serial.println(" *C");
+
+	canGetTemp = false;
+
+	return round(steinhart);
 }
 
 uint32_t draw565to32(uint16_t color)
@@ -1570,4 +1568,82 @@ uint32_t Wheel(byte WheelPos)
 		WheelPos -= 170;
 		return matrix.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 	}
+}
+
+void PartyMode()
+{
+	if (fft1024.available())
+	{
+		level[0] = fft1024.read(7, 10);
+		level[1] = fft1024.read(11, 15);
+		level[2] = fft1024.read(16, 22);
+		level[3] = fft1024.read(23, 32);
+		level[4] = fft1024.read(33, 46);
+		level[5] = fft1024.read(47, 66);
+		level[6] = fft1024.read(67, 93);
+		level[7] = fft1024.read(94, 131);
+
+		fft1024.averageTogether(5);
+
+		//Serial.print(fft1024.read(4, 6));
+	}
+
+	for (int i = 0; i < 8; i++)
+	{
+		int val = level[i] * scale;
+		if (val > 8) val = 8;
+
+		if (val >= shown[i])
+		{
+			shown[i] = val;
+		}
+		else
+		{
+			if (shown[i] > 0) shown[i] = shown[i] - 1;
+			val = shown[i];
+		}
+		matrix.drawLine(conveyorBelt + i - 12, 8, conveyorBelt + i - 12, 8 - shown[i], matrix.Color(0, 255, 255));
+	}
+
+	if (scale != lastScale)
+	{
+		scaleTimer = 2000;
+		pageTimer = 0;
+		lastScale = scale;
+	}
+
+	if (scaleTimer > 0 && scale == lastScale)
+		scaleTimer -= 35;
+
+	if (scaleTimer > 0)
+	{
+		matrix.drawPixel(7 + conveyorBelt - 12, 0, matrix.Color(
+			map(scale, 0, 200, 0, 255),
+			map(scale, 0, 200, 200, 255),
+			0));
+	}
+
+	if (buttonPressed())
+		State = Main;
+
+	//delay(50);
+}
+
+int temp;
+void TempDisplay(int cv, uint16_t col)
+{
+	if (onSecond() && canGetTemp && pageTarget != 1)
+		temp = GetTemp();
+	
+	if(!onSecond())
+		canGetTemp = true;
+
+	int t1, t2;
+
+	t1 = temp / 10 % 10;
+	t2 = temp % 10;
+
+	setConvey3.Update(t1, conveyorBelt +  0 - 22, 0, colors[displayCol1], Big);
+	setConvey4.Update(t2, conveyorBelt + 2 - 22, 0, colors[displayCol2], Big);
+	matrix.drawPixel(conveyorBelt + 5 - 22, 0, colors[displayCol1]);
 }
