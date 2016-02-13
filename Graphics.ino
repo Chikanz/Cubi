@@ -679,6 +679,18 @@ void bedIcon(int startPos, uint16_t col1, uint16_t col2)
 	matrix.drawLine(tempConveyor + 1, tempConveyor + 0, tempConveyor + 1, tempConveyor + 1, col2);
 	matrix.drawLine(tempConveyor + 2, tempConveyor + 1, tempConveyor + 2, tempConveyor + 2, col2);
 }
+
+void musicIcon(int startPos, uint16_t col1)
+{
+	int tempConveyor = conveyorBelt - startPos;
+
+	drawLine(2, 1, 2, 5, tempConveyor, 0, col1);
+	drawLine(3, 1, 6, 1, tempConveyor, 0, col1);
+	drawLine(6, 2, 6, 3, tempConveyor, 0, col1);
+
+	drawRect(1, 5, 2, 2, tempConveyor, 0, col1);
+	drawRect(5, 4, 2, 2, tempConveyor, 0, col1);
+}
 #pragma endregion
 
 #pragma region Days Of The Week
