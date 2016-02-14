@@ -24,11 +24,11 @@ EEPROM Memory allocation
 #include <Time.h>
 #include <Audio.h>
 #include <Wire.h>
+#include <DS1307RTC.h> 
 #include <SPI.h>
 #include <SD.h>
 #include <LinkedList.h>
 #include <gamma.h>
-#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
 #pragma endregion
@@ -38,9 +38,9 @@ EEPROM Memory allocation
 AudioInputI2S            i2sIn;          //xy=246,183
 AudioPlaySdWav           playWav1;       //xy=261,318
 AudioMixer4              mixer1;         //xy=451,323
-AudioMixer4              mixer2;         //xy=452,195
+AudioMixer4              mixer2;         //xy=452,195;
 AudioOutputI2S           i2sOut;         //xy=604,3246
-AudioAnalyzeFFT1024       fft1024;         //xy=640,221
+AudioAnalyzeFFT1024      fft1024;         //xy=640,221
 AudioConnection          patchCord1(i2sIn, 0, mixer2, 0);
 AudioConnection          patchCord2(i2sIn, 1, mixer2, 1);
 AudioConnection          patchCord3(playWav1, 0, mixer1, 0);
@@ -51,16 +51,10 @@ AudioConnection          patchCord7(mixer2, fft1024);
 AudioControlSGTL5000     sgtl5000_1;     //xy=254,414
 // GUItool: end automatically generated code
 
-//AudioPlaySdWav           playWav1;     //xy=253,243
-//AudioMixer4              mixer1;         //xy=446,247
-//AudioOutputI2S           i2s1;           //xy=604,246
-//AudioConnection          patchCord1(playWav1, 0, mixer1, 0);
-//AudioConnection          patchCord2(mixer1, 0, i2s1, 0);
-//AudioConnection          patchCord3(mixer1, 0, i2s1, 1);
-//AudioControlSGTL5000     sgtl5000_1;    //xy=254,324
 #pragma endregion
 
 #pragma region Definitions
+#define ENCODER_OPTIMIZE_INTERRUPTS
 #define PIN 6
 #define Green matrix.Color(0,255,0)
 #define LightGreen matrix.Color(100,255,100)
@@ -354,7 +348,7 @@ void setup()
 	Serial.print(fileCount);
 #pragma endregion
 
-	setSyncProvider(getTeensy3Time);
+	setSyncProvider(RTC.get);
 }
 
 void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efontSize size)
@@ -637,10 +631,12 @@ int pageTarget;
 
 void loop()
 {
+	//Serial.println(fft1024.processorUsage());
+
 	matrix.fillScreen(0);
 	SetLight();
 
-	//Alarm
+	//Alarm						Note: something wrong with brightness volvo pls fix
 	for (int i = 0; i < 7; i++)
 	{
 		if (!AlarmKill && weekday() == i + 1 && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
@@ -1066,8 +1062,6 @@ void playFile(String filename)
 	Serial.print("Playing file: ");
 	Serial.println(filename);
 
-	// Start playing the file.  This sketch continues to
-	// run while the file plays.
 	playWav1.play(filename.c_str());
 
 	// A brief delay for the library read WAV info
@@ -1494,52 +1488,7 @@ int samplesArraySize;
 
 int GetTemp()
 {
-	uint8_t i;
-	float average;
-
-	samples[sampleCount] = analogRead(A2);
-
-	samplesArraySize += 1;
-	if (samplesArraySize > NUMSAMPLES)
-		samplesArraySize = NUMSAMPLES;
-
-	Serial.println(sampleCount);
-
-	// average all the samples out
-	average = 0;
-	for (i = 0; i< samplesArraySize; i++)
-		average += samples[i];
-	
-	average /= samplesArraySize;
-
-	sampleCount += 1;
-	if (sampleCount > NUMSAMPLES)
-		sampleCount = 0;
-
-	Serial.print("Average analog reading ");
-	Serial.println(average);
-
-	// convert the value to resistance
-	average = 1023 / average - 1;
-	average = SERIESRESISTOR / average;
-	Serial.print("Thermistor resistance ");
-	Serial.println(average);
-
-	float steinhart;
-	steinhart = average / THERMISTORNOMINAL;     // (R/Ro)
-	steinhart = log(steinhart);                  // ln(R/Ro)
-	steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
-	steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
-	steinhart = 1.0 / steinhart;                 // Invert
-	steinhart -= 273.15;                         // convert to C
-
-	Serial.print("Temperature ");
-	Serial.print(round(steinhart));	
-	Serial.println(" *C");
-
-	canGetTemp = false;
-
-	return round(steinhart);
+	//return RTC.
 }
 
 uint32_t draw565to32(uint16_t color)
