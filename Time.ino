@@ -189,6 +189,8 @@ void TimeSet()
 	d = DateReturn();
 	t = TimeSetReturn(false, { 0, 0 });
 
+	
+
 	setTime(
 		t.Hr,
 		t.Mn,
@@ -198,7 +200,7 @@ void TimeSet()
 		d.year
 		);
 
-	Teensy3Clock.set(now());
+	RTC.set(now());
 	oke();
 }
 
