@@ -908,45 +908,45 @@ void dec(int x, int y, uint16_t col)
 	e(x + 4, y, col);
 }
 
-void displayMonth(int month)
+void displayMonth(int month, int x, int y)
 {
 	switch (month)
 	{
 		case 0:
-			jan(0, 0, colors[displayCol1]);
+			jan(x, y, colors[displayCol1]);
 			break;
 		case 1:
-			feb(0, 0, colors[displayCol1]);
+			feb(x, y, colors[displayCol1]);
 			break;
 		case 2:
-			march(0, 0, colors[displayCol1]);
+			march(x, y, colors[displayCol1]);
 			break;
 		case 3:
-			april(0, 0, colors[displayCol1]);
+			april(x, y, colors[displayCol1]);
 			break;
 		case 4:
-			may(0, 0, colors[displayCol1]);
+			may(x, y, colors[displayCol1]);
 			break;
 		case 5:
-			june(0, 0, colors[displayCol1]);
+			june(x, y, colors[displayCol1]);
 			break;
 		case 6:
-			july(0, 0, colors[displayCol1]);
+			july(x, y, colors[displayCol1]);
 			break;
 		case 7:
-			august(0, 0, colors[displayCol1]);
+			august(x, y, colors[displayCol1]);
 			break;
 		case 8:
-			sep(0, 0, colors[displayCol1]);
+			sep(x, y, colors[displayCol1]);
 			break;
 		case 9:
-			oct(0, 0, colors[displayCol1]);
+			oct(x, y, colors[displayCol1]);
 			break;
 		case 10:
-			nov(0, 0, colors[displayCol1]);
+			nov(x, y, colors[displayCol1]);
 			break;
 		case 11:
-			dec(0, 0, colors[displayCol1]);
+			dec(x, y, colors[displayCol1]);
 			break;
 	}
 }
