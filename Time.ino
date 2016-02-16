@@ -78,16 +78,16 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 		{
 			minuteAlert(displayCol1, xmod);
 
-			numConvey2.Update(hr2, 1 + conveyorBelt, 60, colors[displayCol2], Big);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 60, colors[displayCol1], Big);
-			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], Big);
+			numConvey2.Update(hr2, 1 + xmod, 60, colors[displayCol2], Big);
+			numConvey3.Update(mn1, 4 + xmod, 60, colors[displayCol1], Big);
+			numConvey4.Update(mn2, 6 + xmod, 50, colors[displayCol2], Big);
 		}
 		else
 		{
-			numConvey1.Update(hr1, 0 + conveyorBelt, 10, colors[displayCol1], Big);
-			numConvey2.Update(hr2, 2 + conveyorBelt, 75, colors[displayCol2], Big);
-			numConvey3.Update(mn1, 4 + conveyorBelt, 50, colors[displayCol1], Big);
-			numConvey4.Update(mn2, 6 + conveyorBelt, 50, colors[displayCol2], Big);
+			numConvey1.Update(hr1, 0 + xmod, 10, colors[displayCol1], Big);
+			numConvey2.Update(hr2, 2 + xmod, 75, colors[displayCol2], Big);
+			numConvey3.Update(mn1, 4 + xmod, 50, colors[displayCol1], Big);
+			numConvey4.Update(mn2, 6 + xmod, 50, colors[displayCol2], Big);
 		}
 	}
 }
@@ -201,7 +201,7 @@ void TimeSet()
 		);
 
 	RTC.set(now());
-	oke();
+	oke(0);
 }
 
 HrMn TimeSetReturn(bool justMins, HrMn set)
@@ -425,7 +425,7 @@ Date DateReturn()
 				numToSet = constrain(numToSet, 0, 11);
 
 				r.month = numToSet;
-				displayMonth(r.month);
+				displayMonth(r.month,0,0);
 
 				//Faff
 				displayNum(0, 0, 3, colors[displayCol2], Small);
@@ -445,7 +445,7 @@ Date DateReturn()
 				displayNum(0, 3, 3, colors[displayCol2], Small);
 
 				//Faff
-				displayMonth(r.month);
+				displayMonth(r.month,0,0);
 			}
 			break;
 
@@ -468,7 +468,7 @@ Date DateReturn()
 				displayNum(numToSet, 3, 3, colors[displayCol2], Small);
 
 				//Faff
-				displayMonth(r.month);
+				displayMonth(r.month,0,0);
 			}
 			break;
 		}
@@ -524,9 +524,9 @@ void printDigits(int digits) {
 	Serial.print(digits);
 }
 
-void menuTime()
+void menuTime(int offset)
 {
-	DisplayTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt);
+	DisplayTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, conveyorBelt - offset);
 }
 
 //Thanks to Collin Biedenkapp from Stack overflow
