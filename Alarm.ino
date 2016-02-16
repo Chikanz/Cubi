@@ -1,7 +1,6 @@
 //Alarm shit
 int timesPlayed;
 
-
 void PlayAlarm()
 {
 	digitalWrite(3, HIGH);
@@ -11,6 +10,8 @@ void PlayAlarm()
 	//	textCursor = matrix.width();
 	//matrix.print(("Wake Up!"));
 	
+	//mixer2.update
+
 	if (!playWav1.isPlaying())
 	{
 		EEPROM.write(6, songToPlay += 1);
@@ -36,7 +37,7 @@ void PlayAlarm()
 	if (buttonPressed())
 	{
 		digitalWrite(3, LOW);
-		State = Main;
+		oke(2);
 		playWav1.stop();
 	}
 }
@@ -70,7 +71,7 @@ void AlarmPageChange()
 		case 0:
 			AlarmKill = true;
 			EEPROM.write(5, true);
-			oke();
+			oke(0);
 			break;
 
 		case 1:
@@ -95,7 +96,7 @@ void perDayAlarm()
 			EEPROM.put(10 + sizeof(BProfile), Alarms);
 			EEPROM.write(5, true);
 			cursorPos = 0;
-			oke(true);
+			oke(1);
 		}
 		else
 		{
