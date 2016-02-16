@@ -75,7 +75,7 @@ void brightnessProfile()
 		{
 			EEPROM.put(10, BProfile);
 			cursorPos = 0;
-			oke(true);
+			oke(0);
 		}
 		else
 		{
@@ -89,7 +89,7 @@ void brightnessProfile()
 				BProfile[cursorPos].active = true;
 				BProfile[cursorPos].time = TimeSetReturn(false, {0, 0});
 				BProfile[cursorPos].level = BrightnessReturn(false);
-				oke(false);
+				oke(1);
 			}
 		}
 	}
