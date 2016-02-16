@@ -14,8 +14,6 @@ EEPROM Memory allocation
 */
 
 //So many libraries the Citadel is jelly
-#pragma region Include
-
 #include <Adafruit_GFX.h>
 #include "Classes.h"
 #include <Adafruit_NeoMatrix.h>
@@ -24,14 +22,12 @@ EEPROM Memory allocation
 #include <Time.h>
 #include <Audio.h>
 #include <Wire.h>
-#include <DS1307RTC.h> 
+#include <DS3232RTC.h> 
 #include <SPI.h>
 #include <SD.h>
 #include <LinkedList.h>
 #include <gamma.h>
 #include <Encoder.h>
-
-#pragma endregion
 
 #pragma region Audio Connections
 // GUItool: begin automatically generated code
@@ -265,6 +261,10 @@ float level[8];
 int   shown[8];
 #pragma endregion
 
+#pragma region Date Scroll
+int datePage;
+#pragma endregion
+
 void setup()
 {
 	matrix.begin();
@@ -355,19 +355,7 @@ void NumConveyor::Update(int numTarget, int x, int speed, uint16_t colour, efont
 {
 	target = numTarget * 11;
 
-	/*
-	num0Big(x, 0 - ymod, colour);
-	num1Big(x, 11 - ymod, colour);
-	num2Big(x, 22 - ymod, colour);
-	num3Big(x, 33 - ymod, colour);
-	num4Big(x, 44 - ymod, colour);
-	num5Big(x, 55 - ymod, colour);
-	num6Big(x, 66 - ymod, colour);
-	num7Big(x, 77 - ymod, colour);
-	num8Big(x, 88 - ymod, colour);
-	num9Big(x, 99 - ymod, colour);
-	*/
-
+	//Draw all the numbers
 	for (int i = 0; i < 10; i++)
 		displayNum(i, x, i * 11 - ymod, colour, size);
 
@@ -405,7 +393,7 @@ public:
 	int posActual;
 	void(*f)(int, uint16_t);
 	void(*f2)(int, uint16_t, uint16_t);
-	void(*f3)();
+	void(*f3)(int);
 	eState state;
 	uint16_t col1;
 	uint16_t col2;
@@ -432,7 +420,7 @@ public:
 		state = _state;
 	}
 
-	MenuContainer(int _pos, void(*_f)(), eState _state)
+	MenuContainer(int _pos, void(*_f)(int), eState _state)
 	{
 		type = 3; //Time
 
@@ -471,7 +459,7 @@ public:
 				break;
 
 			case 3:
-				(*f3)();
+				(*f3)(posActual);
 				break;
 		}
 	}
@@ -487,9 +475,10 @@ public:
 	int menuSpeed = 45; //Lower is faster
 	int resetTimer;
 	int menuSize;
+	int homePage;
 
 	bool canBounce = false;
-	int menuPage = -1;
+	int menuPage;
 
 	//int conveyorBelt;
 	//int conveyorTarget;
@@ -503,8 +492,22 @@ public:
 		menuSize = _size;
 	}
 
+	Menu(MenuContainer* _menuList, int _menuSpeed, int _size, int _homePage)
+	{
+		menuList = _menuList;
+		menuSpeed = _menuSpeed;
+		menuSize = _size;
+		homePage = _homePage;
+		menuPage = homePage - 1;
+		conveyorBelt = homePage * 12;
+		conveyorTarget = homePage * 12;
+	}
+
 	void Update(int page)
 	{
+		Serial.print("1: ");
+		Serial.println(resetTimer);
+	
 		lastPos = (menuSize - 1) * 12;
 
 		if (page == 666)
@@ -550,17 +553,17 @@ public:
 			resetTimer = 0;
 		}
 
-		//Reset Pos Timer (tried to use a delta time function but behaved weirdly)
-		if (lastVal == menuPage && conveyorTarget != 0 && page == 666)
+		//Reset Pos Timer
+		if (lastVal == menuPage && menuPage != homePage && page == 666)
 			resetTimer += 52;
 
-		if (conveyorTarget == 0)
+		if (menuPage == homePage)
 			resetTimer = 0;
 
-		if (resetTimer > 10000) // 10 Seconds
+		if (resetTimer > 10000) // 10 Seconds-ish
 		{
 			conveyorTarget = 0;
-			menuPage = 0;
+			menuPage = homePage;
 		}
 
 		ConveyBelt(menuSpeed);
@@ -595,24 +598,30 @@ public:
 
 	void PageChange()
 	{
-		State = menuList[menuPage].state;
-		conveyorBelt = -8;
+		if (menuList[menuPage].state != Null)
+		{
+			State = menuList[menuPage].state;
+			conveyorBelt = -8;
+		}
+		else
+			datePage += 1;
 	}
 };
 
-MenuContainer MainMenuList[8] =
+MenuContainer MainMenuList[] =
 {
-	MenuContainer(0,menuTime,Brightness),
-	MenuContainer(1,speakerIconMenu,AlarmMenu),
-	MenuContainer(2,bedIcon,NapSet),
-	MenuContainer(3,musicIcon,Party),
-	MenuContainer(4,colourIcon,ChangeColor),
-	MenuContainer(5,pirranaMenu,Snake),
-	MenuContainer(6,timeIcon,TimeSetMode),
-	MenuContainer(7,backIcon,BrightnessProfile),
+	MenuContainer(0,dateScroll,Null),
+	MenuContainer(1,menuTime,Brightness),
+	MenuContainer(2,speakerIconMenu,AlarmMenu),
+	MenuContainer(3,bedIcon,NapSet),
+	MenuContainer(4,musicIcon,Party),
+	MenuContainer(5,colourIcon,ChangeColor),
+	MenuContainer(6,pirranaMenu,Snake),
+	MenuContainer(7,timeIcon,TimeSetMode),
+	MenuContainer(8,backIcon,BrightnessProfile),
 };
 
-Menu MainMenu(MainMenuList, 50, 7);
+Menu MainMenu(MainMenuList, 50, 9 ,1);
 
 MenuContainer PartyMenuList[3] =
 {
@@ -628,6 +637,9 @@ int scaleTimer = 0;
 int lastScale = scale + 5;
 int pageTimer;
 int pageTarget;
+
+//Date
+
 
 void loop()
 {
@@ -710,7 +722,7 @@ void loop()
 		case Brightness:
 		{
 			SetBrightness(BrightnessReturn(true));
-			oke();
+			oke(0);
 		}
 		break;
 
@@ -757,7 +769,7 @@ void loop()
 
 			//UpdateTime();
 			changeColor();
-			delay(10);
+			delay(100);
 		}
 		break;
 
@@ -789,7 +801,7 @@ void loop()
 				snakeLength = 3;
 				score = 0;
 
-				State = Main;
+				oke(2);
 			}
 		}
 		break;
@@ -837,7 +849,7 @@ void loop()
 			napOn = true;
 			napTimerSeconds = napTimer.Mn * 60;
 			pastSec = second();
-			oke();
+			oke(0);
 		}
 		break;
 
@@ -877,7 +889,7 @@ void loop()
 				}
 				else
 				{
-					State = Main;
+					oke(2);
 					pageTimer = 0;
 				}
 			}
@@ -945,7 +957,7 @@ void changeColor()
 		minuteAlert(displayCol1, 0);
 
 	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
-	menuTime();
+	menuTime(0);
 
 	//Code will continually think the rotary encoder is turning left unless serial.print or delay(1) is used. Wtf.
 	Serial.println(ColorToChoose);
@@ -978,7 +990,7 @@ void changeColor()
 	if (ColPos == 2)
 	{
 		ColPos = 0;
-		oke();
+		oke(0);
 		EEPROM.write(2, displayCol2);
 	}
 }
@@ -997,45 +1009,33 @@ boolean onSecond()
 }
 
 int okeX = -7;
-void oke()
+//0 == Normal 1 == doesn't go to main 2 == shows no tick
+void oke(int type)
 {
-	while (okeX < 0)
+	if (type == 0 || type == 1)
 	{
-		matrix.fillScreen(0);
-		delay(50);
+		while (okeX < 0)
+		{
+			matrix.fillScreen(0);
+			delay(50);
 
-		okeX++;
+			okeX++;
 
-		matrix.drawPixel(2 + okeX, 4, colors[2]);
-		matrix.drawLine(3 + okeX, 5, 5 + okeX, 3, colors[2]);
+			matrix.drawPixel(2 + okeX, 4, colors[2]);
+			matrix.drawLine(3 + okeX, 5, 5 + okeX, 3, colors[2]);
 
-		matrix.show();
+			matrix.show();
+		}
+		delay(1000);
 	}
 
-	delay(1000);
-	okeX = -7;
-	State = Main;
-}
-
-void oke(bool returnToMain)
-{
-	while (okeX < 0)
+	if (type == 0 || type == 2)
 	{
-		matrix.fillScreen(0);
-		delay(50);
-
-		okeX++;
-
-		matrix.drawPixel(2 + okeX, 4, colors[2]);
-		matrix.drawLine(3 + okeX, 5, 5 + okeX, 3, colors[2]);
-
-		matrix.show();
-	}
-
-	delay(1000);
-	okeX = -7;
-	if (returnToMain)
+		okeX = -7;
 		State = Main;
+		MainMenu.menuPage = MainMenu.homePage;
+		conveyorBelt = MainMenu.homePage * 12 - 5;
+	}
 }
 
 //Not really on half second, but makes a cool blink effect
@@ -1233,7 +1233,6 @@ int deltaTime4()
 
 void snake()
 {
-	//On second game gameover() doesn't work;
 	if (ate == true)
 	{
 		score += 1;
@@ -1474,21 +1473,9 @@ unsigned long processSyncMessage()
 	return pctime;
 }
 
-//Thanks to the adafruit learning system for this function
-#define THERMISTORNOMINAL 10000      
-#define TEMPERATURENOMINAL 25   // temp. for nominal resistance (almost always 25 C)
-#define NUMSAMPLES 60
-#define BCOEFFICIENT 3950 // The beta coefficient of the thermistor (usually 3000-4000)
-#define SERIESRESISTOR 4300 // the value of the 'other' resistor
-
-bool canGetTemp = true;
-int sampleCount;
-int samples[60];
-int samplesArraySize;
-
 int GetTemp()
 {
-	//return RTC.
+	return RTC.temperature() / 4;
 }
 
 uint32_t draw565to32(uint16_t color)
@@ -1519,7 +1506,7 @@ uint32_t Wheel(byte WheelPos)
 	}
 }
 
-void PartyMode()
+void PartyMode(int ayy)
 {
 	if (fft1024.available())
 	{
@@ -1571,14 +1558,11 @@ void PartyMode()
 			map(scale, 0, 200, 200, 255),
 			0));
 	}
-
-	if (buttonPressed())
-		State = Main;
-
 	//delay(50);
 }
 
 int temp;
+bool canGetTemp;
 void TempDisplay(int cv, uint16_t col)
 {
 	if (onSecond() && canGetTemp && pageTarget != 1)
@@ -1595,4 +1579,28 @@ void TempDisplay(int cv, uint16_t col)
 	setConvey3.Update(t1, conveyorBelt +  0 - 22, 0, colors[displayCol1], Big);
 	setConvey4.Update(t2, conveyorBelt + 2 - 22, 0, colors[displayCol2], Big);
 	matrix.drawPixel(conveyorBelt + 5 - 22, 0, colors[displayCol1]);
+}
+
+void dateScroll(int offset)
+{
+	//drawLine(0, 0, 7, 7, conveyorBelt - offset,0,Red);
+	displayMonth(month(),conveyorBelt - offset,0);
+
+	HrMn d;
+	HrMnSplit ds;
+	d.Mn = day();
+
+	ds = split(d);
+
+	if (ds.mn1 != 1)
+	{
+		displayNum(ds.mn1, conveyorBelt - offset, 3, colors[displayCol2], Small);
+		displayNum(ds.mn2, conveyorBelt - offset + 3, 3, colors[displayCol2], Small);
+	}
+	else
+	{
+		displayNum(ds.mn1, conveyorBelt - offset + 3, 3, colors[displayCol2], Small);
+		displayNum(ds.mn2, conveyorBelt - offset + 6, 3, colors[displayCol2], Small);
+	}
+
 }
