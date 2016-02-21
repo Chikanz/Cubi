@@ -88,63 +88,13 @@ void perDayAlarm()
 	cursorPos = ReadRotary(cursorPos, true);
 	cursorPos = constrain(cursorPos, 0, 7);
 
-	//Button press
-	if (buttonPressed())
-	{
-		if (cursorPos == 7)
-		{
-			EEPROM.put(10 + sizeof(BProfile), Alarms);
-			EEPROM.write(5, true);
-			cursorPos = 0;
-			oke(1);
-		}
-		else
-		{
-			if (Alarms[cursorPos].active)
-			{
-				Alarms[cursorPos].active = false;
-				Alarms[cursorPos].time = { 0,0 };
-			}
-			else
-			{
-				Alarms[cursorPos].active = true;
-				Alarms[cursorPos].time = TimeSetReturn(false, prevTime);
-				prevTime = Alarms[cursorPos].time;
-				oke(false);
-			}
-		}
-	}
-
 	//Display above selection
 	if (cursorPos == 7)
 		backIcon(0, 0, colors[displayCol2], false);
 	else if (Alarms[cursorPos].active)
 		displayTimeSimple(Alarms[cursorPos].time, Med, false, false);
 	else if (!Alarms[cursorPos].active)
-		switch (cursorPos) //TODO: replace with something scrolly someday
-		{
-			case 0:
-				sunday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 1:
-				monday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 2:
-				tuesday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 3:
-				wednesday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 4:
-				thursday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 5:
-				friday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-			case 6:
-				saturday(1, 2, colors[displayCol1], colors[displayCol2]);
-				break;
-		}
+		DisplayDay(cursorPos,3 ,1, 2, colors[displayCol1], colors[displayCol2]);
 
 	//Draw Pixels
 	for (int i = 0; i < 7; i++)
@@ -168,6 +118,33 @@ void perDayAlarm()
 
 	//Create a blink effect
 	matrix.drawPixel(cursorPos, 7, matrix.Color(0, 0, 0));
+
+	//Button press
+	if (buttonPressed())
+	{
+		if (cursorPos == 7)
+		{
+			EEPROM.put(10 + sizeof(BProfile), Alarms);
+			EEPROM.write(5, true);
+			cursorPos = 0;
+			oke(0);
+		}
+		else
+		{
+			if (Alarms[cursorPos].active)
+			{
+				Alarms[cursorPos].active = false;
+				Alarms[cursorPos].time = { 0,0 };
+			}
+			else
+			{
+				Alarms[cursorPos].active = true;
+				Alarms[cursorPos].time = TimeSetReturn(false, prevTime);
+				prevTime = Alarms[cursorPos].time;
+				oke(1);
+			}
+		}
+	}
 
 	delay(50);
 }
