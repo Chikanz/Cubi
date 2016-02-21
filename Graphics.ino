@@ -695,89 +695,41 @@ void musicIcon(int startPos, uint16_t col1)
 
 #pragma region Days Of The Week
 
-void sunday(int x, int y, uint16_t col1, uint16_t col2)
+void DisplayDay(int day, int spacing, int x, int y, uint16_t col1, uint16_t col2)
 {
-	//S
-	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col1);
-	matrix.drawPixel(x + 2, y + 0, col1);
-	matrix.drawPixel(x + 0, y + 2, col1);
-
-	//U
-	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
-	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
-	matrix.drawPixel(x + 4, y + 2, col2);
+	switch (day)
+	{
+		case 0:
+			s(x, y, col1);
+			u(x + spacing, y, col2);
+			break;
+		case 1:
+			m(x, y, col1);
+			o(x + spacing, y, col2);
+			break;
+		case 2:
+			t(x, y, col1);
+			u(x + spacing, y, col2);
+			break;
+		case 3:
+			w(x, y, col1);
+			e(x + spacing, y, col2);
+			break;
+		case 4:
+			t(x, y, col1);
+			h(x + spacing, y, col2);
+			break;
+		case 5:
+			f(x, y, col1);
+			r(x + spacing, y, col2);
+			break;
+		case 6:
+			s(x, y, col1);
+			a(x + spacing, y, col2);
+			break;
+	}
 }
 
-void monday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//M
-	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col1);
-	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col1);
-	matrix.drawPixel(x + 1, y + 0, col1);
-
-	//O
-	matrix.drawRect(x + 3, y + 0, 3, 3, col2);
-}
-
-void tuesday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//T
-	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col1);
-	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col1);
-
-	//U
-	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
-	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
-	matrix.drawPixel(x + 4, y + 2, col2);
-}
-
-void wednesday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//"W"
-	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col1);
-	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col1);
-	matrix.drawPixel(x + 1, y + 2, col1);
-
-	//E
-	matrix.drawRect(x + 3, y + 0, 2, 3, col2);
-	matrix.drawPixel(x + 5, y + 0, col2);
-	matrix.drawPixel(x + 5, y + 2, col2);
-}
-
-void thursday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//T
-	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col1);
-	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col1);
-
-	//U
-	matrix.drawLine(x + 3, y + 0, x + 3, y + 2, col2);
-	matrix.drawLine(x + 5, y + 0, x + 5, y + 2, col2);
-	matrix.drawPixel(x + 4, y + 1, col2);
-}
-
-void friday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//F
-	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col1);
-
-	//R
-	matrix.drawTriangle(x + 3, y + 0, x + 3, y + 2, x + 5, y + 0, col2);
-	matrix.drawPixel(x + 5, y + 2, col2);
-}
-
-void saturday(int x, int y, uint16_t col1, uint16_t col2)
-{
-	//S
-	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col1);
-	matrix.drawPixel(x + 2, y + 0, col1);
-	matrix.drawPixel(x + 0, y + 2, col1);
-
-	//A
-	matrix.drawRect(x + 3, y + 0, 3, 2, col2);
-	matrix.drawPixel(x + 3, y + 2, col2);
-	matrix.drawPixel(x + 5, y + 2, col2);
-}
 
 #pragma endregion
 
@@ -983,6 +935,12 @@ void f(int x, int y, uint16_t col)
 	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
 }
 //void g(int x, int y, uint16_t col);
+void h(int x, int y, uint16_t col)
+{
+	drawLine(0, 0, 0, 2, x, y, col);
+	drawLine(2, 0, 2, 2, x, y, col);
+	drawPixel(1, 1, x, y, col);
+}
 //void i(int x, int y, uint16_t col);
 void j(int x, int y, uint16_t col)
 {
@@ -1035,7 +993,13 @@ void u(int x, int y, uint16_t col)
 	matrix.drawPixel(x + 1, y + 2, col);
 }
 //void v(int x, int y, uint16_t col);
-//void w(int x, int y, uint16_t col);
+void w(int x, int y, uint16_t col)
+{
+	//"W"
+	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+	matrix.drawPixel(x + 1, y + 2, col);
+}
 //void x(int x, int y, uint16_t col);
 //void y(int x, int y, uint16_t col);
 //void z(int x, int y, uint16_t col);
