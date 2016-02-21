@@ -22,7 +22,7 @@ EEPROM Memory allocation
 #include <Time.h>
 #include <Audio.h>
 #include <Wire.h>
-#include <DS3232RTC.h> 
+#include <DS3232RTC.h>
 #include <SPI.h>
 #include <SD.h>
 #include <LinkedList.h>
@@ -271,7 +271,7 @@ void setup()
 	matrix.setBrightness(30);
 
 #pragma region Audio
-	AudioMemory(12);
+	AudioMemory(20);
 
 	sgtl5000_1.enable();
 	sgtl5000_1.inputSelect(myInput);
@@ -285,7 +285,7 @@ void setup()
 	pinMode(2, INPUT);  //Buton
 	pinMode(3, OUTPUT); //Transistor
 	pinMode(12, OUTPUT);
-	//pinMode(13, OUTPUT); // RX pin audio shield, LED
+	pinMode(13, OUTPUT); // RX pin audio shield, LED
 #pragma endregion
 
 #pragma region EEPROM startup
@@ -388,7 +388,6 @@ eState State = Main;
 class MenuContainer
 {
 public:
-
 	int posList;
 	int posActual;
 	void(*f)(int, uint16_t);
@@ -438,9 +437,9 @@ public:
 				(*f)(posActual, col1);
 
 				if (posList % 2 == 0)
-					col1 = colors[displayCol2];
-				else
 					col1 = colors[displayCol1];
+				else
+					col1 = colors[displayCol2];
 				break;
 
 			case 2:
@@ -448,13 +447,13 @@ public:
 
 				if (posList % 2 == 0)
 				{
-					col1 = colors[displayCol2];
-					col2 = colors[displayCol1];
+					col1 = colors[displayCol1];
+					col2 = colors[displayCol2];
 				}
 				else
 				{
-					col1 = colors[displayCol1];
-					col2 = colors[displayCol2];
+					col1 = colors[displayCol2];
+					col2 = colors[displayCol1];
 				}
 				break;
 
@@ -505,9 +504,6 @@ public:
 
 	void Update(int page)
 	{
-		Serial.print("1: ");
-		Serial.println(resetTimer);
-	
 		lastPos = (menuSize - 1) * 12;
 
 		if (page == 666)
@@ -621,7 +617,7 @@ MenuContainer MainMenuList[] =
 	MenuContainer(8,backIcon,BrightnessProfile),
 };
 
-Menu MainMenu(MainMenuList, 50, 9 ,1);
+Menu MainMenu(MainMenuList, 50, 9, 1);
 
 MenuContainer PartyMenuList[3] =
 {
@@ -639,12 +635,8 @@ int pageTimer;
 int pageTarget;
 
 //Date
-
-
 void loop()
 {
-	//Serial.println(fft1024.processorUsage());
-
 	matrix.fillScreen(0);
 	SetLight();
 
@@ -769,7 +761,7 @@ void loop()
 
 			//UpdateTime();
 			changeColor();
-			delay(100);
+			delay(5);
 		}
 		break;
 
@@ -858,7 +850,7 @@ void loop()
 			pageTimer += 51;
 			if (pageTimer > 10000)
 			{
-				if(pageDirection)
+				if (pageDirection)
 					pageTarget += 1;
 				else
 					pageTarget -= 1;
@@ -951,7 +943,7 @@ void changeColor()
 {
 	//Check if this works ayyy lmao
 	HrMn t = { hour(),minute() };
-	displayTimeSimple(t, Big, true, false);
+	displayTimeSimple(t, Big, true, true);
 
 	if (hourBelow10)
 		minuteAlert(displayCol1, 0);
@@ -1027,11 +1019,12 @@ void oke(int type)
 			matrix.show();
 		}
 		delay(1000);
+		okeX = -7;
 	}
 
 	if (type == 0 || type == 2)
 	{
-		okeX = -7;
+		matrix.fillScreen(0);
 		State = Main;
 		MainMenu.menuPage = MainMenu.homePage;
 		conveyorBelt = MainMenu.homePage * 12 - 5;
@@ -1567,8 +1560,8 @@ void TempDisplay(int cv, uint16_t col)
 {
 	if (onSecond() && canGetTemp && pageTarget != 1)
 		temp = GetTemp();
-	
-	if(!onSecond())
+
+	if (!onSecond())
 		canGetTemp = true;
 
 	int t1, t2;
@@ -1576,21 +1569,20 @@ void TempDisplay(int cv, uint16_t col)
 	t1 = temp / 10 % 10;
 	t2 = temp % 10;
 
-	setConvey3.Update(t1, conveyorBelt +  0 - 22, 0, colors[displayCol1], Big);
+	setConvey3.Update(t1, conveyorBelt + 0 - 22, 0, colors[displayCol1], Big);
 	setConvey4.Update(t2, conveyorBelt + 2 - 22, 0, colors[displayCol2], Big);
 	matrix.drawPixel(conveyorBelt + 5 - 22, 0, colors[displayCol1]);
 }
 
 void dateScroll(int offset)
 {
-	//drawLine(0, 0, 7, 7, conveyorBelt - offset,0,Red);
-	displayMonth(month(),conveyorBelt - offset,0);
-
 	HrMn d;
 	HrMnSplit ds;
 	d.Mn = day();
 
 	ds = split(d);
+
+	DisplayDay(weekday() - 1, 4, conveyorBelt, 0, colors[displayCol1], colors[displayCol1]);
 
 	if (ds.mn1 != 1)
 	{
@@ -1599,8 +1591,7 @@ void dateScroll(int offset)
 	}
 	else
 	{
-		displayNum(ds.mn1, conveyorBelt - offset + 3, 3, colors[displayCol2], Small);
-		displayNum(ds.mn2, conveyorBelt - offset + 6, 3, colors[displayCol2], Small);
+		displayNum(ds.mn1, conveyorBelt - offset - 1, 3, colors[displayCol2], Small);
+		displayNum(ds.mn2, conveyorBelt - offset + 2, 3, colors[displayCol2], Small);
 	}
-
 }
