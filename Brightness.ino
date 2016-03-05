@@ -27,12 +27,12 @@ int BrightnessReturn(bool setNow)
 		brightnessGuage = constrain(brightnessGuage, 0, 7);
 
 		matrix.drawLine(0, 0, 0, 8, colors[displayCol2]);
-		matrix.drawPixel(0, brightnessGuage, dotCol);
+		matrix.drawPixel(0, brightnessGuage, colors[displayCol1]);
 
 		if (brightnessGuage == 7)
 			matrix.fillScreen(0);
 
-		SetBrightness(brightnessGuage, true);
+		SetBrightnessTemp(brightnessGuage);
 
 		SetLight();
 
@@ -96,7 +96,7 @@ void brightnessProfile()
 
 	//Display the time above selection
 	if (cursorPos == 6)
-		backIcon(1, 0, colors[displayCol2], false);
+		backIcon(0, 0, colors[displayCol2], false);
 	else if (BProfile[cursorPos].active)
 		displayTimeSimple(BProfile[cursorPos].time, Med, false, false);
 
@@ -110,9 +110,8 @@ void brightnessProfile()
 	}
 	matrix.drawPixel(7, 7, colors[displayCol1]);
 
-	//Create a blink effect
-	if (onHalfSecond())
-		matrix.drawPixel(cursorPos + 1, 7, matrix.Color(0, 0, 0));
+	//Cursor
+	matrix.drawPixel(cursorPos + 1, 7, matrix.Color(0, 0, 0));
 
 	delay(50);
 }
@@ -121,12 +120,17 @@ void SetBrightness(int level)
 {
 	brightnessLevel = level;
 	targetBrightness = brightnessLevels[level];
-	EEPROM.write(6, brightnessLevel);
+	if (level == 6)
+		redColours();
+	else
+		unRedColours();
+
+	EEPROM.write(7, brightnessLevel);
 	Serial.println("Writing brightnes to EEPROM");
 }
 
 //Don't write to the eepRom 
-void SetBrightness(int level,bool dontWrite)
+void SetBrightnessTemp(int level)
 {
 	brightnessLevel = level;
 	targetBrightness = brightnessLevels[level];
