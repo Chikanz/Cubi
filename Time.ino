@@ -94,7 +94,7 @@ void displayTimeInner(int hr1, int hr2, int mn1, int mn2, int xmod)
 
 void displayTimeSimple(HrMn time, efontSize size, bool scroll, bool hr24)
 {
-	if (hour() > 12 && hr24)
+	if (time.Hr > 12 && !hr24)
 		time.Hr -= 12;
 
 	int hr1, hr2, mn1, mn2;
@@ -189,8 +189,6 @@ void TimeSet()
 	d = DateReturn();
 	t = TimeSetReturn(false, { 0, 0 });
 
-	
-
 	setTime(
 		t.Hr,
 		t.Mn,
@@ -275,7 +273,7 @@ HrMn TimeSetReturn(bool justMins, HrMn set)
 			break;
 		}
 
-		numToSet = ReadRotary(numToSet, false);
+		numToSet = ReadRotary(numToSet, true);
 		numToSet = constrain(numToSet, b, a);
 
 		time[NumSetPos] = numToSet;
@@ -303,8 +301,16 @@ HrMn TimeSetReturn(bool justMins, HrMn set)
 		//Flash
 		if (flashTimer > 0)
 		{
-			matrix.drawRect((NumSetPos - 1) * 2 , 0, 2, 8, matrix.Color(0, 0, 0));
-			flashTimer -= 51;
+			if (justMins)
+			{
+				matrix.drawRect((NumSetPos - 1) * 2 + 2, 0, 2, 8, matrix.Color(0, 0, 0));
+				flashTimer -= 51;
+			}
+			else
+			{
+				matrix.drawRect((NumSetPos - 1) * 2, 0, 2, 8, matrix.Color(0, 0, 0));
+				flashTimer -= 51;
+			}
 		}
 
 		if (NumSetPos >= 4 && !justMins)
@@ -384,7 +390,7 @@ Date DateReturn()
 			switch (NumSetPos)
 			{
 				case 3:
-					dayMax = calcDays(r.month, 2016); //?
+					dayMax = calcDays(r.month, year.Hr * 100 + year.Mn);
 					Serial.println(dayMax);
 					day1Max = dayMax / 10 % 10;
 					day2Max = dayMax % 10;
@@ -401,7 +407,7 @@ Date DateReturn()
 				yr1 = constrain(yr1, 1, 9);
 
 				year.Mn = (yr1 * 10) + yr2; //Combine
-				displayTimeSimple(year, Med, false, false);
+				displayTimeSimple(year, Med, false, true);
 			}
 			break;
 
@@ -414,7 +420,7 @@ Date DateReturn()
 					yr2 = constrain(yr2, 0, 9);
 
 				year.Mn = (yr1 * 10) + yr2; //Combine
-				displayTimeSimple(year, Med, false, false);
+				displayTimeSimple(year, Med, false, true);
 			}
 			break;
 
@@ -478,6 +484,7 @@ Date DateReturn()
 			r.year = year.Mn;
 			//r.month
 			r.day = day1 * 10 + day2;
+			r.month = r.month + 1;
 
 			NumSetPos = 0;
 			return r;
