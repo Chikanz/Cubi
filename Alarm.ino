@@ -3,42 +3,34 @@ int timesPlayed;
 
 void PlayAlarm()
 {
-	digitalWrite(3, HIGH);
-
-	/*matrix.setCursor(textCursor, 0);*/
-	//if (--textCursor == -50)
-	//	textCursor = matrix.width();
-	//matrix.print(("Wake Up!"));
-	
-	//mixer2.update
+	menuTime(7);
+	digitalWrite(3, HIGH);	
 
 	if (!playWav1.isPlaying())
-	{
-		EEPROM.write(6, songToPlay += 1);
-		
+	{		
 		if (songToPlay > fileCount)
 		{
-			songToPlay = 0;
-			EEPROM.write(6, 0);
-			Serial.println("Song Playing: ");
-			Serial.println(songToPlay);
+			songToPlay = 1;
+			EEPROM.write(6, 1);
+			Serial.println("Reset Song Count");
 		}
-		
 
-		Serial.print(songToPlay);
+		Serial.print("Playing Song: ");
+		Serial.println(songToPlay);
 
 		playFile("(" + String(songToPlay) + ")" + ".wav");
 	}
-	
-	//matrix.setTextColor(colors[displayCol1]);
 
 	delay(100);
 
 	if (buttonPressed())
 	{
+		volume = 0;
+		songToPlay += 1;
+		EEPROM.write(6, songToPlay);
 		digitalWrite(3, LOW);
 		oke(2);
-		playWav1.stop();
+		playWav1.stop();                
 	}
 }
 
@@ -47,7 +39,7 @@ void alarmMenu()
 {
 	alarmMenuPage = ReadRotary(alarmMenuPage, 0, 1);
 
-	if (AlarmKill)
+	if (!AlarmKill)
 		matrix.drawPixel(7, 0, colors[displayCol2]);
 
 	switch (alarmMenuPage)
@@ -64,19 +56,20 @@ void alarmMenu()
 	}
 }
 
-void AlarmPageChange()
+void AlarmPageChange() //fix dis
 {
 	switch (alarmMenuPage)
 	{
 		case 0:
 			AlarmKill = true;
 			EEPROM.write(5, true);
+			alarmMenuPage = 0;
 			oke(0);
 			break;
 
 		case 1:
-			AlarmKill = false;
-			EEPROM.write(5, true);
+			EEPROM.write(5, false);
+			alarmMenuPage = 0;
 			State = SetAlarm;
 			break;
 	}
@@ -92,9 +85,9 @@ void perDayAlarm()
 	if (cursorPos == 7)
 		backIcon(0, 0, colors[displayCol2], false);
 	else if (Alarms[cursorPos].active)
-		displayTimeSimple(Alarms[cursorPos].time, Med, false, false);
+		displayTimeSimple(Alarms[cursorPos].time, Med, false, true);
 	else if (!Alarms[cursorPos].active)
-		DisplayDay(cursorPos,3 ,1, 2, colors[displayCol1], colors[displayCol2]);
+		DisplayDay(cursorPos,0,1,1,colors[displayCol1], colors[displayCol2],Med);
 
 	//Draw Pixels
 	for (int i = 0; i < 7; i++)
@@ -116,8 +109,12 @@ void perDayAlarm()
 	}
 	matrix.drawPixel(7, 7, colors[displayCol1]);
 
-	//Create a blink effect
+	//cursor
 	matrix.drawPixel(cursorPos, 7, matrix.Color(0, 0, 0));
+
+	//blink current day
+	if (onSecond())
+		matrix.drawPixel(weekday() - 1, 7, matrix.Color(0, 0, 0));
 
 	//Button press
 	if (buttonPressed())
@@ -125,7 +122,17 @@ void perDayAlarm()
 		if (cursorPos == 7)
 		{
 			EEPROM.put(10 + sizeof(BProfile), Alarms);
-			EEPROM.write(5, true);
+
+			for (int i = 0; i < 6; i++)
+			{
+				if (Alarms[i].active)
+				{
+					EEPROM.write(5, false);
+					AlarmKill = false;
+					i = 7;
+				}
+			}
+
 			cursorPos = 0;
 			oke(0);
 		}
