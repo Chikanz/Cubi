@@ -275,7 +275,7 @@ void num8Med(int x, int y, uint16_t col)
 
 void num9Med(int x, int y, uint16_t col)
 {
-	matrix.drawLine(0 + x, 0 + y, 0 + x, 4 + y, col);
+	matrix.drawLine(0 + x, 0 + y, 0 + x, 3 + y, col);
 	matrix.drawLine(1 + x, 0 + y, 1 + x, 6 + y, col);
 }
 #pragma endregion
@@ -504,11 +504,10 @@ void speakerIcon(bool play, bool invert)
 
 void timeIcon(int startpos, uint16_t col)
 {
-	//  int tempConveyor = conveyorBelt - 16;
 	int tempConveyor = conveyorBelt - startpos;
 
-	matrix.drawRoundRect(tempConveyor + 1, 1, 6, 6, 1, colors[displayCol1]);
-	matrix.drawTriangle(tempConveyor + 3, 4, tempConveyor + 3, 3, tempConveyor + 4, 4, colors[displayCol1]);
+	matrix.drawRoundRect(tempConveyor + 1, 1, 6, 6, 1, col);
+	matrix.drawTriangle(tempConveyor + 3, 4, tempConveyor + 3, 3, tempConveyor + 4, 4, col);
 }
 
 void pirrana(int startpos, int convey, int timer)
@@ -643,20 +642,28 @@ void backIcon(int startpos, uint16_t col)
 void backIcon(int x, int y, uint16_t col, bool animated)
 {
 	if (animated)
+	{
 		timer3 += deltaTime3();
 
-	if (timer3 > 500)
-	{
-		timer3 = 0;
-		backMove--;
+		if (timer3 > 500)
+		{
+			timer3 = 0;
+			backMove--;
+		}
+
+		if (backMove < -1)
+			backMove = 0;
+
+		matrix.drawTriangle(x + backMove + 2, y + 2, x + backMove + 3, y + 1, x + backMove + 3, y + 2, col);
+		matrix.drawRect(x + backMove + 1, y + 3, 6, 2, col);
+		matrix.drawTriangle(x + backMove + 2, y + 5, x + backMove + 3, y + 5, x + backMove + 3, y + 6, col);
 	}
-
-	if (backMove < -1)
-		backMove = 0;
-
-	matrix.drawTriangle(x + backMove + 2, y + 2, x + backMove + 3, y + 1, x + backMove + 3, y + 2, col);
-	matrix.drawRect(x + backMove + 1, y + 3, 6, 2, col);
-	matrix.drawTriangle(x + backMove + 2, y + 5, x + backMove + 3, y + 5, x + backMove + 3, y + 6, col);
+	else
+	{
+		matrix.drawTriangle(x + 2, y + 2, x + 3, y + 1, x + 3, y + 2, col);
+		matrix.drawRect(x + 1, y + 3, 6, 2, col);
+		matrix.drawTriangle(x + 2, y + 5, x + 3, y + 5, x + 3, y + 6, col);
+	}
 }
 
 void sunIcon(int startPos, uint16_t col)
@@ -695,314 +702,400 @@ void musicIcon(int startPos, uint16_t col1)
 
 #pragma region Days Of The Week
 
-void DisplayDay(int day, int spacing, int x, int y, uint16_t col1, uint16_t col2)
+void DisplayDay(int day, int spacing, int x, int y, uint16_t col1, uint16_t col2, efontSize size)
 {
 	switch (day)
 	{
 		case 0:
-			s(x, y, col1);
-			u(x + spacing, y, col2);
+			textWriter("su", size, x, y, spacing,col1,col2);
 			break;
 		case 1:
-			m(x, y, col1);
-			o(x + spacing, y, col2);
+			textWriter("mo", size, x, y, spacing, col1, col2);
 			break;
 		case 2:
-			t(x, y, col1);
-			u(x + spacing, y, col2);
+			textWriter("tu", size, x, y, spacing, col1, col2);
 			break;
 		case 3:
-			w(x, y, col1);
-			e(x + spacing, y, col2);
+			textWriter("we", size, x, y, spacing, col1, col2);
 			break;
 		case 4:
-			t(x, y, col1);
-			h(x + spacing, y, col2);
+			textWriter("th", size, x, y, spacing, col1, col2);
 			break;
 		case 5:
-			f(x, y, col1);
-			r(x + spacing, y, col2);
+			textWriter("fr", size, x, y, spacing, col1, col2);
 			break;
 		case 6:
-			s(x, y, col1);
-			a(x + spacing, y, col2);
+			textWriter("sa", size, x, y, spacing, col1, col2);
 			break;
 	}
 }
-
-
 #pragma endregion
 
-#pragma region Months
-
-//Together
-
-void jan(int x, int y, uint16_t col1, uint16_t col2)
-{
-	j(x, y, col1);
-	a(x + 3, y, col2);
-}
-void feb(int x, int y, uint16_t col1, uint16_t col2)
-{
-	f(x, y, col1);
-	e(x + 3, y, col2);
-}
-void march(int x, int y, uint16_t col1, uint16_t col2)
-{
-	m(x, y, col1);
-	a(x + 3, y, col2);
-}
-void april(int x, int y, uint16_t col1, uint16_t col2)
-{
-	a(x, y, col1);
-	p(x + 3, y, col2);
-}
-void may(int x, int y, uint16_t col1, uint16_t col2)
-{
-	m(x, y, col1);
-	a(x + 3, y, col2);
-}
-void june(int x, int y, uint16_t col1, uint16_t col2)
-{
-	j(x, y, col1);
-	u(x + 3, y, col2);
-}
-void july(int x, int y, uint16_t col1, uint16_t col2) //Well fuck
-{
-	j(x, y, col1);
-	u(x + 3, y, col2);
-}
-void august(int x, int y, uint16_t col1, uint16_t col2)
-{
-	a(x, y, col1);
-	u(x + 3, y, col2);
-}
-void sep(int x, int y, uint16_t col1, uint16_t col2)
-{
-	s(x, y, col1);
-	e(x + 3, y, col2);
-}
-void oct(int x, int y, uint16_t col1, uint16_t col2)
-{
-	o(x, y, col1);
-	c(x + 3, y, col2);
-}
-void nov(int x, int y, uint16_t col1, uint16_t col2)
-{
-	n(x, y, col1);
-	o(x + 3, y, col2);
-}
-void dec(int x, int y, uint16_t col1, uint16_t col2)
-{
-	d(x, y, col1);
-	e(x + 3, y, col2);
-}
-
-//Apart
-void jan(int x, int y, uint16_t col)
-{
-	j(x, y, col);
-	a(x + 4, y, col);
-}
-void feb(int x, int y, uint16_t col)
-{
-	f(x, y, col);
-	e(x + 4, y, col);
-}
-void march(int x, int y, uint16_t col)
-{
-	m(x, y, col);
-	a(x + 4, y, col);
-}
-void april(int x, int y, uint16_t col)
-{
-	a(x, y, col);
-	p(x + 4, y, col);
-}
-void may(int x, int y, uint16_t col)
-{
-	m(x, y, col);
-	a(x + 4, y, col);
-}
-void june(int x, int y, uint16_t col)
-{
-	j(x, y, col);
-	u(x + 4, y, col);
-}
-void july(int x, int y, uint16_t col) //Well fuck
-{
-	j(x, y, col);
-	u(x + 4, y, col);
-}
-void august(int x, int y, uint16_t col)
-{
-	a(x, y, col);
-	u(x + 4, y, col);
-}
-void sep(int x, int y, uint16_t col)
-{
-	s(x, y, col);
-	e(x + 4, y, col);
-}
-void oct(int x, int y, uint16_t col)
-{
-	o(x, y, col);
-	c(x + 4, y, col);
-}
-void nov(int x, int y, uint16_t col)
-{
-	n(x, y, col);
-	o(x + 4, y, col);
-}
-void dec(int x, int y, uint16_t col)
-{
-	d(x, y, col);
-	e(x + 4, y, col);
-}
-
-void displayMonth(int month, int x, int y)
-{
-	switch (month)
-	{
-		case 0:
-			jan(x, y, colors[displayCol1]);
-			break;
-		case 1:
-			feb(x, y, colors[displayCol1]);
-			break;
-		case 2:
-			march(x, y, colors[displayCol1]);
-			break;
-		case 3:
-			april(x, y, colors[displayCol1]);
-			break;
-		case 4:
-			may(x, y, colors[displayCol1]);
-			break;
-		case 5:
-			june(x, y, colors[displayCol1]);
-			break;
-		case 6:
-			july(x, y, colors[displayCol1]);
-			break;
-		case 7:
-			august(x, y, colors[displayCol1]);
-			break;
-		case 8:
-			sep(x, y, colors[displayCol1]);
-			break;
-		case 9:
-			oct(x, y, colors[displayCol1]);
-			break;
-		case 10:
-			nov(x, y, colors[displayCol1]);
-			break;
-		case 11:
-			dec(x, y, colors[displayCol1]);
-			break;
-	}
-}
-
-#pragma endregion
 
 #pragma region Letters
 
-void a(int x, int y, uint16_t col)
+static letter letters[] =
 {
-	matrix.drawRect(x + 0, y + 0, 3, 2, col);
-	matrix.drawPixel(x + 0, y + 2, col);
-	matrix.drawPixel(x + 2, y + 2, col);
+	a,
+	b,
+	c,
+	d,
+	e,
+	f,
+	g,
+	h,
+	i,
+	j,
+	k,
+	l,
+	m,
+	n,
+	o,
+	p,
+	q,
+	r,
+	s,
+	t,
+	u,
+	v,
+	w,
+	x,
+	y,
+	z,
+};
+
+void a(int x, int y, uint16_t col, efontSize size)
+{
+	if (size == Small)
+	{
+		matrix.drawRect(x + 0, y + 0, 3, 2, col);
+		matrix.drawPixel(x + 0, y + 2, col);
+		matrix.drawPixel(x + 2, y + 2, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 2, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-//void b(int x, int y, uint16_t col);
-void c(int x, int y, uint16_t col)
+void b(int x, int y, uint16_t col, efontSize size){}
+void c(int x, int y, uint16_t col, efontSize size)
 {
 	drawRect(0, 0, 3, 3, x, y, col);
 	drawPixel(2, 1, x, y, 0);
 }
-void d(int x, int y, uint16_t col)
+void d(int x, int y, uint16_t col, efontSize size)
 {
 	drawRect(0, 0, 3, 3, x, y, col);
 	drawPixel(2, 0, x, y, 0);
 }
-void e(int x, int y, uint16_t col)
+void e(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawRect(x + 0, y + 0, 2, 3, col);
-	matrix.drawPixel(x + 2, y + 0, col);
-	matrix.drawPixel(x + 2, y + 2, col);
+	if (size == Small)
+	{
+		matrix.drawRect(x + 0, y + 0, 2, 3, col);
+		matrix.drawPixel(x + 2, y + 0, col);
+		matrix.drawPixel(x + 2, y + 2, col);
+	}
+
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 2, x, y, col);
+		drawPixel(1, 4, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
+
 }
-void f(int x, int y, uint16_t col)
+void f(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
+	if (size == Small)
+		matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 2, x, y, col);
+		drawPixel(2, 0, x, y, col);
+	}
+	//End CubiHelper Code
 }
-//void g(int x, int y, uint16_t col);
-void h(int x, int y, uint16_t col)
+void g(int x, int y, uint16_t col, efontSize size){}
+void h(int x, int y, uint16_t col, efontSize size)
 {
-	drawLine(0, 0, 0, 2, x, y, col);
-	drawLine(2, 0, 2, 2, x, y, col);
-	drawPixel(1, 1, x, y, col);
+	drawLine(0, 0, 0, 4 , x, y, col);
+	drawLine(2, 0, 2, 4, x, y, col);
+	drawPixel(1, 2, x, y, col);
 }
-//void i(int x, int y, uint16_t col);
-void j(int x, int y, uint16_t col)
+void i(int x, int y, uint16_t col, efontSize size){}
+void j(int x, int y, uint16_t col, efontSize size)
 {
 	drawRect(0, 0, 3, 3, x, y, col);
 	drawLine(0, 0, 1, 0, x, y, 0);
 }
-//void k(int x, int y, uint16_t col);
-//void l(int x, int y, uint16_t col);
-void m(int x, int y, uint16_t col)
+void k(int x, int y, uint16_t col, efontSize size){}
+void l(int x, int y, uint16_t col, efontSize size){}
+void m(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
-	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
-	matrix.drawPixel(x + 1, y + 0, col);
+	if (size == Small)
+	{
+		matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+		matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+		matrix.drawPixel(x + 1, y + 0, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-void n(int x, int y, uint16_t col)
+void n(int x, int y, uint16_t col, efontSize size)
 {
-	drawRect(0, 0, 3, 3, x, y, col);
-	drawPixel(1, 2, x, y, 0);
+	if (size == Small)
+	{
+		drawRect(0, 0, 3, 3, x, y, col);
+		drawPixel(1, 2, x, y, 0);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-void o(int x, int y, uint16_t col)
+void o(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawRect(x + 0, y + 0, 3, 3, col);
+	if (size == Small)
+	{
+		matrix.drawRect(x + 0, y + 0, 3, 3, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 4, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-void p(int x, int y, uint16_t col)
+void p(int x, int y, uint16_t col, efontSize size)
 {
 	drawRect(0, 0, 3, 2, x, y, col);
 	drawPixel(0, 2, x, y, col);
 }
-//void q(int x, int y, uint16_t col);
-void r(int x, int y, uint16_t col)
+void q(int x, int y, uint16_t col, efontSize size){}
+void r(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
-	matrix.drawPixel(x + 2, y + 2, col);
+	if (size == Small)
+	{
+		matrix.drawTriangle(x + 0, y + 0, x + 0, y + 2, x + 2, y + 0, col);
+		matrix.drawPixel(x + 2, y + 2, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 2, x, y, col);
+		drawPixel(1, 3, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-void s(int x, int y, uint16_t col)
+void s(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col);
-	matrix.drawPixel(x + 2, y + 0, col);
-	matrix.drawPixel(x + 0, y + 2, col);
+	if (size == Small)
+	{
+		matrix.drawLine(x + 1, y + 0, x + 1, y + 2, col);
+		matrix.drawPixel(x + 2, y + 0, col);
+		matrix.drawPixel(x + 0, y + 2, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 0, x, y, col);
+		drawPixel(1, 2, x, y, col);
+		drawPixel(1, 4, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-void t(int x, int y, uint16_t col)
+void t(int x, int y, uint16_t col, efontSize size)
 {
 	matrix.drawLine(x + 0, y + 0, x + 2, y + 0, col);
-	matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col);
+	//matrix.drawLine(x + 1, y + 1, x + 1, y + 2, col);
+	matrix.drawLine(x + 1, y + 1, x + 1, y + 4, col);
 }
-void u(int x, int y, uint16_t col)
+void u(int x, int y, uint16_t col, efontSize size)
 {
-	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
-	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
-	matrix.drawPixel(x + 1, y + 2, col);
+	if (size == Small)
+	{
+		matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+		matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+		matrix.drawPixel(x + 1, y + 2, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 4, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-//void v(int x, int y, uint16_t col);
-void w(int x, int y, uint16_t col)
+void v(int x, int y, uint16_t col, efontSize size){}
+void w(int x, int y, uint16_t col, efontSize size)
 {
-	//"W"
-	matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
-	matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
-	matrix.drawPixel(x + 1, y + 2, col);
+	if (size == Small)
+	{
+		matrix.drawLine(x + 0, y + 0, x + 0, y + 2, col);
+		matrix.drawLine(x + 2, y + 0, x + 2, y + 2, col);
+		matrix.drawPixel(x + 1, y + 2, col);
+	}
+
+	//Generated by CubiHelper
+	if (size == Med)
+	{
+		drawPixel(0, 0, x, y, col);
+		drawPixel(0, 1, x, y, col);
+		drawPixel(0, 2, x, y, col);
+		drawPixel(0, 3, x, y, col);
+		drawPixel(0, 4, x, y, col);
+		drawPixel(1, 3, x, y, col);
+		drawPixel(1, 4, x, y, col);
+		drawPixel(2, 0, x, y, col);
+		drawPixel(2, 1, x, y, col);
+		drawPixel(2, 2, x, y, col);
+		drawPixel(2, 3, x, y, col);
+		drawPixel(2, 4, x, y, col);
+	}
+	//End CubiHelper Code
 }
-//void x(int x, int y, uint16_t col);
-//void y(int x, int y, uint16_t col);
-//void z(int x, int y, uint16_t col);
+void x(int x, int y, uint16_t col, efontSize size){}
+void y(int x, int y, uint16_t col, efontSize size){}
+void z(int x, int y, uint16_t col, efontSize size){}
+
+#pragma endregion
+
+#pragma region writing Funcs
+
+void textWriter(String text, efontSize size, int x, int y, int spacing, uint16_t col)
+{
+	for (int i = 0; i < text.length(); i++)
+	{
+		charWriter(text[i], x + spacing + (i * 3), y, col, size);
+	}
+}
+
+void textWriter(String text, efontSize size, int x, int y, int spacing, uint16_t col1, uint16_t col2)
+{
+	for (int i = 0; i < text.length(); i++)
+	{
+		if (i % 2)
+			charWriter(text[i], x + spacing + (i * 3), y, col2, size);
+		else
+			charWriter(text[i], x + spacing + (i * 3), y, col1, size);
+	}
+}
+
+void charWriter(char ch, int x1, int y1, uint16_t col, efontSize size)
+{
+	//Serial.println("Char: ");
+	//Serial.println((int)ch - 96);
+
+	letters[ch - 97](x1, y1, col, size);
+}
+
+void displayMonth(int month, int x, int y)
+{
+
+}
 
 #pragma endregion
 
