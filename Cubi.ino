@@ -1,18 +1,6 @@
 //Cubi, a playful LED powered alarm clock.
 //Zac Lucarelli 2k16
 
-/*
-EEPROM Memory allocation
-0 - null
-1 - DisplayCol1
-2 - DisplayCol2
-3 - AlarmTime1
-4 - AlarmTime2
-5 - AlarmIsSet
-6 - PrevBrightness
-10- BrightnessProfileArray
-*/
-
 //So many libraries the Citadel is jelly
 #include <Adafruit_GFX.h>
 #include "Classes.h"
@@ -271,7 +259,7 @@ void setup()
 	matrix.setBrightness(30);
 
 #pragma region Audio
-	AudioMemory(20);
+	AudioMemory(30);
 
 	sgtl5000_1.enable();
 	sgtl5000_1.inputSelect(myInput);
@@ -285,10 +273,23 @@ void setup()
 	pinMode(2, INPUT);  //Buton
 	pinMode(3, OUTPUT); //Transistor
 	pinMode(12, OUTPUT);
-	pinMode(13, OUTPUT); // RX pin audio shield, LED
+	//pinMode(13, INPUT); // RX pin audio shield, LED
 #pragma endregion
 
 #pragma region EEPROM startup
+	/*
+	EEPROM Memory allocation
+	0 - null
+	1 - DisplayCol1
+	2 - DisplayCol2
+	3 - AlarmTime1
+	4 - AlarmTime2
+	5 - AlarmIsSet
+	6 - SongToPlay
+	7 - PrevBrightness
+	10- BrightnessProfileArray
+	AlarmArray
+	*/
 	Serial.println("Reading from Eeprom");
 	displayCol1 = EEPROM.read(1);
 	displayCol2 = EEPROM.read(2);
@@ -298,11 +299,10 @@ void setup()
 
 	AlarmKill = EEPROM.read(5);
 	songToPlay = EEPROM.read(6);
+	SetBrightness(EEPROM.read(7)); //Remember prev brightness
 
 	EEPROM.get(10, BProfile);
 	EEPROM.get(10 + sizeof(BProfile), Alarms);
-
-	SetBrightness(EEPROM.read(6)); //Remember prev brightness
 
 	if (BProfile == 0)
 	{
@@ -634,20 +634,18 @@ int lastScale = scale + 5;
 int pageTimer;
 int pageTarget;
 
-//Date
 void loop()
 {
 	matrix.fillScreen(0);
 	SetLight();
 
-	//Alarm						Note: something wrong with brightness volvo pls fix
+	//Alarm
 	for (int i = 0; i < 7; i++)
 	{
 		if (!AlarmKill && weekday() == i + 1 && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
 		{
 			State = Alarm;
-			//textCursor = 0;
-			SetBrightness(1);
+			SetBrightness(2); //normal Brightness
 			unRedColours();
 		}
 	}
@@ -800,32 +798,42 @@ void loop()
 
 		case DisplayTest:
 		{
-			uint16_t n = matrix.Color(0, 0, 0);
-			uint32_t i, j;
-			int x, y;
-			matrix.setBrightness(30);
-			for (i = 0; i < 256; i++) {
-				for (j = 0; j < matrix.numPixels(); j++)
-				{
-					//x = j;
-					matrix.setPixelColor(j, draw565to32(Wheel((j + i) & 255)));
-					//matrix.drawPixel(j, y, draw565to32(Wheel((j + i) & 255)));
-					//x++;
-				}
-				matrix.drawLine(0, 5, 0, 7, n);
-				matrix.drawLine(1, 0, 1, 3, n);
 
-				matrix.drawLine(2, 0, 2, 7, n);
+			/*for (int i = 0; i < 26; i++)
+			{
+				charWriter(i + 96, 0, 0, Blue, Small);
+				delay(1000);
+			}*/
 
-				matrix.drawLine(3, 1, 3, 3, n);
-				matrix.drawLine(4, 5, 4, 6, n);
+		
 
-				matrix.drawLine(5, 0, 5, 7, n);
 
-				matrix.show();
+			//uint16_t n = matrix.Color(0, 0, 0);
+			//uint32_t i, j;
+			//int x, y;
+			//matrix.setBrightness(30);
+			//for (i = 0; i < 256; i++) {
+			//	for (j = 0; j < matrix.numPixels(); j++)
+			//	{
+			//		//x = j;
+			//		matrix.setPixelColor(j, draw565to32(Wheel((j + i) & 255)));
+			//		//matrix.drawPixel(j, y, draw565to32(Wheel((j + i) & 255)));
+			//		//x++;
+			//	}
+			//	matrix.drawLine(0, 5, 0, 7, n);
+			//	matrix.drawLine(1, 0, 1, 3, n);
 
-				delay(10);
-			}
+			//	matrix.drawLine(2, 0, 2, 7, n);
+
+			//	matrix.drawLine(3, 1, 3, 3, n);
+			//	matrix.drawLine(4, 5, 4, 6, n);
+
+			//	matrix.drawLine(5, 0, 5, 7, n);
+
+			//	matrix.show();
+
+			//	delay(10);
+			//}
 		}
 		break;
 
@@ -939,17 +947,13 @@ void unRedColours()
 
 int ColPos = 0;
 
-void changeColor()
+void changeColor() //Make scrolly in future
 {
-	//Check if this works ayyy lmao
 	HrMn t = { hour(),minute() };
-	displayTimeSimple(t, Big, true, true);
+	displayTimeSimple(t, Big, false, false);
 
 	if (hourBelow10)
 		minuteAlert(displayCol1, 0);
-
-	//DisplayCurrentTime(hrDisplay1, hrDisplay2, mnDisplay1, mnDisplay2, false, 2);
-	menuTime(0);
 
 	//Code will continually think the rotary encoder is turning left unless serial.print or delay(1) is used. Wtf.
 	Serial.println(ColorToChoose);
@@ -985,6 +989,8 @@ void changeColor()
 		oke(0);
 		EEPROM.write(2, displayCol2);
 	}
+
+	delay(2);
 }
 
 boolean onSecond()
@@ -1511,10 +1517,6 @@ void PartyMode(int ayy)
 		level[5] = fft1024.read(47, 66);
 		level[6] = fft1024.read(67, 93);
 		level[7] = fft1024.read(94, 131);
-
-		fft1024.averageTogether(5);
-
-		//Serial.print(fft1024.read(4, 6));
 	}
 
 	for (int i = 0; i < 8; i++)
@@ -1531,7 +1533,7 @@ void PartyMode(int ayy)
 			if (shown[i] > 0) shown[i] = shown[i] - 1;
 			val = shown[i];
 		}
-		matrix.drawLine(conveyorBelt + i - 12, 8, conveyorBelt + i - 12, 8 - shown[i], matrix.Color(0, 255, 255));
+		matrix.drawLine(conveyorBelt + i - 12, 8, conveyorBelt + i - 12, 8 - shown[i], colors[displayCol1]);
 	}
 
 	if (scale != lastScale)
@@ -1582,7 +1584,7 @@ void dateScroll(int offset)
 
 	ds = split(d);
 
-	DisplayDay(weekday() - 1, 4, conveyorBelt, 0, colors[displayCol1], colors[displayCol1]);
+	DisplayDay(weekday() - 1, 0, conveyorBelt, 0, colors[displayCol1], colors[displayCol1],Small);
 
 	if (ds.mn1 != 1)
 	{
