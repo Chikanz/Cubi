@@ -218,7 +218,7 @@ int fakeTime = 0;
 #pragma endregion
 
 #pragma region Nap timer stuff
-HrMn napTimer;
+int napTimerMin;
 bool napOn = false;
 int pastSec;
 int napTimerSeconds;
@@ -639,7 +639,8 @@ void loop()
 	matrix.fillScreen(0);
 	SetLight();
 
-	//Alarm
+	//Alarm 
+	//Maybe use RTC functions instead?
 	for (int i = 0; i < 7; i++)
 	{
 		if (!AlarmKill && weekday() == i + 1 && Alarms[i].active && Alarms[i].time.Hr == hour() && Alarms[i].time.Mn == minute() && second() == 0)
@@ -664,6 +665,7 @@ void loop()
 			{
 				pastSec = second();
 				napTimerSeconds -= 1;
+				napTimerMin = (napTimerSeconds / 60) + 1;
 			}
 		}
 	}
@@ -798,15 +800,8 @@ void loop()
 
 		case DisplayTest:
 		{
-
-			/*for (int i = 0; i < 26; i++)
-			{
-				charWriter(i + 96, 0, 0, Blue, Small);
-				delay(1000);
-			}*/
-
-		
-
+			/*sunIcon(12, Yellow);
+			delay(100);*/
 
 			//uint16_t n = matrix.Color(0, 0, 0);
 			//uint32_t i, j;
@@ -822,18 +817,6 @@ void loop()
 			//	}
 			//	matrix.drawLine(0, 5, 0, 7, n);
 			//	matrix.drawLine(1, 0, 1, 3, n);
-
-			//	matrix.drawLine(2, 0, 2, 7, n);
-
-			//	matrix.drawLine(3, 1, 3, 3, n);
-			//	matrix.drawLine(4, 5, 4, 6, n);
-
-			//	matrix.drawLine(5, 0, 5, 7, n);
-
-			//	matrix.show();
-
-			//	delay(10);
-			//}
 		}
 		break;
 
@@ -845,11 +828,21 @@ void loop()
 
 		case NapSet:
 		{
-			napTimer = TimeSetReturn(true, { 0, 0 });
-			napOn = true;
-			napTimerSeconds = napTimer.Mn * 60;
-			pastSec = second();
-			oke(0);
+			if (!napOn)
+			{
+				HrMn m;
+				m = TimeSetReturn(true, { 0, 0 });
+				napTimerMin = m.Mn;
+				napOn = true;
+				napTimerSeconds = napTimerMin * 60;
+				pastSec = second();
+				oke(0);
+			}
+			else
+			{
+				napOn = false;
+				oke(0);
+			}
 		}
 		break;
 
@@ -1584,16 +1577,33 @@ void dateScroll(int offset)
 
 	ds = split(d);
 
-	DisplayDay(weekday() - 1, 0, conveyorBelt, 0, colors[displayCol1], colors[displayCol1],Small);
+	DisplayDay(weekday() - 1, 1, conveyorBelt, 0, colors[displayCol1], colors[displayCol1], Small);
 
-	if (ds.mn1 != 1)
+	//Yummy sphagetti alignment code
+	if (ds.mn1 != 1) //Normal
 	{
-		displayNum(ds.mn1, conveyorBelt - offset, 3, colors[displayCol2], Small);
-		displayNum(ds.mn2, conveyorBelt - offset + 3, 3, colors[displayCol2], Small);
+		if (ds.mn2 != 1)
+		{
+			displayNum(ds.mn1, conveyorBelt - offset, 3, colors[displayCol2], Small);
+			displayNum(ds.mn2, conveyorBelt - offset + 3, 3, colors[displayCol2], Small);
+		}
+		else
+		{
+			displayNum(ds.mn1, conveyorBelt - offset, 3, colors[displayCol2], Small);
+			displayNum(ds.mn2, conveyorBelt - offset + 2, 3, colors[displayCol2], Small);
+		}
 	}
-	else
+	else //1st digit aligned
 	{
-		displayNum(ds.mn1, conveyorBelt - offset - 1, 3, colors[displayCol2], Small);
-		displayNum(ds.mn2, conveyorBelt - offset + 2, 3, colors[displayCol2], Small);
+		if (ds.mn2 != 1)
+		{
+			displayNum(ds.mn1, conveyorBelt - offset - 1, 3, colors[displayCol2], Small);
+			displayNum(ds.mn2, conveyorBelt - offset + 2, 3, colors[displayCol2], Small);
+		}
+		else
+		{
+			displayNum(ds.mn1, conveyorBelt - offset - 1, 3, colors[displayCol2], Small);
+			displayNum(ds.mn2, conveyorBelt - offset + 1, 3, colors[displayCol2], Small);
+		}
 	}
 }
