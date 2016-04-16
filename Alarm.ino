@@ -3,7 +3,7 @@ int timesPlayed;
 
 void PlayAlarm()
 {
-	menuTime(7);
+//	menuTime(7);
 	digitalWrite(3, HIGH);	
 
 	if (!playWav1.isPlaying())
@@ -78,28 +78,36 @@ void AlarmPageChange() //fix dis
 HrMn prevTime;
 void perDayAlarm()
 {
+	/*Serial.print("Alarm: ");
+	Serial.println(Alarms[cursorPos].time.Hr);
+	Serial.println(Alarms[cursorPos].active);	
+
+	Serial.print("CursorPos: ");
+	Serial.println(cursorPos);*/
+
+	//Serial.println(Alarms[0].active);
+
 	cursorPos = ReadRotary(cursorPos, true);
 	cursorPos = constrain(cursorPos, 0, 7);
 
 	//Display above selection
 	if (cursorPos == 7)
+	{
 		backIcon(0, 0, colors[displayCol2], false);
+	}
 	else if (Alarms[cursorPos].active)
+	{
 		displayTimeSimple(Alarms[cursorPos].time, Med, false, true);
+	}
 	else if (!Alarms[cursorPos].active)
-		DisplayDay(cursorPos,0,1,1,colors[displayCol1], colors[displayCol2],Med);
+	{
+		DisplayDay(cursorPos, 0, 1, 1, colors[displayCol1], colors[displayCol2], Med);
+	}
 
 	//Draw Pixels
 	for (int i = 0; i < 7; i++)
 	{
-		if (i == cursorPos)
-		{
-			if (Alarms[i].active)
-				matrix.drawPixel(i, 7, colors[1] - fadeMod);
-			else
-				matrix.drawPixel(i, 7, colors[6] - fadeMod);
-		}
-		else
+		if (i != cursorPos)
 		{
 			if (Alarms[i].active)
 				matrix.drawPixel(i, 7, colors[1]);
@@ -123,13 +131,13 @@ void perDayAlarm()
 		{
 			EEPROM.put(10 + sizeof(BProfile), Alarms);
 
-			for (int i = 0; i < 6; i++)
+			for (int i = 0; i < 7; i++)
 			{
 				if (Alarms[i].active)
 				{
 					EEPROM.write(5, false);
 					AlarmKill = false;
-					i = 7;
+					break;
 				}
 			}
 
@@ -140,14 +148,16 @@ void perDayAlarm()
 		{
 			if (Alarms[cursorPos].active)
 			{
+				Serial.println("active false");
 				Alarms[cursorPos].active = false;
 				Alarms[cursorPos].time = { 0,0 };
 			}
 			else
 			{
-				Alarms[cursorPos].active = true;
-				Alarms[cursorPos].time = TimeSetReturn(false, prevTime);
+				Alarms[cursorPos].time = TimeSetReturn(false, prevTime);;
 				prevTime = Alarms[cursorPos].time;
+				Alarms[cursorPos].active = true; //Don't put this line before timeSetReturn(), weird shit happens
+
 				oke(1);
 			}
 		}
