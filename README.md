@@ -7,7 +7,7 @@ Glorious 8x8 Neopixel display
 </li>
 
 <li>
-Custom music on alarm
+Custom music on alarm with a fade in
 </li>
 
 <li>
@@ -15,11 +15,19 @@ Custom music on alarm
 </li>
 
 <li>
-Like the coolest menu system ever <sup>tm</sup>
+The coolest menu system ever <sup>tm</sup>
 </li>
 
 <li>
-Did I mention it plays snake? That's pretty damn cool. Can your alarm clock play snake?
+The game snake
+</li>
+
+<li>
+A party mode that cycles between the time, the temperature and a spectrum analyser from the mic
+</li>
+
+<li>
+Nap mode (count down timer)
 </li>
 
 </ul>
@@ -34,9 +42,6 @@ Force user to play snake on alarm
 </li>
 <li>
 Change license to CDL
-</li>
-<li>
-Add nap mode
 </li>
 <li>
 Add music player mode
